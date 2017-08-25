@@ -4,7 +4,7 @@
     2. [Kodi](#kodi)
     3. [Radio](#radio)
 2. [Python](#python)
-	1. [Core Script](#corescript)
+	1. [Core Script](#core-script)
 	2. [AutoConfig](#autoconfig)
 	3. [DeviceMonitor](#devicemonitor)
 	4. [Discovery](#discovery)
