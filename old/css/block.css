@@ -1,0 +1,339 @@
+/*Version 1.4*/
+.image-block {
+    border: 3px solid white ;
+    background-color: #D3D3D3;
+    padding: 0px;
+	height: auto;
+    margin: 0px;
+    text-align: center;
+    vertical-align: bottom;
+	position: relative;
+	overflow: hidden;
+}
+
+.rs-control .rs-overlay, .rs-block .rs-inner{
+background-color: #D3D3D3;
+}
+.rs-control{
+	position: absolute !important;
+	margin-top: 15px;
+}
+.contentDimmer .rs-control,.contentDimmer  .rs-container {
+	height: 85% !important;
+	width:  85% !important;
+}
+.volume .rs-control,.volume .rs-container {
+	height: 100% !important;
+	width:  100% !important;
+}
+
+.rs-control, .rs-container {
+	/* height:  calc(100% - 40px) !important;
+	width:  calc(100% - 40px) !important; */
+	margin: auto;
+	overflow: -moz-hidden-unscrollable;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	width: 100%;
+	height: 100%;
+	font-size: 1em;
+	color: black;
+	font-weight: bold;
+}
+
+.contentDimmer{
+	position:  absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	 width: 100%;
+    height: 100%;
+    font-size: 1em;
+	color: black; 
+	font-weight: bold;
+	padding-top: 15%;
+}
+
+.col-xs-4.content {
+	font-size: 10px;
+}
+.rs-inner-container{
+	 margin-top:25%;
+}
+
+.fa.fa-4 {
+	font-size: 4em;
+	bottom: 20%;
+	position: absolute;
+	left: 35%;
+	right: 35%;
+	}
+.fa.fa-3 {
+	font-size: 3em;
+	}
+.fa.fa-2 {
+	font-size: 2em;
+	}
+.image-block:hover > p {
+ /*   background-color: rgba(3,3,3,0.5);   */
+}
+.fa-lightbulb-o.active {
+	color: yellow;
+	text-shadow: 2px 2px 15px yellow;
+}
+.fa-heart.active {
+	color: red;
+	text-shadow: 2px 2px 15px red;
+}
+.fa-power-off.active {
+	color: green;
+	text-shadow: 2px 2px 15px green;
+}
+.fa-music.active {
+	color: yellow;
+	text-shadow: 2px 2px 15px yellow;
+}
+.fa-clock-o.active {
+	color: yellow;
+	text-shadow: 2px 2px 15px yellow;
+}
+.fa-play.active {
+	color: green;
+	text-shadow: 2px 2px 15px green;
+}
+.fa-pause.active {
+	color: orange ;
+	text-shadow: 2px 2px 15px orange;
+}
+.fa-stop.active {
+	color: red;
+	text-shadow: 2px 2px 15px red;
+
+}
+.fa-moon-o.active {
+	color: yellow;
+	text-shadow: 2px 2px 15px yellow;
+}
+.fa-sun-o.active {
+	color: yellow;
+}
+
+
+.box,.box2{
+	position: relative;
+}
+.box:before{
+	content: "";
+	display: block;
+	padding-top: 100%; 	
+	
+}
+.box2:before{
+	content: "";
+	display: block;
+	padding-top: 50%; 	
+	
+}
+.content{
+	position:  absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	 width: 100%;
+    height: 100%;
+    font-size: 1em;
+    padding-top: 15%;
+	color: black; 
+	font-weight: bold;
+
+}
+.fa-play,.fa-stop,.fa-volume-off,.fa-minus-circle,.fa-plus-circle{
+	margin: 10px;
+	
+}
+.master{
+	height: calc(100% + 1px);
+}
+
+.scrolling {
+color: #54bbe0;
+}
+
+/* Important part */
+.volume{
+	display: inline-block;
+	position:  relative;
+	/* width: 20%;
+	margin: 5% 5% 0 0; */
+	float: left;
+	font-size: 12px;
+	padding-right: 0px;
+	padding-left: 0px
+}
+.volume:before{
+	content: "";
+	display: block;
+	padding-top: 100%; /* initial ratio of 1:1*/
+}
+
+.volume_content{
+	position: absolute;
+top: 0;
+left: 0;
+bottom: 0;
+right: 0;
+padding: 30px;
+text-align: center;
+vertical-align: center;
+text-transform: uppercase;
+}
+
+.volume .rs-control{
+position: relative !important;
+}
+
+.volume .rs-inner-container{
+	margin: 0px;
+}
+.volumerow.row{
+	background-color: #D3D3D3;
+	overflow: hidden;
+	border: 3px solid white;
+}
+.volumerow select, .volumerow .youtube{
+	width: 100%;
+}
+.volumerow .youtube input[type=url]{
+width: calc(100% - 31px);
+}
+.volumerow .fa.fa-4{
+	font-size: 4em;
+	margin: 10px;
+}
+.marquee{
+	
+}
+
+
+input[type=range] {
+  -webkit-appearance: none;
+  margin: 25% 0; 
+  width: 100%;
+  /*padding-top: 2em; */
+}
+input[type=range]:focus {
+  outline: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 16px;
+  cursor: pointer;
+  animate: 0.2s;
+  box-shadow: 0px 0px 0px #000000;
+  background: #B6B6B6;
+  border-radius: 25px;
+  border: 1px solid #8A8A8A;
+}
+input[type=range]::-webkit-slider-thumb {
+  box-shadow: 1px 1px 1px #828282;
+  border: 1px solid #8A8A8A;
+  height: 24px;
+  width: 35px;
+  border-radius: 6px;
+  background: #DADADA;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -5px;
+}
+input[type=range]:focus::-webkit-slider-runnable-track {
+  background: #B6B6B6;
+}
+input[type=range]::-moz-range-track {
+  width: 100%;
+  height: 16px;
+  cursor: pointer;
+  animate: 0.2s;
+  box-shadow: 0px 0px 0px #000000;
+  background: #B6B6B6;
+  border-radius: 25px;
+  border: 1px solid #8A8A8A;
+}
+input[type=range]::-moz-range-thumb {
+  box-shadow: 1px 1px 1px #828282;
+  border: 1px solid #8A8A8A;
+  height: 24px;
+  width: 35px;
+  border-radius: 6px;
+  background: #DADADA;
+  cursor: pointer;
+}
+input[type=range]::-ms-track {
+  width: 100%;
+  height: 16px;
+  cursor: pointer;
+  animate: 0.2s;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+input[type=range]::-ms-fill-lower {
+  background: #B6B6B6;
+  border: 1px solid #8A8A8A;
+  border-radius: 50px;
+  box-shadow: 0px 0px 0px #000000;
+}
+input[type=range]::-ms-fill-upper {
+  background: #B6B6B6;
+  border: 1px solid #8A8A8A;
+  border-radius: 50px;
+  box-shadow: 0px 0px 0px #000000;
+}
+input[type=range]::-ms-thumb {
+  box-shadow: 1px 1px 1px #828282;
+  border: 1px solid #8A8A8A;
+  height: 24px;
+  width: 35px;
+  border-radius: 6px;
+  background: #DADADA;
+  cursor: pointer;
+}
+input[type=range]:focus::-ms-fill-lower {
+  background: #B6B6B6;
+}
+input[type=range]:focus::-ms-fill-upper {
+  background: #B6B6B6;
+}
+
+
+
+
+
+input[type=range].active::-webkit-slider-runnable-track {
+  background: #41A90E;
+}
+
+input[type=range].active:focus::-webkit-slider-runnable-track {
+  background: #41A90E;
+}
+input[type=range].active::-moz-range-track {
+  background: #41A90E;
+
+}
+
+input[type=range].active::-ms-fill-lower {
+  background: #41A90E;
+}
+input[type=range].active::-ms-fill-upper {
+  background: #41A90E;
+}
+
+input[type=range].active:focus::-ms-fill-lower {
+  background: #41A90E;
+}
+input[type=range].active:focus::-ms-fill-upper {
+  background: #41A90E;
+}

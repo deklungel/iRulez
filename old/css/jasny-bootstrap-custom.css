@@ -1,0 +1,6 @@
+/*Version 1.0*/
+.nav.navmenu-nav.bottom{
+	bottom: 0px;
+	position: fixed;
+	width: 300px;
+}
