@@ -3,7 +3,7 @@
 """
 Created on Sun Jan 16 2017
 
-@author: Laurent
+@author: Laurent Michel
 """
 import sys
 sys.path.append('/var/www/html/modules/libraries')
