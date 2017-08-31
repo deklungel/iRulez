@@ -24,7 +24,8 @@ class DummyDb(DbBase):
         # Create array of 16 relay pins
         pins = []
         for x in range(0, 15):
-            pins[x] = domain.ArduinoPin(x, domain.ArduinoPinType.RELAY)
+            pins.append([])
+            pins[x]= domain.ArduinoPin(x, domain.ArduinoPinType.RELAY)
         # Initialize an arduino with those pins
         arduino = domain.Arduino("dummy", pins)
 

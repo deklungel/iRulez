@@ -1,5 +1,5 @@
 # Name of all arduino topics
-arduinoTopic = 'iRulesIO16_'
+arduinoTopic = 'iRulesIO16'
 
 # Name of an action topic
 actionTopic = 'action'
