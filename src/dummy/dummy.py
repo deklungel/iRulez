@@ -6,7 +6,7 @@ logger = logging.getLogger('dummy')
 logger.info('Dummy starting')
 db = src.irulez.db.get_dummy_db()
 
-relais = bin(0).zfill(32)
+relais = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""
@@ -27,11 +27,20 @@ def on_message(client, userdata, msg):
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
     # convert the incomming payload in hex to a biniry with leading 0
     action = bin(int(msg.payload, 16))[2:].zfill(32)
-    ON = action[:16]
-    OFF = action[16:]
-
-
-    client.publish("iRulezIO16_1/status",)
+    ON = list(action[:16])
+    OFF = list(action[16:])
+    # Loop 16 times and update the relais array.
+    for x in range(0, 15):
+        if ON[x] == 1:
+            relais[x] = 1
+        if OFF[x] == 1:
+            relais[x] = 0
+    # Make a string from the array
+    status = ''.join(relais)
+    # create a hex from the string
+    status = hex(int(status))
+    # Publish the status
+    client.publish("iRulezIO16_1/status",str(status))
 
 # Create client
 client = mqtt.Client()
