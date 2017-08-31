@@ -31,9 +31,9 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
-    global arduinos
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
+    global arduinos
 
     # Find arduino name of topic
     if not(util.is_arduino_action_topic(msg.topic)):
@@ -41,7 +41,10 @@ def on_message(client, userdata, msg):
         # Unknown topic
         return
 
+    # Get the name of the arduino from the topic
     name = util.get_arduino_name_from_topic(msg.topic)
+
+    # .get(key, None) gets the element with key from a dictionary or None if it doesn't exist
     arduino = arduinos.get(name, None)
     if arduino is None:
         # Unknown arduino
@@ -53,6 +56,7 @@ def on_message(client, userdata, msg):
     on = list(action[:16])
     off = list(action[16:])
 
+    # Loop over all pins of the arduino and update if needed
     for pin in arduino.pins.values():
         if pin.number < 0 or pin.number > 15:
             logger.warning(f"Arduino '{name}' has a pin with number '{pin.number}'.")
@@ -62,8 +66,10 @@ def on_message(client, userdata, msg):
         if off[pin.number] == 1:
             pin.state = False
 
-    status = arduino.get_relay_status()
-    client.publish(constants.arduinoTopic + name + '/status', str(status))
+    # Publish new status
+    status = str(arduino.get_relay_status())
+    logger.debug(f"Publishing new status of arduino '{name}': '{status}'")
+    client.publish(constants.arduinoTopic + name + '/status', status)
 
 
 # Create client
@@ -79,6 +85,7 @@ mqttConfig = db.get_mqtt_config()
 client.username_pw_set(mqttConfig.username, mqttConfig.password)
 client.connect(mqttConfig.address, mqttConfig.port, 60)
 
+logger.info("Starting loop forever")
 # Blocking class that loops forever
 # Also handles reconnecting
 client.loop_forever()
