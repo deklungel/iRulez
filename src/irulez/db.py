@@ -39,7 +39,7 @@ class DummyDb(DbBase):
         pass
 
     def get_mqtt_config(self):
-        return MqttConfig("10.0.50.50", 1883,"iRulezMqtt","iRulez4MQTT")
+        return MqttConfig("10.0.50.50", 1883, "iRulezMqtt", "iRulez4MQTT")
 
 
 def get_dummy_db() -> DbBase:

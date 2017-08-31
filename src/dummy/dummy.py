@@ -4,9 +4,13 @@ import paho.mqtt.client as mqtt
 
 logger = logging.getLogger('dummy')
 logger.info('Dummy starting')
+
+# Get database, dummy for now
 db = src.irulez.db.get_dummy_db()
 
-relais = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+# Initialize relay states
+relays = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
 
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""
@@ -22,25 +26,25 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, msg):
-    global relais
+    global relays
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
-    # convert the incomming payload in hex to a biniry with leading 0
+    # convert the incoming payload in hex to a binary with leading 0
     action = bin(int(msg.payload, 16))[2:].zfill(32)
-    ON = list(action[:16])
-    OFF = list(action[16:])
-    # Loop 16 times and update the relais array.
+    on = list(action[:16])
+    off = list(action[16:])
+    # Loop 16 times and update the relays array.
     for x in range(0, 15):
-        if ON[x] == 1:
-            relais[x] = 1
-        if OFF[x] == 1:
-            relais[x] = 0
+        if on[x] == 1:
+            relays[x] = 1
+        if off[x] == 1:
+            relays[x] = 0
     # Make a string from the array
-    status = ''.join(relais)
+    status = ''.join(relays)
     # create a hex from the string
     status = hex(int(status))
     # Publish the status
-    client.publish("iRulezIO16_1/status",str(status))
+    client.publish("iRulezIO16_1/status", str(status))
 
 # Create client
 client = mqtt.Client()
@@ -52,7 +56,7 @@ client.on_message = on_message
 # Connect
 mqttConfig = db.get_mqtt_config()
 
-client.username_pw_set(mqttConfig.username,mqttConfig.password)
+client.username_pw_set(mqttConfig.username, mqttConfig.password)
 client.connect(mqttConfig.address, mqttConfig.port, 60)
 
 # Blocking class that loops forever
