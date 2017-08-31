@@ -6,6 +6,7 @@ logger = logging.getLogger('dummy')
 logger.info('Dummy starting')
 db = src.irulez.db.get_dummy_db()
 
+relais = bin(0).zfill(32)
 
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""
@@ -15,14 +16,22 @@ def on_connect(client, userdata, flags, rc):
     # Subscribe to all arduino relay actions
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
-    client.subscribe("arduino+/relay+/action")
+    client.subscribe("iRulezIO16_+/action")
 
     # Subscribe to dimmer values
 
 
 def on_message(client, userdata, msg):
+    global relais
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
+    # convert the incomming payload in hex to a biniry with leading 0
+    action = bin(int(msg.payload, 16))[2:].zfill(32)
+    ON = action[:16]
+    OFF = action[16:]
+
+
+    client.publish("iRulezIO16_1/status",)
 
 # Create client
 client = mqtt.Client()
