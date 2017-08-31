@@ -33,6 +33,8 @@ client.on_message = on_message
 
 # Connect
 mqttConfig = db.get_mqtt_config()
+
+client.username_pw_set(mqttConfig.username,mqttConfig.password)
 client.connect(mqttConfig.address, mqttConfig.port, 60)
 
 # Blocking class that loops forever

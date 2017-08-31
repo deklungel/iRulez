@@ -14,9 +14,11 @@ class ArduinoConfig:
 
 class MqttConfig:
     """Represents the configuration of the mqtt service"""
-    def __init__(self, address: str, port: int):
+    def __init__(self, address: str, port: int, username: str, password: str):
         self.address = address
         self.port = port
+        self.username = username
+        self.password = password
 
 
 class DbBase(ABC):
@@ -37,7 +39,7 @@ class DummyDb(DbBase):
         pass
 
     def get_mqtt_config(self):
-        return MqttConfig("10.0.50.50", 1883)
+        return MqttConfig("10.0.50.50", 1883,"iRulezMqtt","iRulez4MQTT")
 
 
 def get_dummy_db() -> DbBase:
