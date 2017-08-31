@@ -6,10 +6,12 @@ class DbBase(ABC):
     """Base class, defining all methods a database class should implement"""
     @abstractmethod
     def get_arduino_config(self) -> domain.ArduinoConfig:
+        """Retrieves the configuration of the arduinos"""
         pass
 
     @abstractmethod
     def get_mqtt_config(self) -> domain.MqttConfig:
+        """Retrieves the configuration of mqtt"""
         pass
 
 

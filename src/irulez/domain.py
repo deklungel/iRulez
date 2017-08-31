@@ -29,11 +29,15 @@ class Arduino:
 
     def get_relay_status(self):
         """Gets the status array of the pins of this arduino"""
+        # Initialize empty state array
         pin_states = [0]*16
+        # Loop over all pins and set their state in the array
         for pin in self.pins:
             pin_states[pin.number] = 1 if pin.state else 0
 
+        # Convert to a string
         status = ''.join(pin_states)
+        # Convert to hex
         status = hex(int(status))
         return status
 
