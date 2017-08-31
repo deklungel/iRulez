@@ -13,7 +13,7 @@ db = src.irulez.db.get_dummy_db()
 # Get arduinos from database and store them in a dictionary
 # Key is the name of the arduino
 arduinos = {}
-for arduino in db.get_arduino_config.arduinos:
+for arduino in db.get_arduino_config().arduinos:
     arduinos[arduino.name] = arduino
 
 
@@ -60,14 +60,16 @@ def on_message(client, userdata, msg):
     for pin in arduino.pins.values():
         if pin.number < 0 or pin.number > 15:
             logger.warning(f"Arduino '{name}' has a pin with number '{pin.number}'.")
+            # Continue hops to the next iteration of the for-loop
             continue
         if on[pin.number] == 1:
             pin.state = True
+            continue
         if off[pin.number] == 1:
             pin.state = False
 
     # Publish new status
-    status = str(arduino.get_relay_status())
+    status = arduino.get_relay_status()
     logger.debug(f"Publishing new status of arduino '{name}': '{status}'")
     client.publish(constants.arduinoTopic + name + '/status', status)
 

@@ -27,7 +27,7 @@ class Arduino:
         for pin in pins:
             self.pins[pin.number] = pin
 
-    def get_relay_status(self):
+    def get_relay_status(self) -> str:
         """Gets the status array of the pins of this arduino"""
         # Initialize empty state array
         pin_states = [0]*16
@@ -38,7 +38,7 @@ class Arduino:
         # Convert to a string
         status = ''.join(pin_states)
         # Convert to hex
-        status = hex(int(status))
+        status = str(hex(int(status)))
         return status
 
 

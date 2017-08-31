@@ -17,6 +17,9 @@ class DbBase(ABC):
 
 class DummyDb(DbBase):
     """Dummy implementation of a database class. Returns fixed data for all operations"""
+    def __init(self):
+        pass
+
     def get_arduino_config(self):
         # Create array of 16 relay pins
         pins = []
