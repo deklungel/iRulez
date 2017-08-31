@@ -2,7 +2,7 @@ import logging
 import src.irulez.db
 import src.irulez.constants as constants
 import src.irulez.util as util
-import paho.mqtt.client as mqtt
+import lib.paho.mqtt.client as mqtt
 
 logger = logging.getLogger('dummy')
 logger.info('Dummy starting')
