@@ -1,4 +1,5 @@
 from enum import Enum
+import src.irulez.util as util
 
 
 class ArduinoPinType(Enum):
@@ -35,11 +36,9 @@ class Arduino:
         for pin in self.pins:
             pin_states[pin.number] = 1 if pin.state else 0
 
-        # Convert to a string
-        status = ''.join(pin_states)
-        # Convert to hex
-        status = str(hex(int(status)))
-        return status
+
+        #convert array to hex string
+        return util.convert_array_to_hex(pin_states)
 
 
 class ArduinoConfig:
