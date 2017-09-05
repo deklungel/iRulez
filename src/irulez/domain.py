@@ -33,7 +33,7 @@ class Arduino:
         # Initialize empty state array
         pin_states = [0]*16
         # Loop over all pins and set their state in the array
-        for pin in self.pins:
+        for pin in self.pins.values():
             pin_states[pin.number] = 1 if pin.state else 0
 
 

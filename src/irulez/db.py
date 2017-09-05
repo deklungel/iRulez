@@ -23,7 +23,7 @@ class DummyDb(DbBase):
     def get_arduino_config(self):
         # Create array of 16 relay pins
         pins = []
-        for x in range(0, 15):
+        for x in range(0, 16):
             pins.append([])
             pins[x]= domain.ArduinoPin(x, domain.ArduinoPinType.RELAY)
         # Initialize an arduino with those pins

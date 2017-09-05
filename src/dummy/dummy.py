@@ -66,17 +66,17 @@ def on_message(client, userdata, msg):
     action = bin(int(msg.payload, 16))[2:].zfill(32)
     on = list(action[:16])
     off = list(action[16:])
-
     # Loop over all pins of the arduino and update if needed
     for pin in arduino.pins.values():
         if pin.number < 0 or pin.number > 15:
             logger.warning(f"Arduino '{name}' has a pin with number '{pin.number}'.")
             # Continue hops to the next iteration of the for-loop
             continue
-        if on[pin.number] == 1:
+
+        if on[pin.number] == '1':
             pin.state = True
             continue
-        if off[pin.number] == 1:
+        if off[pin.number] == '1':
             pin.state = False
 
     # Publish new status

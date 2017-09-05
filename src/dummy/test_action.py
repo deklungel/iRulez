@@ -15,15 +15,14 @@ pin = input("Pin 0 <-> 15 " or "5")
 state = input("H | L " or "H")
 
 arduino = "dummy"
-pin = "5"
-stage = "H"
+
 
 pin_states = [0]*32
 
 if(state == 'H'):
     pin_states[int(pin)] = 1
 else:
-    pin_states[15 + int(pin)] =1
+    pin_states[16 + int(pin)] = 1
 
 
 
