@@ -31,12 +31,14 @@ def on_connect(client, userdata, flags, rc):
     # Subscribe to all arduino hexnumber actions
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/action/hexnumber")
-    client.subscribe(constants.arduinoTopic + "/+/action/hexnumber")
+    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.actionTopic + "/hexnumber")
+    client.subscribe(constants.arduinoTopic + "/+/" + constants.actionTopic + "/hexnumber")
     # TODO: Subscribe to dimmer values
 
+
 def on_subscribe(mqttc, obj, mid, granted_qos):
-    logger.debug("Subscribed: "+str(mid)+" "+str(granted_qos))
+    logger.debug("Subscribed: " + str(mid) + " " + str(granted_qos))
+
 
 def on_message(client, userdata, msg):
     """Callback function for when a new message is received."""
@@ -44,13 +46,14 @@ def on_message(client, userdata, msg):
     global arduinos
 
     # Find arduino name of topic
-    if not(util.is_arduino_action_topic(msg.topic)):
+    if not (util.is_arduino_action_topic(msg.topic)):
         logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
         # Unknown topic
         return
 
     # Get the name of the arduino from the topic
     name = util.get_arduino_name_from_topic(msg.topic)
+
 
     # .get(key, None) gets the element with key from a dictionary or None if it doesn't exist
     arduino = arduinos.get(name, None)
@@ -96,9 +99,7 @@ mqttConfig = db.get_mqtt_config()
 client.username_pw_set(mqttConfig.username, mqttConfig.password)
 client.connect(mqttConfig.address, mqttConfig.port, 60)
 
-
 logger.info("Starting loop forever")
 # Blocking class that loops forever
 # Also handles reconnecting
 client.loop_forever()
-

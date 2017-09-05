@@ -36,6 +36,13 @@ class DummyDb(DbBase):
     def get_mqtt_config(self):
         return domain.MqttConfig("10.0.50.50", 1883, "iRulezMqtt", "iRulez4MQTT")
 
+class MySQL(DbBase):
+    def get_mqtt_config(self) -> domain.MqttConfig:
+        pass
+
+    def get_arduino_config(self) -> domain.ArduinoConfig:
+        pass
+
 
 def get_dummy_db() -> DbBase:
     """Returns a dummy database"""

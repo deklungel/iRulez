@@ -19,7 +19,7 @@ situation where you have a single/multiple messages you want to publish to a
 broker, then disconnect and nothing else is required.
 """
 
-import paho.mqtt.client as mqtt
+import lib.paho.mqtt.client as mqtt
 
 
 def _do_publish(c):
