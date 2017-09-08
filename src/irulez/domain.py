@@ -19,19 +19,23 @@ class ArduinoPin:
 
 class Arduino:
     """Represents an actual arduino"""
-    def __init__(self, name: str, pins: list):
+    def __init__(self, name: str, number_of_pins: int):
+        self.name = name
+        self.number_of_pins = number_of_pins
+        self.pins = {}
+
+
+    def set_pins(self, pins:list):
         # Check that all elements in our list are actual ArduinoPin objects
         # This check is completely unnecessary, but gives us some assurances
         all(isinstance(el, ArduinoPin) for el in pins)
-        self.name = name
-        self.pins = {}
         for pin in pins:
             self.pins[pin.number] = pin
 
     def get_relay_status(self) -> str:
         """Gets the status array of the pins of this arduino"""
         # Initialize empty state array
-        pin_states = [0]*16
+        pin_states = [0]*self.number_of_pins
         # Loop over all pins and set their state in the array
         for pin in self.pins.values():
             pin_states[pin.number] = 1 if pin.state else 0

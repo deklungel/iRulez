@@ -68,7 +68,7 @@ def on_message(client, userdata, msg):
     off = list(action[16:])
     # Loop over all pins of the arduino and update if needed
     for pin in arduino.pins.values():
-        if pin.number < 0 or pin.number > 15:
+        if pin.number < 0 or pin.number > (arduino.number_of_pins - 1):
             logger.warning(f"Arduino '{name}' has a pin with number '{pin.number}'.")
             # Continue hops to the next iteration of the for-loop
             continue

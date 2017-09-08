@@ -21,13 +21,17 @@ class DummyDb(DbBase):
         pass
 
     def get_arduino_config(self):
+
+        # Initialize an arduino with those pins
+        arduino = domain.Arduino("dummy", 16)
+
         # Create array of 16 relay pins
         pins = []
-        for x in range(0, 16):
+        for x in range(0, arduino.number_of_pins):
             pins.append([])
-            pins[x]= domain.ArduinoPin(x, domain.ArduinoPinType.RELAY)
-        # Initialize an arduino with those pins
-        arduino = domain.Arduino("dummy", pins)
+            pins[x] = domain.ArduinoPin(x, domain.ArduinoPinType.RELAY)
+
+        arduino.set_pins(pins)
 
         # Initialize the dictionary of arduinos (contains only 1 for now)
         # Key is name of the arduino
