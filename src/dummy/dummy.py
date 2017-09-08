@@ -63,9 +63,9 @@ def on_message(client, userdata, msg):
         return
 
     # Convert the incoming payload in hex to a binary with leading 0
-    action = bin(int(msg.payload, 16))[2:].zfill(32)
-    on = list(action[:16])
-    off = list(action[16:])
+    action = bin(int(msg.payload, 16))[2:].zfill(arduino.number_of_pins * 2)
+    on = list(action[:arduino.number_of_pins])
+    off = list(action[arduino.number_of_pins:])
     # Loop over all pins of the arduino and update if needed
     for pin in arduino.pins.values():
         if pin.number < 0 or pin.number > (arduino.number_of_pins - 1):
