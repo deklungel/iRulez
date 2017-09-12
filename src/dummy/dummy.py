@@ -85,6 +85,8 @@ def on_message(client, userdata, msg):
     client.publish(constants.arduinoTopic + name + '/status', status)
 
 
+
+
 # Create client
 client = mqtt.Client()
 

@@ -34,6 +34,10 @@ class DummyDb(DbBase):
 
         arduino.set_relay_pins(relay_pins)
 
+        # Create 2 actions.
+        # Action 1 execute immediately, toggle pins 0 and 10
+        # Actuin 2 execute immediately, toggle pins 2, 5 and 9
+
         action1 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType, 0,
                                 [arduino.relay_pins[0], arduino.relay_pins[10]],
                                 domain.MailNotification(True, "Laurentmichel@me.com"))

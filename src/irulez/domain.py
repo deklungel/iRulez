@@ -10,6 +10,7 @@ class ArduinoPinType(Enum):
 
 
 class ActionType(Enum):
+    """Represents what should happen. Toggle --> Relais H <-> L, On --> Relay H, Off --> Relay L, Follow_Button --> when button pressed -> relay H, dimmer --> dimmer"""
     TOGGLE = 1
     ON = 2
     OFF = 3
@@ -18,6 +19,7 @@ class ActionType(Enum):
 
 
 class ActionTriggerType(Enum):
+    """Represents when a action need to be executed"""
     Immediately = 1
     AfterRelease = 2
     LongDown = 3
@@ -63,11 +65,11 @@ class TrippleTapActionTrigger(ActionTrigger):
 
 class OutputPin:
     """Represents a single pin on an arduino"""
-
     def __init__(self, number: int, pin_type: ArduinoPinType, state=False):
         self.number = number
         self.type = pin_type
         self.state = state
+
 
 class Notification:
     def __init__(self,enabled: False):
