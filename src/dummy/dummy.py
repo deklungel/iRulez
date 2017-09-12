@@ -66,7 +66,7 @@ def on_message(client, userdata, msg):
     action = bin(int(msg.payload, 16))[2:].zfill(arduino.number_of_pins * 2)
     on = list(action[:arduino.number_of_pins])
     off = list(action[arduino.number_of_pins:])
-    # Loop over all pins of the arduino and update if needed
+    # Loop over all relay_pins of the arduino and update if needed
     for pin in arduino.pins.values():
         if pin.number < 0 or pin.number > (arduino.number_of_pins - 1):
             logger.warning(f"Arduino '{name}' has a pin with number '{pin.number}'.")

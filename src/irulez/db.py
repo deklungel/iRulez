@@ -22,16 +22,36 @@ class DummyDb(DbBase):
 
     def get_arduino_config(self):
 
-        # Initialize an arduino with those pins
-        arduino = domain.Arduino("dummy", 16)
+        # Initialize an arduino with those relay_pins
+        arduino = domain.Arduino("dummy", 16, 16)
 
-        # Create array of 16 relay pins
-        pins = []
-        for x in range(0, arduino.number_of_pins):
-            pins.append([])
-            pins[x] = domain.ArduinoPin(x, domain.ArduinoPinType.RELAY)
 
-        arduino.set_pins(pins)
+        # Create array of relay_pins with a variable number of pins.
+        relay_pins = []
+        for x in range(0, arduino.number_of_relay_pins):
+            relay_pins.append([])
+            relay_pins[x] = domain.OutputPin(x, domain.ArduinoPinType.RELAY)
+
+        arduino.set_relay_pins(relay_pins)
+
+        action1 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType, 0,
+                                [arduino.relay_pins[0], arduino.relay_pins[10]],
+                                domain.MailNotification(True, "Laurentmichel@me.com"))
+        action2 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType, 0,
+                                [arduino.relay_pins[2], arduino.relay_pins[5],arduino.relay_pins[9]],
+                                domain.TelegramNotification(True, "azerty"))
+
+
+        # Create array of button pins with a variable number of pins.
+        button_pins = []
+        for x in range(0, arduino.number_of_button_pins):
+            button_pins.append([])
+            button_pins[x] = domain.ButtonPin(x, domain.ArduinoPinType.BUTTON, False, [])
+
+        button_pins[5].set_button_pin_actions([action1 ,action2])
+        arduino.set_button_pins(button_pins)
+
+
 
         # Initialize the dictionary of arduinos (contains only 1 for now)
         # Key is name of the arduino
