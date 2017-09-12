@@ -25,37 +25,33 @@ class DummyDb(DbBase):
         # Initialize an arduino with those relay_pins
         arduino = domain.Arduino("dummy", 16, 16)
 
-
         # Create array of relay_pins with a variable number of pins.
         relay_pins = []
         for x in range(0, arduino.number_of_relay_pins):
             relay_pins.append([])
-            relay_pins[x] = domain.OutputPin(x, domain.ArduinoPinType.RELAY)
+            relay_pins[x] = domain.OutputPin(x)
 
         arduino.set_relay_pins(relay_pins)
 
         # Create 2 actions.
         # Action 1 execute immediately, toggle pins 0 and 10
-        # Actuin 2 execute immediately, toggle pins 2, 5 and 9
+        # Action 2 execute immediately, toggle pins 2, 5 and 9
 
-        action1 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType, 0,
+        action1 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType.ON, 0,
                                 [arduino.relay_pins[0], arduino.relay_pins[10]],
-                                domain.MailNotification(True, "Laurentmichel@me.com"))
-        action2 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType, 0,
-                                [arduino.relay_pins[2], arduino.relay_pins[5],arduino.relay_pins[9]],
-                                domain.TelegramNotification(True, "azerty"))
-
+                                domain.MailNotification("Laurentmichel@me.com", True))
+        action2 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType.ON, 0,
+                                [arduino.relay_pins[2], arduino.relay_pins[5], arduino.relay_pins[9]],
+                                domain.TelegramNotification("azerty", True))
 
         # Create array of button pins with a variable number of pins.
         button_pins = []
         for x in range(0, arduino.number_of_button_pins):
             button_pins.append([])
-            button_pins[x] = domain.ButtonPin(x, domain.ArduinoPinType.BUTTON, False, [])
+            button_pins[x] = domain.ButtonPin(x, [], False)
 
-        button_pins[5].set_button_pin_actions([action1 ,action2])
+        button_pins[5].set_button_pin_actions([action1, action2])
         arduino.set_button_pins(button_pins)
-
-
 
         # Initialize the dictionary of arduinos (contains only 1 for now)
         # Key is name of the arduino
@@ -63,6 +59,7 @@ class DummyDb(DbBase):
 
     def get_mqtt_config(self):
         return domain.MqttConfig("10.0.50.50", 1883, "iRulezMqtt", "iRulez4MQTT")
+
 
 class MySQL(DbBase):
     def get_mqtt_config(self) -> domain.MqttConfig:

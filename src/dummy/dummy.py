@@ -54,7 +54,6 @@ def on_message(client, userdata, msg):
     # Get the name of the arduino from the topic
     name = util.get_arduino_name_from_topic(msg.topic)
 
-
     # .get(key, None) gets the element with key from a dictionary or None if it doesn't exist
     arduino = arduinos.get(name, None)
     if arduino is None:
@@ -83,8 +82,6 @@ def on_message(client, userdata, msg):
     status = arduino.get_relay_status()
     logger.debug(f"Publishing new status of arduino '{name}': '{status}'")
     client.publish(constants.arduinoTopic + name + '/status', status)
-
-
 
 
 # Create client

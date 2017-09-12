@@ -1,5 +1,6 @@
 from enum import Enum
 import src.irulez.util as util
+from abc import ABC
 
 
 class ArduinoPinType(Enum):
@@ -10,7 +11,12 @@ class ArduinoPinType(Enum):
 
 
 class ActionType(Enum):
-    """Represents what should happen. Toggle --> Relais H <-> L, On --> Relay H, Off --> Relay L, Follow_Button --> when button pressed -> relay H, dimmer --> dimmer"""
+    """Represents what should happen.
+        Toggle --> Relay H <-> L,
+        On --> Relay H,
+        Off --> Relay L,
+        Follow_Button --> when button pressed -> relay H,
+        dimmer --> dimmer"""
     TOGGLE = 1
     ON = 2
     OFF = 3
@@ -20,89 +26,102 @@ class ActionType(Enum):
 
 class ActionTriggerType(Enum):
     """Represents when a action need to be executed"""
-    Immediately = 1
-    AfterRelease = 2
-    LongDown = 3
-    DubbleTap = 4
-    TrippleTap = 5
+    IMMEDIATELY = 1
+    AFTER_RELEASE = 2
+    LONG_DOWN = 3
+    DOUBLE_TAP = 4
+    TRIPLE_TAP = 5
 
 
-class ActionTrigger:
-    def __init__(self, type: ActionTriggerType):
-        self.type = type
+class ActionTrigger(ABC):
+    def __init__(self, trigger_type: ActionTriggerType):
+        self.trigger_type = trigger_type
 
-    def get_actionTrigger(self):
-        return  self.type
+    def get_action_trigger_type(self):
+        return self.trigger_type
 
 
 class ImmediatelyActionTrigger(ActionTrigger):
     def __init__(self):
-        super(ImmediatelyActionTrigger, self).__init__(ActionTriggerType.Immediately)
+        super(ImmediatelyActionTrigger, self).__init__(ActionTriggerType.IMMEDIATELY)
 
 
 class AfterReleaseActionTrigger(ActionTrigger):
     def _init_(self):
-        super(AfterReleaseActionTrigger, self).__init__(ActionTriggerType.AfterRelease)
+        super(AfterReleaseActionTrigger, self).__init__(ActionTriggerType.AFTER_RELEASE)
 
 
 class LongDownActionTrigger(ActionTrigger):
-    def _init_(self, SecDown: int):
-        super(LongDownActionTrigger, self).__init__(ActionTriggerType.LongDown)
-        self.SecDown = SecDown
+    def _init_(self, seconds_down: int):
+        super(LongDownActionTrigger, self).__init__(ActionTriggerType.LONG_DOWN)
+        self.seconds_down = seconds_down
 
 
-class DubbleTapActionTrigger(ActionTrigger):
-    def _init_(self, TimeBetweenTap: int):
-        super(DubbleTapActionTrigger, self).__init__(ActionTriggerType.DubbleTap)
-        self.TimeBetweenTap = TimeBetweenTap
+class DoubleTapActionTrigger(ActionTrigger):
+    def _init_(self, time_between_tap: int):
+        super(DoubleTapActionTrigger, self).__init__(ActionTriggerType.DOUBLE_TAP)
+        self.time_between_tap = time_between_tap
 
 
-class TrippleTapActionTrigger(ActionTrigger):
-    def _init_(self, TimeBetweenTap: int):
-        super(TrippleTapActionTrigger, self)._init_(ActionTriggerType.TrippleTap)
-        self.TimeBetweenTap = TimeBetweenTap
+class TripleTapActionTrigger(ActionTrigger):
+    def _init_(self, time_between_tap: int):
+        super(TripleTapActionTrigger, self).__init__(ActionTriggerType.TRIPLE_TAP)
+        self.time_between_tap = time_between_tap
 
 
-class OutputPin:
-    """Represents a single pin on an arduino"""
+class Pin(ABC):
+    """Represents a pin on an arduino"""
     def __init__(self, number: int, pin_type: ArduinoPinType, state=False):
         self.number = number
-        self.type = pin_type
+        self.pin_type = pin_type
         self.state = state
 
 
-class Notification:
-    def __init__(self,enabled: False):
-        self.enabled = enabled
+class OutputPin(Pin):
+    """Represents a single pin on an arduino"""
+    def __init__(self, number: int, state=False):
+        super(OutputPin, self).__init__(number, ArduinoPinType.RELAY, state)
 
-class MailNotification(Notification):
-    def __init__(self, email: str, enabled= False):
-        super(MailNotification, self).__init__(enabled)
-        self.email = email
 
-class TelegramNotification(Notification):
-    def __init__(self, token: str, enabled= False):
-        super(TelegramNotification, self).__init__(enabled)
-        self.token = token
-
-class ButtonPin:
+class ButtonPin(Pin):
     """Represents a single input pin on an arduino"""
 
-    def __init__(self, number: int, pin_type: ArduinoPinType, state:False, actions: list):
-        self.number = number
-        self.type = pin_type
-        self.state = state
+    def __init__(self, number: int, actions: list, state=False):
+        super(ButtonPin, self).__init__(number, ArduinoPinType.BUTTON, state)
         all(isinstance(el, Action) for el in actions)
         self.actions = actions
 
     def set_button_pin_actions(self, actions: list):
         self.actions = actions
 
+
+class Notification(ABC):
+    def __init__(self, enabled: False):
+        self.enabled = enabled
+
+
+class MailNotification(Notification):
+    def __init__(self, email: str, enabled=False):
+        super(MailNotification, self).__init__(enabled)
+        self.email = email
+
+
+class TelegramNotification(Notification):
+    def __init__(self, token: str, enabled=False):
+        super(TelegramNotification, self).__init__(enabled)
+        self.token = token
+
+
 class Action:
-        "Represents a singe action"
-        def __init__(self,trigger: ActionTrigger, type: ActionType, delay: int, relay_pins: list, notification: Notification):
+        """Represents a singe action"""
+        def __init__(self,
+                     trigger: ActionTrigger,
+                     action_type: ActionType,
+                     delay: int,
+                     relay_pins: list,
+                     notification: Notification):
             self.trigger = trigger
-            self.type = type
+            self.action_type = action_type
             self.delay = delay
             all(isinstance(el, OutputPin) for el in relay_pins)
             self.relay_pins = relay_pins

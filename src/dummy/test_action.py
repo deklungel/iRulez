@@ -14,21 +14,17 @@ arduino = input("Arduino name? <dummy> " or "dummy")
 pin = input("Pin 0 <-> 15 " or "5")
 state = input("H | L " or "H")
 
-arduino = "dummy"
-
-
 pin_states = [0]*32
 
-if(state == 'H'):
+if state == 'H':
     pin_states[int(pin)] = 1
 else:
     pin_states[16 + int(pin)] = 1
 
-
-
-
 payload = util.convert_array_to_hex(pin_states)
 
-print(constants.arduinoTopic + "/" + arduino + "/" + constants.actionTopic + "/hexnumber/" +payload)
+print(constants.arduinoTopic + "/" + arduino + "/" + constants.actionTopic + "/hexnumber/" + payload)
 
-publish.single(constants.arduinoTopic + "/" + arduino + "/" +constants.actionTopic + "/hexnumber",payload,auth={'username': mqttConfig.username, 'password': mqttConfig.password}, hostname=mqttConfig.address, port=mqttConfig.port,retain=False)
+publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.actionTopic + "/hexnumber", payload,
+               auth={'username': mqttConfig.username, 'password': mqttConfig.password}, hostname=mqttConfig.address,
+               port=mqttConfig.port, retain=False)

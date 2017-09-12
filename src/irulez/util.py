@@ -18,8 +18,9 @@ def get_arduino_name_from_topic(topic: str) -> str:
         return None
     return (topic[len(constants.arduinoTopic + '/'):topic.find('/' + constants.actionTopic)])
 
+
 def convert_array_to_hex(status: list) -> str:
-    binair = ''
+    binary = ''
     for digit in status:
-        binair += str(digit)
-    return str(hex(int(binair, 2)))[2:]
+        binary += str(digit)
+    return str(hex(int(binary, 2)))[2:]

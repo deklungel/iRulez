@@ -1,7 +1,6 @@
 import logging
 import src.irulez.db
 import src.irulez.constants as constants
-import src.irulez.util as util
 import lib.paho.mqtt.client as mqtt
 
 logger = logging.getLogger('dummy')
@@ -23,6 +22,7 @@ arduinos = {}
 for arduino in db.get_arduino_config().arduinos:
     arduinos[arduino.name] = arduino
 
+
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""
     logger.info("Connected client with result code " + str(rc))
@@ -30,8 +30,9 @@ def on_connect(client, userdata, flags, rc):
     # Subscribe to all arduino hexnumber actions
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.buttonTopic )
+    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.buttonTopic)
     client.subscribe(constants.arduinoTopic + "/+/" + constants.buttonTopic)
+
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
     logger.debug("Subscribed: " + str(mid) + " " + str(granted_qos))
