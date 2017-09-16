@@ -28,11 +28,9 @@ void setup() {
   delay(2000);
   setRegisterDirection();
   printInfoPoorten();
-
 }
 
 void loop() {
-
   while (Serial.available() && endMessage == false) {
 
     if (Serial.peek() == '[') {
@@ -80,19 +78,18 @@ void loop() {
   }
 }
 
+//Deze functie is enkel voor het printen van binaire waarden.
+//voorbeeld: 0000_1111_0000_0000
 void print_binary(int v, int num_places)
 {
     int mask=0, n;
-
     for (n=1; n<=num_places; n++)
     {
         mask = (mask << 1) | 0x0001;
     }
     v = v & mask;  // truncate v to specified number of places
-
     while(num_places)
     {
-
         if (v & (0x0001 << num_places-1))
         {
              Serial.print("1");
@@ -101,7 +98,6 @@ void print_binary(int v, int num_places)
         {
              Serial.print("0");
         }
-
         --num_places;
         if(((num_places%4) == 0) && (num_places != 0))
         {
@@ -110,6 +106,8 @@ void print_binary(int v, int num_places)
     }
     Serial.println("");
 }
+
+//Omvormen van string naar HEX
 unsigned int hex2int(char *hex) {
     unsigned int val = 0;
     while (*hex) {
@@ -145,6 +143,7 @@ void verwerkInput(int input) {
   updateRegisterX('J', PARSE_INPUT_PORTJ);
 
 }
+
 
 int extractBitsBetween(int lsb, int msb, int DATA) {
   return  (DATA >> lsb) & ~(~0 << (msb - lsb + 1));
@@ -184,7 +183,7 @@ void updateRegisterX(char PORT, int NEWVALUE) {
       ;
   }
 }
-
+ //Dit is gewoon om de status van de poorten te printen in de seriële console.
 void printStatusPorts() {
   Serial.print("PORTB: ");
   Serial.print(PORTB, HEX);
@@ -212,6 +211,7 @@ void printStatusPorts() {
   Serial.println(PORTJ, BIN);
 }
 
+//Print de mapping van de poorten
 void printInfoPoorten(){
  Serial.print(F("Uitgang:        "));
  Serial.println(F("0  1   2   3   4  5   6  7  8  9  10  11  12  13  14  15"));
