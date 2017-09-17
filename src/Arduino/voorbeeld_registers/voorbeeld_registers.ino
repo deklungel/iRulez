@@ -18,6 +18,8 @@ int INPUT_COMMAND_PORTE = 0x00;
 int INPUT_COMMAND_PORTH = 0x00;
 int INPUT_COMMAND_PORTJ = 0x00;
 
+unsigned int FEEDBACK_STATUS_PORT = 0x0000;
+
 char inData[25];
 int x = 0;
 bool endMessage = false;
@@ -61,13 +63,13 @@ void loop() {
     unsigned int number = hex2int(inData);
     Serial.print(F("Onvangen data in binair: "));
     print_binary(number,16);
-    printStatusPorts();
     Serial.println(F("------------------------------------------"));
     double timeOne = micros();
     verwerkInput(number);
     double timeTwo = micros();
     double duration = timeTwo - timeOne;   
     printStatusPorts();
+    readStatusPorts();
     Serial.print(F("Tijd nodig om ALLE uitgangen te updaten[Microseconden]: "));
     Serial.println(duration); 
     Serial.println(F("__________________________________________"));
@@ -184,6 +186,7 @@ void updateRegisterX(char PORT, int NEWVALUE) {
   }
 }
  //Dit is gewoon om de status van de poorten te printen in de seriële console.
+ //DEBUG, Niet nodig in finale code
 void printStatusPorts() {
   Serial.print("PORTB: ");
   Serial.print(PORTB, HEX);
@@ -209,8 +212,38 @@ void printStatusPorts() {
   Serial.print(PORTJ, HEX);
   Serial.print("=>");
   Serial.println(PORTJ, BIN);
+
+  
 }
 
+//Deze functie gaat de poorten (registers) lezen en serieel terugsturen.
+//Nu in binair maar kan ook in HEX.
+void readStatusPorts(){
+  
+  unsigned int partB = (PORTB & USEDPINS_PORTB)<<8;
+  unsigned int partD = (PORTD & USEDPINS_PORTD)>>2;
+  unsigned int partE1 = (PORTE & 0x08)<<5;
+  unsigned int partE2 = (PORTE & 0x30)<<2;
+  unsigned int partH1 = (PORTH & 0x78)<<6;
+  unsigned int partH2 = (PORTH & 0x03)<<2;
+  unsigned int partJ = (PORTJ & USEDPINS_PORTJ)<<4;
+  
+FEEDBACK_STATUS_PORT=0x0000;
+FEEDBACK_STATUS_PORT = FEEDBACK_STATUS_PORT|partB;
+FEEDBACK_STATUS_PORT = FEEDBACK_STATUS_PORT|partD;
+FEEDBACK_STATUS_PORT = FEEDBACK_STATUS_PORT|partE1;
+FEEDBACK_STATUS_PORT = FEEDBACK_STATUS_PORT|partE2;
+FEEDBACK_STATUS_PORT = FEEDBACK_STATUS_PORT|partH1;
+FEEDBACK_STATUS_PORT = FEEDBACK_STATUS_PORT|partH2;
+FEEDBACK_STATUS_PORT = FEEDBACK_STATUS_PORT|partJ;
+
+Serial.print(F("Status van de poorten na aanpssen van registers[BIN]: "));
+print_binary(FEEDBACK_STATUS_PORT,16);
+Serial.print(F("Status van de poorten na aanpssen van registers [HEX]: 0x"));
+Serial.println(FEEDBACK_STATUS_PORT,HEX);
+  
+}
+  
 //Print de mapping van de poorten
 void printInfoPoorten(){
  Serial.print(F("Uitgang:        "));
