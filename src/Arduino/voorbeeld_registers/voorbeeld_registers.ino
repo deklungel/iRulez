@@ -1,4 +1,3 @@
-
 #define USEDPINS_PORTB 0xE0 //b1110 0000
 #define USEDPINS_PORTD 0x0C //b0000 1100
 #define USEDPINS_PORTE 0x38 //b0011 1000
@@ -188,27 +187,27 @@ void updateRegisterX(char PORT, int NEWVALUE) {
  //Dit is gewoon om de status van de poorten te printen in de seriële console.
  //DEBUG, Niet nodig in finale code
 void printStatusPorts() {
-  Serial.print("PORTB: ");
+  Serial.print("PORTB: 0x");
   Serial.print(PORTB, HEX);
   Serial.print("=>");
   Serial.println(PORTB, BIN);
 
-  Serial.print("PORTD: ");
+  Serial.print("PORTD: 0x");
   Serial.print(PORTD, HEX);
   Serial.print("=>");
   Serial.println(PORTD, BIN);
 
-  Serial.print("PORTE: ");
+  Serial.print("PORTE: 0x");
   Serial.print(PORTE, HEX);
   Serial.print("=>");
   Serial.println(PORTE, BIN);
 
-  Serial.print("PORTH: ");
+  Serial.print("PORTH: 0x");
   Serial.print(PORTH, HEX);
   Serial.print("=>");
   Serial.println(PORTH, BIN);
 
-  Serial.print("PORTJ: ");
+  Serial.print("PORTJ: 0x");
   Serial.print(PORTJ, HEX);
   Serial.print("=>");
   Serial.println(PORTJ, BIN);
