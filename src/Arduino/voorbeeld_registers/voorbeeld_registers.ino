@@ -9,7 +9,7 @@
 #define USEDPINS_PORTF 0xFF //b1111 1111
 #define USEDPINS_PORTL 0xC7 //b1100 0111
 #define USEDPINS_PORTG 0x03 //b0000 0011
-#define USEDPINS_PORTD 0x80 //b1000 0000
+#define USEDPINS_PORTD_ 0x80 //b1000 0000
 
 # define aantalSamples 6
 
@@ -187,7 +187,7 @@ void setRegisterDirection() {
   DDRF = ~USEDPINS_PORTF;
   DDRL = ~USEDPINS_PORTL;
   DDRG = ~USEDPINS_PORTG;
-  DDRD = ~USEDPINS_PORTD; // Deze moet eigenlijk niet omdat DDRD bij de uitgangen al werd juist gezet.
+  DDRD = ~USEDPINS_PORTD_; // Deze moet eigenlijk niet omdat DDRD bij de uitgangen al werd juist gezet.
 
 }
 
@@ -220,7 +220,6 @@ void updateRegisterX(char PORT, int NEWVALUE) {
 //Deze functie gaat de poorten (registers) lezen en serieel terugsturen.
 //Nu in binair maar kan ook in HEX.
 void readStatusOutputPorts() {
-
   unsigned int partB = (PORTB & USEDPINS_PORTB) << 8;
   unsigned int partD = (PORTD & USEDPINS_PORTD) >> 2;
   unsigned int partE1 = (PORTE & 0x08) << 5;
@@ -242,12 +241,6 @@ void readStatusOutputPorts() {
   print_binary(FEEDBACK_STATUS_PORT, 16);
   Serial.print(F("Status van de poorten na aanpssen van registers [HEX]: 0x"));
   Serial.println(FEEDBACK_STATUS_PORT, HEX);
-
-}
-
-void readStatusInputPorts() {
-
-  byte temp_PINF = ((PINF & 0x01) << 7) | ((PINF & 0x02) << 5) | ((PINF & 0x04) << 3) | ((PINF & 0x08) << 1) | ((PINF & 0x10) >> 1) | ((PINF & 0x20) >> 3) | ((PINF & 0x40) >> 5) | ((PINF & 0x80) >> 7);
 
 }
 
