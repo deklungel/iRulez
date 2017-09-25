@@ -22,6 +22,7 @@ class ActionType(Enum):
     OFF = 3
     FOLLOW_BUTTON = 4
     DIMMER = 5
+    DOORPHONE = 6
 
 
 class ActionTriggerType(Enum):
