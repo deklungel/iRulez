@@ -19,6 +19,7 @@ db = src.irulez.db.get_dummy_db()
 # Connect
 mqttConfig = db.get_mqtt_config()
 
+
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""
     logger.info("Connected client with result code " + str(rc))

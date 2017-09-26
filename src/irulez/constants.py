@@ -5,4 +5,7 @@ arduinoTopic = 'iRulesIO16'
 actionTopic = 'action'
 
 # Name of an action topic
+statusTopic = 'status'
+
+# Name of an action topic
 buttonTopic = 'button'

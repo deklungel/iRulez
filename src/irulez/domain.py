@@ -95,6 +95,8 @@ class ButtonPin(Pin):
     def set_button_pin_actions(self, actions: list):
         self.actions = actions
 
+    def get__button_pin_actions(self) -> list:
+        return  self.actions
 
 class Notification(ABC):
     def __init__(self, enabled: False):
@@ -119,13 +121,13 @@ class Action:
                      trigger: ActionTrigger,
                      action_type: ActionType,
                      delay: int,
-                     relay_pins: list,
+                     Output_Pins: list,
                      notification: Notification):
             self.trigger = trigger
             self.action_type = action_type
             self.delay = delay
-            all(isinstance(el, OutputPin) for el in relay_pins)
-            self.relay_pins = relay_pins
+            all(isinstance(el, OutputPin) for el in Output_Pins)
+            self.Output_Pins = Output_Pins
             self.notification = notification
 
 
@@ -162,6 +164,23 @@ class Arduino:
 
         # convert array to hex string
         return util.convert_array_to_hex(pin_states)
+
+    def set_relay_status(self,payload: str):
+        status = util.convert_hex_to_array(payload,self.number_of_relay_pins)
+        for pin in self.relay_pins.values():
+            if(status[pin.number] == 1):
+                pin.state = True
+            else:
+                pin.state = False
+
+    def get_changed_pins(self, payload: str) -> list:
+        status = util.convert_hex_to_array(payload, self.number_of_relay_pins)
+        changed_pins = {}
+        for pin in self.button_pins.values():
+            if (status[pin.number] != pin.state):
+                changed_pins[pin.number] = status[pin.number]
+                pin.state = status[pin.number]
+        return changed_pins
 
 
 class ArduinoConfig:
