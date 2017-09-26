@@ -50,11 +50,78 @@ def update_arduino_output_pins(name, payload):
         # Unknown arduino
         logger.info(f"Could not find arduino with name '{name}'.")
         return
+    logger.debug(f"Board with name '{name}' found")
     arduino.set_relay_status(payload)
+    logger.debug(f"relay status HEX: '{arduino.get_relay_status()}'.")
+
+
+def publish_action(absolute):
+    for name in absolute:
+        arduino = arduinos.get(name, None)
+        payload = util.convert_array_to_hex(absolute[name])
+        topic = constants.arduinoTopic + '/'+ name + '/' + constants.actionTopic
+        logger.debug(f"Publishing: '{topic}'/'{payload}'")
+        client.publish(topic, payload)
+
+
+def send_Absolute_Update(ON, OFF):
+    global arduinos
+    sendUpdate = False
+    absolute = {}
+    for name in ON:
+        arduino = arduinos.get(name, None)
+        if arduino is None:
+            # Unknown arduino
+            logger.info(f"Could not find arduino with name '{name}'.")
+            return
+        absolute[name]= [False] * arduino.number_of_relay_pins
+        for pin in arduino.relay_pins.values():
+            if (pin.state == True):
+                absolute[name][pin.number] = True
+            if(ON[name][pin.number] == True and pin.state == False):
+                sendUpdate = True
+                absolute[name][pin.number] = True
+
+    for name in OFF:
+        arduino = arduinos.get(name, None)
+        if arduino is None:
+            # Unknown arduino
+            logger.info(f"Could not find arduino with name '{name}'.")
+            return
+        if (name not in absolute.keys()):
+            absolute[name]= [False] * arduino.number_of_relay_pins
+        for pin in arduino.relay_pins.values():
+            if (pin.state == True):
+                absolute[name][pin.number] = True
+            if(OFF[name][pin.number] == True and pin.state == True):
+                absolute[name][pin.number] = False
+                sendUpdate = True
+
+    if sendUpdate:
+        publish_action(absolute)
+    else:
+        logger.info("No change to publish")
 
 
 def send_Relative_Update(registersON, registersOFF):
-    pass
+    ON = {}
+    OFF = {}
+    for name in registersON:
+        global arduinos
+        arduino = arduinos.get(name, None)
+        if arduino is None:
+            # Unknown arduino
+            logger.info(f"Could not find arduino with name '{name}'.")
+            return
+        ON[name] = [False] * arduino.number_of_relay_pins
+        OFF[name] = [False] * arduino.number_of_relay_pins
+
+        for pin in registersON[name]:
+            ON[name][pin] = True
+        for pin in registersOFF[name]:
+            OFF[name][pin] = True
+
+        send_Absolute_Update(ON, OFF)
 
 
 def process_Button(arduino, pin , value):
@@ -62,17 +129,18 @@ def process_Button(arduino, pin , value):
     registersON = {}
     registersOFF = {}
     for action in actions:
-        if(action.action_type.get_action_trigger_type() == domain.ActionTriggerType.IMMEDIATELY and value == True):
+        if(action.trigger.get_action_trigger_type() == domain.ActionTriggerType.IMMEDIATELY and value == True):
             logger.info(f"Process action Immediatly")
             if(action.action_type == domain.ActionType.ON):
-                pins = action.relay_pins
+                pins = action.Output_Pins
                 for pin in pins:
-                    registersON.setdefault(arduino.name, []).append(pin.number)
+                    logger.debug(f"Action ON for pin '{pin.number}'")
+                    registersON.setdefault(pin.parent, []).append(pin.number)
             elif(action.action_type == domain.ActionType.OFF):
-                pins = action.relay_pins
+                pins = action.Output_Pins
                 for pin in pins:
-                    registersOFF.setdefault(arduino.name, []).append(pin.number)
-        elif(action.action_type.get_action_trigger_type() == domain.ActionTriggerType.AFTER_RELEASE and value == False):
+                    registersOFF.setdefault(pin.parent, []).append(pin.number)
+        elif action.trigger.get_action_trigger_type() == domain.ActionTriggerType.AFTER_RELEASE and value == False:
             logger.info(f"Process action After Release")
     
     send_Relative_Update(registersON,registersOFF)
@@ -85,7 +153,9 @@ def process_Button_Message(name, payload):
         # Unknown arduino
         logger.info(f"Could not find arduino with name '{name}'.")
         return
+    logger.debug("find changed pins")
     changed_pins = arduino.get_changed_pins(payload)
+    logger.debug(f"changed pins found '{changed_pins}'")
     for pin, value in changed_pins.items():
         process_Button(arduino, pin,value)
 
@@ -99,7 +169,7 @@ def on_message(client, userdata, msg):
     global arduinos
 
     # Find arduino name of topic
-    if not (util.is_arduino_action_topic(msg.topic)):
+    if not (util.is_arduino_status_topic(msg.topic) or util.is_arduino_button_topic(msg.topic)):
         logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
         # Unknown topic
         return

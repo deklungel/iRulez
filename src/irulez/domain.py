@@ -80,8 +80,9 @@ class Pin(ABC):
 
 class OutputPin(Pin):
     """Represents a single pin on an arduino"""
-    def __init__(self, number: int, state=False):
+    def __init__(self, number: int, parent: str, state=False ):
         super(OutputPin, self).__init__(number, ArduinoPinType.RELAY, state)
+        self.parent = parent
 
 
 class ButtonPin(Pin):
@@ -168,7 +169,7 @@ class Arduino:
     def set_relay_status(self,payload: str):
         status = util.convert_hex_to_array(payload,self.number_of_relay_pins)
         for pin in self.relay_pins.values():
-            if(status[pin.number] == 1):
+            if(int(status[pin.number]) == 1):
                 pin.state = True
             else:
                 pin.state = False
@@ -177,9 +178,9 @@ class Arduino:
         status = util.convert_hex_to_array(payload, self.number_of_relay_pins)
         changed_pins = {}
         for pin in self.button_pins.values():
-            if (status[pin.number] != pin.state):
-                changed_pins[pin.number] = status[pin.number]
-                pin.state = status[pin.number]
+            if (bool(int(status[pin.number])) != pin.state):
+                changed_pins[pin.number] = bool(int(status[pin.number]))
+                pin.state = bool(int(status[pin.number]))
         return changed_pins
 
 
