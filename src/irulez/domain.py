@@ -123,13 +123,15 @@ class Action:
                      action_type: ActionType,
                      delay: int,
                      Output_Pins: list,
-                     notification: Notification):
+                     notification: Notification,
+                     master: OutputPin):
             self.trigger = trigger
             self.action_type = action_type
             self.delay = delay
             all(isinstance(el, OutputPin) for el in Output_Pins)
             self.Output_Pins = Output_Pins
             self.notification = notification
+            self.master = master
 
 
 class Arduino:

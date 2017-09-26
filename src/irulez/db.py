@@ -36,13 +36,17 @@ class DummyDb(DbBase):
         # Create 2 actions.
         # Action 1 execute immediately, pins 0 and 10 ON
         # Action 2 execute immediately, pins 2, 5 and 9 OFF
+        # Action 3 execute immediately, ping 7,9,10 TOGGLE
 
         action1 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType.ON, 0,
                                 [arduino.relay_pins[0], arduino.relay_pins[10]],
-                                domain.MailNotification("Laurentmichel@me.com", True))
+                                domain.MailNotification("Laurentmichel@me.com", True), None)
         action2 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType.OFF, 0,
                                 [arduino.relay_pins[2], arduino.relay_pins[5], arduino.relay_pins[9]],
-                                domain.TelegramNotification("azerty", True))
+                                domain.TelegramNotification("azerty", True), None)
+        action3 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType.TOGGLE, 0,
+                                [arduino.relay_pins[8], arduino.relay_pins[9], arduino.relay_pins[10]],
+                                domain.TelegramNotification("azerty", True), arduino.relay_pins[8])
 
         # Create array of button pins with a variable number of pins.
         button_pins = []
@@ -51,6 +55,7 @@ class DummyDb(DbBase):
             button_pins[x] = domain.ButtonPin(x, [], False)
 
         button_pins[5].set_button_pin_actions([action1, action2])
+        button_pins[10].set_button_pin_actions([action3])
         arduino.set_button_pins(button_pins)
 
         # Initialize the dictionary of arduinos (contains only 1 for now)

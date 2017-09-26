@@ -97,6 +97,7 @@ def send_Absolute_Update(ON, OFF):
                 absolute[name][pin.number] = False
                 sendUpdate = True
 
+
     if sendUpdate:
         publish_action(absolute)
     else:
@@ -104,24 +105,32 @@ def send_Absolute_Update(ON, OFF):
 
 
 def send_Relative_Update(registersON, registersOFF):
+    global arduinos
     ON = {}
     OFF = {}
+
     for name in registersON:
-        global arduinos
         arduino = arduinos.get(name, None)
         if arduino is None:
             # Unknown arduino
             logger.info(f"Could not find arduino with name '{name}'.")
             return
         ON[name] = [False] * arduino.number_of_relay_pins
-        OFF[name] = [False] * arduino.number_of_relay_pins
-
         for pin in registersON[name]:
             ON[name][pin] = True
+
+    for name in registersOFF:
+        arduino = arduinos.get(name, None)
+        if arduino is None:
+            # Unknown arduino
+            logger.info(f"Could not find arduino with name '{name}'.")
+            return
+        OFF[name] = [False] * arduino.number_of_relay_pins
         for pin in registersOFF[name]:
             OFF[name][pin] = True
 
-        send_Absolute_Update(ON, OFF)
+
+    send_Absolute_Update(ON, OFF)
 
 
 def process_Button(arduino, pin , value):
@@ -132,14 +141,20 @@ def process_Button(arduino, pin , value):
         if(action.trigger.get_action_trigger_type() == domain.ActionTriggerType.IMMEDIATELY and value == True):
             logger.info(f"Process action Immediatly")
             if(action.action_type == domain.ActionType.ON):
+                logger.debug("ON action")
                 pins = action.Output_Pins
                 for pin in pins:
                     logger.debug(f"Action ON for pin '{pin.number}'")
                     registersON.setdefault(pin.parent, []).append(pin.number)
             elif(action.action_type == domain.ActionType.OFF):
+                logger.debug("OFF action")
                 pins = action.Output_Pins
                 for pin in pins:
                     registersOFF.setdefault(pin.parent, []).append(pin.number)
+            elif (action.action_type == domain.ActionType.TOGGLE):
+                logger.debug("Toggle action")
+
+
         elif action.trigger.get_action_trigger_type() == domain.ActionTriggerType.AFTER_RELEASE and value == False:
             logger.info(f"Process action After Release")
     
