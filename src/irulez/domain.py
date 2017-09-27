@@ -1,6 +1,6 @@
 from enum import Enum
 import src.irulez.util as util
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
 class ArduinoPinType(Enum):
@@ -41,30 +41,52 @@ class ActionTrigger(ABC):
     def get_action_trigger_type(self):
         return self.trigger_type
 
+    @abstractmethod
+    def should_trigger(self, value: bool):
+        pass
+
 
 class ImmediatelyActionTrigger(ActionTrigger):
+    def should_trigger(self, value: bool):
+        return value
+
     def __init__(self):
         super(ImmediatelyActionTrigger, self).__init__(ActionTriggerType.IMMEDIATELY)
 
 
 class AfterReleaseActionTrigger(ActionTrigger):
+    def should_trigger(self, value: bool):
+        return not value
+
     def _init_(self):
         super(AfterReleaseActionTrigger, self).__init__(ActionTriggerType.AFTER_RELEASE)
 
 
 class LongDownActionTrigger(ActionTrigger):
+    def should_trigger(self, value: bool):
+        NotImplementedError
+        pass
+
     def _init_(self, seconds_down: int):
         super(LongDownActionTrigger, self).__init__(ActionTriggerType.LONG_DOWN)
         self.seconds_down = seconds_down
 
 
 class DoubleTapActionTrigger(ActionTrigger):
+    def should_trigger(self, value: bool):
+        NotImplementedError
+        pass
+
     def _init_(self, time_between_tap: int):
         super(DoubleTapActionTrigger, self).__init__(ActionTriggerType.DOUBLE_TAP)
         self.time_between_tap = time_between_tap
 
 
 class TripleTapActionTrigger(ActionTrigger):
+    def should_trigger(self, value: bool):
+        NotImplementedError
+        pass
+
     def _init_(self, time_between_tap: int):
         super(TripleTapActionTrigger, self).__init__(ActionTriggerType.TRIPLE_TAP)
         self.time_between_tap = time_between_tap
@@ -72,6 +94,7 @@ class TripleTapActionTrigger(ActionTrigger):
 
 class Pin(ABC):
     """Represents a pin on an arduino"""
+
     def __init__(self, number: int, pin_type: ArduinoPinType, state=False):
         self.number = number
         self.pin_type = pin_type
@@ -80,6 +103,7 @@ class Pin(ABC):
 
 class OutputPin(Pin):
     """Represents a single pin on an arduino"""
+
     def __init__(self, number: int, parent: str, state=False):
         super(OutputPin, self).__init__(number, ArduinoPinType.OUTPUT, state)
         self.parent = parent
@@ -117,22 +141,58 @@ class TelegramNotification(Notification):
         self.token = token
 
 
-class Action:
-        """Represents a singe action"""
-        def __init__(self,
-                     trigger: ActionTrigger,
-                     action_type: ActionType,
-                     delay: int,
-                     output_pins: list,
-                     notification: Notification,
-                     master: OutputPin):
-            self.trigger = trigger
-            self.action_type = action_type
-            self.delay = delay
-            all(isinstance(el, OutputPin) for el in output_pins)
-            self.output_pins = output_pins
-            self.notification = notification
-            self.master = master
+class Action(ABC):
+    """Represents a singe action"""
+
+    def __init__(self,
+                 trigger: ActionTrigger,
+                 action_type: ActionType,
+                 delay: int,
+                 output_pins: list,
+                 notification: Notification,
+                 master: OutputPin):
+        self.trigger = trigger
+        self.action_type = action_type
+        self.delay = delay
+        all(isinstance(el, OutputPin) for el in output_pins)
+        self.output_pins = output_pins
+        self.notification = notification
+        self.master = master
+
+    def should_trigger(self, value: bool):
+        return self.trigger.should_trigger(value)
+
+    @abstractmethod
+    def perform_action(self):
+        pass
+
+
+class OnAction(Action):
+    def __init__(self,
+                 trigger: ActionTrigger,
+                 delay: int,
+                 output_pins: list,
+                 notification: Notification,
+                 master: OutputPin):
+        super(Action, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, master)
+
+    def perform_action(self) -> {}:
+        NotImplementedError
+        pass
+
+
+class OffAction(Action):
+    def __init__(self,
+                 trigger: ActionTrigger,
+                 delay: int,
+                 output_pins: list,
+                 notification: Notification,
+                 master: OutputPin):
+        super(Action, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, master)
+
+    def perform_action(self, on_pins: {}, off_pins: {}):
+        NotImplementedError
+        pass
 
 
 class Arduino:

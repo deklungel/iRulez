@@ -15,8 +15,14 @@ class ButtonActionProcessor:
         pins_to_switch_on = {}
         pins_to_switch_off = {}
         for action in actions:
+            if action.should_trigger(value):
+                action.perform_action()
+
+
+
+
             if action.trigger.get_action_trigger_type() == domain.ActionTriggerType.IMMEDIATELY and value:
-                logger.info(f"Process action Immediatly")
+                logger.info(f"Process action immediatly")
                 if(action.action_type == domain.ActionType.ON):
                     logger.debug("ON action")
                     pins = action.output_pins
@@ -30,7 +36,7 @@ class ButtonActionProcessor:
                         pins_to_switch_off.setdefault(pin.parent, []).append(pin.number)
                 elif (action.action_type == domain.ActionType.TOGGLE):
                     logger.debug("Toggle action")
-            elif action.trigger.get_action_trigger_type() == domain.ActionTriggerType.AFTER_RELEASE and value == False:
+            elif action.trigger.get_action_trigger_type() == domain.ActionTriggerType.AFTER_RELEASE and not value:
                 logger.info(f"Process action After Release")
 
         self.sender.send_relative_update(pins_to_switch_on, pins_to_switch_off)
