@@ -1,0 +1,13 @@
+.devices .device
+{
+	border-bottom:1px solid;
+	display:block;
+	padding:10px;
+	
+	cursor:hand;
+}
+.devices .device:hover
+{
+	background-color:green;
+	color:white;
+}
