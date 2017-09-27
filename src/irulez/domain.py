@@ -176,9 +176,9 @@ class OnAction(Action):
                  master: OutputPin):
         super(Action, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, master)
 
-    def perform_action(self) -> {}:
-        NotImplementedError
-        pass
+    def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {} ):
+        for pin in self.output_pins:
+            pins_to_switch_on.setdefault(pin.parent, []).append(pin.number)
 
 
 class OffAction(Action):
@@ -190,9 +190,9 @@ class OffAction(Action):
                  master: OutputPin):
         super(Action, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, master)
 
-    def perform_action(self, on_pins: {}, off_pins: {}):
-        NotImplementedError
-        pass
+    def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
+        for pin in self.output_pins:
+            pins_to_switch_off.setdefault(pin.parent, []).append(pin.number)
 
 
 class Arduino:
