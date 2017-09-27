@@ -6,7 +6,7 @@ from abc import ABC
 class ArduinoPinType(Enum):
     """Represents the purpose of a pin on an arduino"""
     BUTTON = 1
-    RELAY = 2
+    OUTPUT = 2
     DIMMER = 3
 
 
@@ -22,7 +22,7 @@ class ActionType(Enum):
     OFF = 3
     FOLLOW_BUTTON = 4
     DIMMER = 5
-    DOORPHONE = 6
+    DOOR_PHONE = 6
 
 
 class ActionTriggerType(Enum):
@@ -80,8 +80,8 @@ class Pin(ABC):
 
 class OutputPin(Pin):
     """Represents a single pin on an arduino"""
-    def __init__(self, number: int, parent: str, state=False ):
-        super(OutputPin, self).__init__(number, ArduinoPinType.RELAY, state)
+    def __init__(self, number: int, parent: str, state=False):
+        super(OutputPin, self).__init__(number, ArduinoPinType.OUTPUT, state)
         self.parent = parent
 
 
@@ -96,8 +96,9 @@ class ButtonPin(Pin):
     def set_button_pin_actions(self, actions: list):
         self.actions = actions
 
-    def get__button_pin_actions(self) -> list:
-        return  self.actions
+    def get_button_pin_actions(self) -> list:
+        return self.actions
+
 
 class Notification(ABC):
     def __init__(self, enabled: False):
@@ -122,14 +123,14 @@ class Action:
                      trigger: ActionTrigger,
                      action_type: ActionType,
                      delay: int,
-                     Output_Pins: list,
+                     output_pins: list,
                      notification: Notification,
                      master: OutputPin):
             self.trigger = trigger
             self.action_type = action_type
             self.delay = delay
-            all(isinstance(el, OutputPin) for el in Output_Pins)
-            self.Output_Pins = Output_Pins
+            all(isinstance(el, OutputPin) for el in output_pins)
+            self.output_pins = output_pins
             self.notification = notification
             self.master = master
 
@@ -168,19 +169,19 @@ class Arduino:
         # convert array to hex string
         return util.convert_array_to_hex(pin_states)
 
-    def set_relay_status(self,payload: str):
-        status = util.convert_hex_to_array(payload,self.number_of_relay_pins)
+    def set_relay_status(self, payload: str):
+        status = util.convert_hex_to_array(payload, self.number_of_relay_pins)
         for pin in self.relay_pins.values():
-            if(int(status[pin.number]) == 1):
+            if int(status[pin.number]) == 1:
                 pin.state = True
             else:
                 pin.state = False
 
-    def get_changed_pins(self, payload: str) -> list:
+    def get_changed_pins(self, payload: str) -> {}:
         status = util.convert_hex_to_array(payload, self.number_of_relay_pins)
         changed_pins = {}
         for pin in self.button_pins.values():
-            if (bool(int(status[pin.number])) != pin.state):
+            if bool(int(status[pin.number])) != pin.state:
                 changed_pins[pin.number] = bool(int(status[pin.number]))
                 pin.state = bool(int(status[pin.number]))
         return changed_pins

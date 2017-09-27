@@ -1,18 +1,10 @@
-import logging
+import src.irulez.log as log
 import src.irulez.db
 import src.irulez.constants as constants
 import src.irulez.util as util
 import lib.paho.mqtt.client as mqtt
 
-logger = logging.getLogger('dummy')
-logger.info('Dummy starting')
-logger.setLevel(logging.DEBUG)
-
-handler = logging.StreamHandler()
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = log.get_logger('dummy')
 
 # Get database, dummy for now
 db = src.irulez.db.get_dummy_db()
