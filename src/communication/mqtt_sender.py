@@ -13,25 +13,27 @@ class MqttSender:
     def publish_action(self, absolute):
         for name in absolute:
             payload = util.convert_array_to_hex(absolute[name])
-            topic = constants.arduinoTopic + '/'+ name + '/' + constants.actionTopic
+            topic = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic
             logger.debug(f"Publishing: '{topic}'/'{payload}'")
             self.client.publish(topic, payload)
 
     def send_absolute_update(self, on_pins: {}, off_pins: {}):
-        sendUpdate = False
+        # TODO: improve 'send_update' mechanism to only send updates to arduinos with updates.
+        #  Current implementation sends updates to all arduinos or none.
+        send_update = False
         absolute = {}
         for name in on_pins:
             arduino = self.arduinos.get(name, None)
             if arduino is None:
                 # Unknown arduino
                 logger.info(f"Could not find arduino with name '{name}'.")
-                return
-            absolute[name]= [False] * arduino.number_of_relay_pins
+                # Continue means hop to the next cycle of the for loop
+                continue
+            absolute[name] = [False] * arduino.number_of_relay_pins
             for pin in arduino.relay_pins.values():
-                if (pin.state == True):
-                    absolute[name][pin.number] = True
-                if(on_pins[name][pin.number] == True and pin.state == False):
-                    sendUpdate = True
+                absolute[name][pin.number] = pin.state
+                if on_pins[name][pin.number] and not pin.state:
+                    send_update = True
                     absolute[name][pin.number] = True
 
         for name in off_pins:
@@ -40,16 +42,15 @@ class MqttSender:
                 # Unknown arduino
                 logger.info(f"Could not find arduino with name '{name}'.")
                 return
-            if (name not in absolute.keys()):
-                absolute[name]= [False] * arduino.number_of_relay_pins
+            if name not in absolute.keys():
+                absolute[name] = [False] * arduino.number_of_relay_pins
             for pin in arduino.relay_pins.values():
-                if (pin.state == True):
-                    absolute[name][pin.number] = True
-                if(off_pins[name][pin.number] == True and pin.state == True):
+                absolute[name][pin.number] = pin.state
+                if off_pins[name][pin.number] and pin.state:
                     absolute[name][pin.number] = False
-                    sendUpdate = True
+                    send_update = True
 
-        if sendUpdate:
+        if send_update:
             self.publish_action(absolute)
         else:
             logger.info("No change to publish")

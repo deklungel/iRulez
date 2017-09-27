@@ -142,8 +142,7 @@ class TelegramNotification(Notification):
 
 
 class Action(ABC):
-    """Represents a singe action"""
-
+    """Represents a single action"""
     def __init__(self,
                  trigger: ActionTrigger,
                  action_type: ActionType,
@@ -163,7 +162,7 @@ class Action(ABC):
         return self.trigger.should_trigger(value)
 
     @abstractmethod
-    def perform_action(self):
+    def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         pass
 
 
@@ -174,9 +173,9 @@ class OnAction(Action):
                  output_pins: list,
                  notification: Notification,
                  master: OutputPin):
-        super(Action, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, master)
+        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, master)
 
-    def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {} ):
+    def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         for pin in self.output_pins:
             pins_to_switch_on.setdefault(pin.parent, []).append(pin.number)
 
@@ -188,7 +187,7 @@ class OffAction(Action):
                  output_pins: list,
                  notification: Notification,
                  master: OutputPin):
-        super(Action, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, master)
+        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, master)
 
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         for pin in self.output_pins:

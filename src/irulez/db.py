@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 class DbBase(ABC):
     """Base class, defining all methods a database class should implement"""
+
     @abstractmethod
     def get_arduino_config(self) -> domain.ArduinoConfig:
         """Retrieves the configuration of the arduinos"""
@@ -17,6 +18,7 @@ class DbBase(ABC):
 
 class DummyDb(DbBase):
     """Dummy implementation of a database class. Returns fixed data for all operations"""
+
     def __init(self):
         pass
 
@@ -39,15 +41,15 @@ class DummyDb(DbBase):
         # Action 3 execute immediately, ping 7,9,10 TOGGLE
 
         action1 = domain.OnAction(domain.ImmediatelyActionTrigger(), 0,
-                                [arduino.relay_pins[0], arduino.relay_pins[10]],
-                                domain.MailNotification("Laurentmichel@me.com", True), None)
+                                  [arduino.relay_pins[0], arduino.relay_pins[10]],
+                                  domain.MailNotification("Laurentmichel@me.com", True), None)
         action2 = domain.OffAction(domain.ImmediatelyActionTrigger(), 0,
-                                [arduino.relay_pins[2], arduino.relay_pins[5], arduino.relay_pins[9]],
-                                domain.TelegramNotification("azerty", True), None)
+                                   [arduino.relay_pins[2], arduino.relay_pins[5], arduino.relay_pins[9]],
+                                   domain.TelegramNotification("azerty", True), None)
 
-        action3 = domain.OffAction(domain.ImmediatelyActionTrigger(), domain.ActionType.TOGGLE, 0,
-                                [arduino.relay_pins[8], arduino.relay_pins[9], arduino.relay_pins[10]],
-                                domain.TelegramNotification("azerty", True), arduino.relay_pins[8])
+        # action3 = domain.OffAction(domain.ImmediatelyActionTrigger(), domain.ActionType.TOGGLE, 0,
+        #                         [arduino.relay_pins[8], arduino.relay_pins[9], arduino.relay_pins[10]],
+        #                         domain.TelegramNotification("azerty", True), arduino.relay_pins[8])
 
         # Create array of button pins with a variable number of pins.
         button_pins = []
@@ -56,7 +58,7 @@ class DummyDb(DbBase):
             button_pins[x] = domain.ButtonPin(x, [], False)
 
         button_pins[5].set_button_pin_actions([action1, action2])
-        button_pins[10].set_button_pin_actions([action3])
+        # button_pins[10].set_button_pin_actions([action3])
         arduino.set_button_pins(button_pins)
 
         # Initialize the dictionary of arduinos (contains only 1 for now)

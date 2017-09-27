@@ -1,5 +1,4 @@
 import src.communication.mqtt_sender as mqtt_sender
-import src.irulez.domain as domain
 import src.irulez.log as log
 
 logger = log.get_logger('button_processor')
@@ -16,11 +15,8 @@ class ButtonActionProcessor:
         pins_to_switch_off = {}
         for action in actions:
             if action.should_trigger(value):
-                logger.info(f"Process action Immediately ")
-                action.perform_action(action, pins_to_switch_on,pins_to_switch_off)
-
-            elif action.trigger.get_action_trigger_type() == domain.ActionTriggerType.AFTER_RELEASE and not value:
-                logger.info(f"Process action After Release")
+                logger.info(f"Process action with type '{action.action_type}'")
+                action.perform_action(pins_to_switch_on, pins_to_switch_off)
 
         self.sender.send_relative_update(pins_to_switch_on, pins_to_switch_off)
 

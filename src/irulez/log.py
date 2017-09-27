@@ -23,4 +23,3 @@ def get_logger(name: str):
     if not log_initialized:
         init_logger()
     return logging.getLogger(log_prefix + "." + name)
-
