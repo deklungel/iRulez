@@ -38,13 +38,14 @@ class DummyDb(DbBase):
         # Action 2 execute immediately, pins 2, 5 and 9 OFF
         # Action 3 execute immediately, ping 7,9,10 TOGGLE
 
-        action1 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType.ON, 0,
+        action1 = domain.OnAction(domain.ImmediatelyActionTrigger(), 0,
                                 [arduino.relay_pins[0], arduino.relay_pins[10]],
                                 domain.MailNotification("Laurentmichel@me.com", True), None)
-        action2 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType.OFF, 0,
+        action2 = domain.OffAction(domain.ImmediatelyActionTrigger(), 0,
                                 [arduino.relay_pins[2], arduino.relay_pins[5], arduino.relay_pins[9]],
                                 domain.TelegramNotification("azerty", True), None)
-        action3 = domain.Action(domain.ImmediatelyActionTrigger(), domain.ActionType.TOGGLE, 0,
+
+        action3 = domain.OffAction(domain.ImmediatelyActionTrigger(), domain.ActionType.TOGGLE, 0,
                                 [arduino.relay_pins[8], arduino.relay_pins[9], arduino.relay_pins[10]],
                                 domain.TelegramNotification("azerty", True), arduino.relay_pins[8])
 
