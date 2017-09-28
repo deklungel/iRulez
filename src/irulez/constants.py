@@ -12,5 +12,5 @@ buttonTopic = 'button'
 
 #name of the virtual_IO_board
 virtual_IO_board_name = 'virtual_IO_Board'
-virtual_IO_board_buttons = 16
-virtual_IO_board_outputs = 16
+virtual_IO_board_buttons = 20
+virtual_IO_board_outputs = 20

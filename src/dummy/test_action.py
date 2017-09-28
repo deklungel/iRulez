@@ -11,10 +11,11 @@ mqttConfig = db.get_mqtt_config()
 
 
 arduino = input("Arduino name? <DEMO|virtual_IO_Board> ")
-pin = input("Pin 0 <-> 15 ")
+number_of_pin = input("Numver of pins? <16|20>")
+pin = input("Pin ")
 button_action = input("B: Button , A: action ")
 
-pin_states = [0]*16
+pin_states = [0]*int(number_of_pin)
 
 if(pin != ""):
     list = pin.split('|');

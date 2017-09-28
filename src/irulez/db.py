@@ -78,7 +78,7 @@ class DummyDb(DbBase):
                                   [Virtual_arduino.output_pins[0], arduino.output_pins[10]],
                                   domain.MailNotification("Laurentmichel@me.com", True))
         action2 = domain.OffAction(domain.ImmediatelyActionTrigger(), 0,
-                                  [Virtual_arduino.output_pins[0], arduino.output_pins[10]],
+                                  [Virtual_arduino.output_pins[0], Virtual_arduino.output_pins[4],  arduino.output_pins[10]],
                                   domain.MailNotification("Laurentmichel@me.com", True))
 
         # Create array of button pins with a variable number of pins.

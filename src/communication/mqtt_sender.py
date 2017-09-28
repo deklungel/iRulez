@@ -15,7 +15,7 @@ class MqttSender:
             payload = util.convert_array_to_hex(absolute[name])
             topic = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic
             logger.debug(f"Publishing: {topic}/{payload}")
-            self.client.publish(topic, payload)
+            self.client.publish(topic, payload, 0, True)
 
     def send_absolute_update(self, on_pins: {}, off_pins: {}):
         # TODO: improve 'send_update' mechanism to only send updates to arduinos with updates.

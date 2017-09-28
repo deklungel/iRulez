@@ -35,15 +35,12 @@ def get_arduino_name_from_topic(topic: str) -> str:
 
 def convert_array_to_hex(status: list) -> str:
     binary = ''
+    logger.debug("status " + str(status))
     for digit in status:
         binary += str(int(digit))
     return str(hex(int(binary, 2)))[2:]
 
 
 def convert_hex_to_array(payload: str, number_of_pins: int) -> list:
-    var = int(payload, 16)
-    logger.debug(bin(var))
-    logger.debug(bin(var)[2:].zfill(20))
-    logger.debug(bin(int(payload, 16))[2:].zfill(number_of_pins))
-
+    logger.debug("convert_hex_to_array " + bin(int(payload, 16))[2:].zfill(number_of_pins))
     return bin(int(payload, 16))[2:].zfill(number_of_pins)
