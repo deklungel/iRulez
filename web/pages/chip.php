@@ -17,16 +17,28 @@
 
 	$(document).ready(function()
 	{
-		iRulez.Data.getDevice($(".chippiemac").val(), function(data)
+		$(".sendState").click(function()
 		{
-			var _details = "id: " + data.id
-					+ "<br />Created: "+ data.Created 
-					+ "<br />LastModified: " + data.LastModified
-					+ "<br />Mac: " + data.MAC
-					+ "<br />State: " + data.State;
-			
-			$(".deviceDetails").html(_details);
+			console.log("Mac:" + $(".chippiemac").val());
+			console.log("Sending new state: H: " + $(this).data("H") + " L: " + $(this).data("L"));
+			iRulez.Data.triggerDeviceState($(".chippiemac").val(),
+											$(this).data("H"),
+											$(this).data("L"),
+											function(success)
+											{
+												if(success)
+												{
+													alert("Success");
+												}
+												else
+												{
+													alert("fail");
+												}
+											});
 		});
+		
+		refreshDeviceStatus(10);
+		
 		var s = Snap("#chip");
 		var chip_center = s.rect(25,15,245,80,10,0);
 		for(var v=1;v<=_prongAmount/2;v++)
@@ -112,6 +124,7 @@
 				strokeWidth: 5
 			});
 		}
+	
 	}
 
 	function startToggling()
@@ -164,6 +177,11 @@
 				_stateH += "0";
 			}
 		}
+		$(".sendState").data("H", _stateH);
+		$(".sendState").data("L", _stateH);
+		$(".sendState").data("HexH", getHEXString(_stateH));
+		$(".sendState").data("HexL", getHEXString(_stateL));
+		
 		var _result = "<b>bit</b><br />H : " + _stateH + " L: " + _stateL + "<br /><b>Hex</b><br />H : " + getHEXString(_stateH) + " L: " + getHEXString(_stateL);
 		$(".deviceState").html(_result);
 	}
@@ -173,12 +191,36 @@
 		if(hexValue.length == 1) hexValue = '0'+hexValue
 		return hexValue;
 	}
+	var _currentSecond = 0;
+	function refreshDeviceStatus(intervalSeconds)
+	{
+		_currentSecond = intervalSeconds;
+		setInterval(function()
+		{
+			if(_currentSecond<=0 || _currentSecond == intervalSeconds)
+			{
+				_currentSecond = intervalSeconds;
+				iRulez.Data.getDevice($(".chippiemac").val(), function(data)
+				{
+					var _details = "id: " + data.id
+							+ "<br />Created: "+ data.Created 
+							+ "<br />LastModified: " + data.LastModified
+							+ "<br />Mac: " + data.MAC
+							+ "<br />State: " + data.State + "<br /><label class=refresh></label>";
+					
+					$(".deviceDetails").html(_details);
+				});
+			}
+			_currentSecond-=1;
+			$(".deviceDetails .refresh").html("Refresh in " + (_currentSecond +1));
+			
+		}, 1000);
+	}
 	</script>	
   </head>
 <body>
 <h1>Chippie</h1>
-<input type="text" value="<?php echo $_GET['MAC'] ?>" class="chippiemac"/>
-
+<input type="hidden" value="<?php echo $_GET['MAC'] ?>" class="chippiemac"/>
 <button class="Toggle" data-status="off">Start/stop toggle</button>
 <div class="deviceDetails" style="float:right"></div>
 <br />
@@ -186,6 +228,6 @@
 
 <div class="deviceState">
 </div>
-
+<button class="sendState">Send new state to API</button>
 </body>
 </html>

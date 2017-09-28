@@ -13,11 +13,47 @@ var iRulez = new function ()
 	{
 		console.log("[" + Tag + "] " + Message); // Write it to the console for now (F12 in your browser)
 	}
-	
+	this.Validation = new function()
+	{
+		this.isNullOrEmpty = function(obj)
+		{
+			return obj == null || obj == 'undefined';
+		}
+	}
+	this.Tool = new function()
+	{
+		// todo; implement fancy error boxes
+		this.showErrorMessage = function(Message)
+		{
+			alert(Message);
+		}
+	}
 	// Data related functions
 	
 	this.Data = new function ()
     {
+		// This function will request a new state, by putting it on the queue
+		this.triggerDeviceState = function(Mac,H,L,callback)
+		{
+			var x =  { Mac: Mac, H: H, L:L};
+			$.ajax({
+                type: "POST",
+                contentType: "application/json",
+				url: iRulez.apiPath("/?action=triggerdevicestate"),
+                dataType: "json",
+                data: JSON.stringify(x),
+                success: function (success) {
+                    if (iRulez.Validation.isNullOrEmpty(callback)) return successs;
+                    else callback(success);
+                },
+                error: function (xhr, status, error) {
+                    iRulez.Tool.showErrorMessage(xhr.responseJSON.ExceptionMessage, function () {
+                        if (iRulez.Validation.isNullOrEmpty(callback)) return false;
+                        else callback(false);
+                    });
+                }
+            });
+		}
         this.getDevices = function(callback)
         {
             $.ajax({
