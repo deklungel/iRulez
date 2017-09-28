@@ -1,7 +1,9 @@
 from enum import Enum
 import src.irulez.util as util
 from abc import ABC, abstractmethod
+import src.irulez.log as log
 
+logger = log.get_logger('domain')
 
 class ArduinoPinType(Enum):
     """Represents the purpose of a pin on an arduino"""
@@ -148,15 +150,13 @@ class Action(ABC):
                  action_type: ActionType,
                  delay: int,
                  output_pins: list,
-                 notification: Notification,
-                 master: OutputPin):
+                 notification: Notification):
         self.trigger = trigger
         self.action_type = action_type
         self.delay = delay
         all(isinstance(el, OutputPin) for el in output_pins)
         self.output_pins = output_pins
         self.notification = notification
-        self.master = master
 
     def should_trigger(self, value: bool):
         return self.trigger.should_trigger(value)
@@ -171,13 +171,14 @@ class OnAction(Action):
                  trigger: ActionTrigger,
                  delay: int,
                  output_pins: list,
-                 notification: Notification,
-                 master: OutputPin):
-        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, master)
+                 notification: Notification):
+        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification)
 
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         for pin in self.output_pins:
+            logger.debug(f"pinnumber: '{pin.number}' with parent: '{pin.parent}'")
             pins_to_switch_on.setdefault(pin.parent, []).append(pin.number)
+        logger.debug(f"Pins to swhtich on: '{pins_to_switch_on}'")
 
 
 class OffAction(Action):
@@ -185,23 +186,41 @@ class OffAction(Action):
                  trigger: ActionTrigger,
                  delay: int,
                  output_pins: list,
-                 notification: Notification,
-                 master: OutputPin):
-        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, master)
+                 notification: Notification):
+        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification)
 
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         for pin in self.output_pins:
             pins_to_switch_off.setdefault(pin.parent, []).append(pin.number)
 
+class ToggleAction(Action):
+    def __init__(self,
+                 trigger: ActionTrigger,
+                 delay: int,
+                 output_pins: list,
+                 notification: Notification,
+                 master: OutputPin):
+        super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notification)
+        self.master = master
+
+    def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
+        #if master is on put all the lights of and visa versa
+        if self.master.state:
+            for pin in self.output_pins:
+                pins_to_switch_off.setdefault(pin.parent, []).append(pin.number)
+        else:
+            for pin in self.output_pins:
+                pins_to_switch_on.setdefault(pin.parent, []).append(pin.number)
+
 
 class Arduino:
     """Represents an actual arduino"""
 
-    def __init__(self, name: str, number_of_relay_pins: int, number_of_button_pins: int):
+    def __init__(self, name: str, number_of_outputs_pins: int, number_of_button_pins: int):
         self.name = name
-        self.number_of_relay_pins = number_of_relay_pins
+        self.number_of_output_pins = number_of_outputs_pins
         self.number_of_button_pins = number_of_button_pins
-        self.relay_pins = {}
+        self.output_pins = {}
         self.button_pins = {}
 
     def set_relay_pins(self, relay_pins: list):
@@ -209,7 +228,7 @@ class Arduino:
         # This check is completely unnecessary, but gives us some assurances
         all(isinstance(el, OutputPin) for el in relay_pins)
         for pin in relay_pins:
-            self.relay_pins[pin.number] = pin
+            self.output_pins[pin.number] = pin
 
     def set_button_pins(self, button_pins: list):
         # Check that all elements in our list are actual button_pins objects
@@ -220,24 +239,24 @@ class Arduino:
     def get_relay_status(self) -> str:
         """Gets the status array of the relay_pins of this arduino"""
         # Initialize empty state array
-        pin_states = [0] * self.number_of_relay_pins
+        pin_states = [0] * self.number_of_output_pins
         # Loop over all relay_pins and set their state in the array
-        for pin in self.relay_pins.values():
+        for pin in self.output_pins.values():
             pin_states[pin.number] = 1 if pin.state else 0
 
         # convert array to hex string
         return util.convert_array_to_hex(pin_states)
 
     def set_relay_status(self, payload: str):
-        status = util.convert_hex_to_array(payload, self.number_of_relay_pins)
-        for pin in self.relay_pins.values():
+        status = util.convert_hex_to_array(payload, self.number_of_output_pins)
+        for pin in self.output_pins.values():
             if int(status[pin.number]) == 1:
                 pin.state = True
             else:
                 pin.state = False
 
     def get_changed_pins(self, payload: str) -> {}:
-        status = util.convert_hex_to_array(payload, self.number_of_relay_pins)
+        status = util.convert_hex_to_array(payload, self.number_of_output_pins)
         changed_pins = {}
         for pin in self.button_pins.values():
             if bool(int(status[pin.number])) != pin.state:

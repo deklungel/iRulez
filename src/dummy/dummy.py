@@ -23,8 +23,8 @@ def on_connect(client, userdata, flags, rc):
     # Subscribe to all arduino hexnumber actions
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.actionTopic + "/hexnumber")
-    client.subscribe(constants.arduinoTopic + "/+/" + constants.actionTopic + "/hexnumber")
+    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.actionTopic + "/")
+    client.subscribe(constants.arduinoTopic + "/+/" + constants.actionTopic + "/")
     # TODO: Subscribe to dimmer values
 
 
@@ -73,7 +73,7 @@ def on_message(client, userdata, msg):
     # Publish new status
     status = arduino.get_relay_status()
     logger.debug(f"Publishing new status of arduino '{name}': '{status}'")
-    client.publish(constants.arduinoTopic + name + '/status', status)
+    client.publish(constants.arduinoTopic + name + '/status', status,True)
 
 
 # Create client

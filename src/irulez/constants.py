@@ -1,5 +1,5 @@
 # Name of all arduino topics
-arduinoTopic = 'iRulesIO16'
+arduinoTopic = 'iRulezIO16'
 
 # Name of an action topic
 actionTopic = 'action'
@@ -9,3 +9,8 @@ statusTopic = 'status'
 
 # Name of an action topic
 buttonTopic = 'button'
+
+#name of the virtual_IO_board
+virtual_IO_board_name = 'virtual_IO_Board'
+virtual_IO_board_buttons = 16
+virtual_IO_board_outputs = 16

@@ -18,6 +18,7 @@ class ButtonActionProcessor:
                 logger.info(f"Process action with type '{action.action_type}'")
                 action.perform_action(pins_to_switch_on, pins_to_switch_off)
 
+        logger.debug(f"Pins to switch on: '{pins_to_switch_on}' & Pins to switch off: '{pins_to_switch_off}'")
         self.sender.send_relative_update(pins_to_switch_on, pins_to_switch_off)
 
     def process_button_message(self, name, payload):

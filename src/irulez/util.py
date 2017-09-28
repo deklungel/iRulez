@@ -1,5 +1,7 @@
 import src.irulez.constants as constants
+import src.irulez.log as log
 
+logger = log.get_logger('util')
 
 def is_arduino_topic(topic: str) -> bool:
     """Checks if the given topic is a topic of an arduino"""
@@ -9,7 +11,7 @@ def is_arduino_topic(topic: str) -> bool:
 def is_arduino_action_topic(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""
     # Format arduino_number/action/something
-    return is_arduino_topic(topic) and '/' + constants.actionTopic + '/' in topic
+    return is_arduino_topic(topic) and '/' + constants.actionTopic in topic
 
 
 def is_arduino_button_topic(topic: str) -> bool:
@@ -39,4 +41,9 @@ def convert_array_to_hex(status: list) -> str:
 
 
 def convert_hex_to_array(payload: str, number_of_pins: int) -> list:
+    var = int(payload, 16)
+    logger.debug(bin(var))
+    logger.debug(bin(var)[2:].zfill(20))
+    logger.debug(bin(int(payload, 16))[2:].zfill(number_of_pins))
+
     return bin(int(payload, 16))[2:].zfill(number_of_pins)

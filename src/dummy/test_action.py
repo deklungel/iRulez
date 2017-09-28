@@ -10,7 +10,7 @@ db = src.irulez.db.get_dummy_db()
 mqttConfig = db.get_mqtt_config()
 
 
-arduino = input("Arduino name? <DEMO> ")
+arduino = input("Arduino name? <DEMO|virtual_IO_Board> ")
 pin = input("Pin 0 <-> 15 ")
 button_action = input("B: Button , A: action ")
 
