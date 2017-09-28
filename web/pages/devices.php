@@ -34,7 +34,7 @@
 			$(".devices").html(_deviceHTML); // to the browser!
 			$(".devices .device").click(function()
 			{
-				alert("What you gonna do with " + $(this).data("mac"));
+				document.location.href = "chip.php?MAC=" +$(this).data("mac");
 			});
 		}
 		function renderDevice(device) // visual representation of this device
@@ -51,10 +51,6 @@
 <body>
 <h1>Inline database</h1>
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 include('../lib/class.database.device.php'); // required 
 $dbdevices = new DBDevice();
 $devices = $dbdevices->getDevices();

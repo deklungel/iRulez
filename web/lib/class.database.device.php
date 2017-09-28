@@ -8,7 +8,6 @@ class DBDevice {
 	public function getDevices()
 	{
 		$devices = array(); // return object
-
 		// Get Database instance
 		$db = Database::getInstance();
 		$mysqli = $db->getConnection(); 
@@ -25,6 +24,22 @@ class DBDevice {
 			$result->free();
 		}
 		return $devices;
+	}
+	public function getDevice($mac)
+	{
+		// Get Database instance
+		$db = Database::getInstance();
+		$mysqli = $db->getConnection(); 
+		$sql_query = "SELECT id,MAC, LastModified, Created, State FROM devices WHERE MAC='".$mac."'";
+		if ($result = $mysqli->query($sql_query)) {
+			/* fetch associative array */
+			while ($row = $result->fetch_assoc()) {
+				$device = new Device($row["id"], $row["MAC"],$row["State"], $row["Created"], $row["LastModified"]);
+			}
+			/* free result set */
+			$result->free();
+		}
+		return $device;
 	}
   }
 ?>

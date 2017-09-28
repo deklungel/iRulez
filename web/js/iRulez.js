@@ -32,5 +32,19 @@ var iRulez = new function ()
                 }
             });
         }
+		this.getDevice = function(mac, callback)
+		{
+            $.ajax({
+                type: "GET",
+                contentType: "application/json",
+                url: iRulez.apiPath("/?action=getdevice&mac="+mac),
+                success: function (data) {
+                    callback(data);
+                },
+                error: function (xhr, status, error) {
+                    callback("ERROR");
+                }
+            });
+		}
 	}
 }
