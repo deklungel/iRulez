@@ -44,13 +44,13 @@ class DummyDb(DbBase):
 
         action1 = domain.OnAction(domain.ImmediatelyActionTrigger(), 0,
                                   [arduino.output_pins[0], arduino.output_pins[10]],
-                                  domain.MailNotification("Laurentmichel@me.com", True))
+                                  domain.MailNotification("Laurentmichel@me.com", True), None)
         action2 = domain.OffAction(domain.ImmediatelyActionTrigger(), 0,
                                    [arduino.output_pins[2], arduino.output_pins[5], arduino.output_pins[9]],
-                                   domain.TelegramNotification("azerty", True))
+                                   domain.TelegramNotification("azerty", True), None)
         action3 = domain.ToggleAction(domain.ImmediatelyActionTrigger(), 0,
                                  [arduino.output_pins[8], arduino.output_pins[9], arduino.output_pins[10]],
-                                 domain.TelegramNotification("azerty", True), arduino.output_pins[8])
+                                 domain.TelegramNotification("azerty", True), arduino.output_pins[8], None)
 
         # Create array of button pins with a variable number of pins.
         button_pins = []

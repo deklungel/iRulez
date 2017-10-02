@@ -5,6 +5,7 @@ import src.irulez.log as log
 
 logger = log.get_logger('domain')
 
+
 class ArduinoPinType(Enum):
     """Represents the purpose of a pin on an arduino"""
     BUTTON = 1
@@ -145,18 +146,21 @@ class TelegramNotification(Notification):
 
 class Action(ABC):
     """Represents a single action"""
+
     def __init__(self,
                  trigger: ActionTrigger,
                  action_type: ActionType,
                  delay: int,
                  output_pins: list,
-                 notification: Notification):
+                 notification: Notification,
+                 condition: Condition):
         self.trigger = trigger
         self.action_type = action_type
         self.delay = delay
         all(isinstance(el, OutputPin) for el in output_pins)
         self.output_pins = output_pins
         self.notification = notification
+        self.condition = condition
 
     def should_trigger(self, value: bool):
         return self.trigger.should_trigger(value)
@@ -165,20 +169,26 @@ class Action(ABC):
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         pass
 
+    def check_condition(self):
+        if self.condition is None:
+            return True
+        return self.condition.verify()
+
 
 class OnAction(Action):
     def __init__(self,
                  trigger: ActionTrigger,
                  delay: int,
                  output_pins: list,
-                 notification: Notification):
-        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification)
+                 notification: Notification,
+                 condition: Condition):
+        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, condition)
 
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         for pin in self.output_pins:
-            logger.debug(f"pinnumber: '{pin.number}' with parent: '{pin.parent}'")
+            logger.debug(f"pin number: '{pin.number}' with parent: '{pin.parent}'")
             pins_to_switch_on.setdefault(pin.parent, []).append(pin.number)
-        logger.debug(f"Pins to swhtich on: '{pins_to_switch_on}'")
+        logger.debug(f"Pins to switch on: '{pins_to_switch_on}'")
 
 
 class OffAction(Action):
@@ -186,12 +196,14 @@ class OffAction(Action):
                  trigger: ActionTrigger,
                  delay: int,
                  output_pins: list,
-                 notification: Notification):
-        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification)
+                 notification: Notification,
+                 condition: Condition):
+        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, condition)
 
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         for pin in self.output_pins:
             pins_to_switch_off.setdefault(pin.parent, []).append(pin.number)
+
 
 class ToggleAction(Action):
     def __init__(self,
@@ -199,12 +211,13 @@ class ToggleAction(Action):
                  delay: int,
                  output_pins: list,
                  notification: Notification,
-                 master: OutputPin):
-        super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notification)
+                 master: OutputPin,
+                 condition: Condition):
+        super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notification, condition)
         self.master = master
 
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
-        #if master is on put all the lights of and visa versa
+        # if master is on put all the lights of and visa versa
         if self.master.state:
             for pin in self.output_pins:
                 pins_to_switch_off.setdefault(pin.parent, []).append(pin.number)
@@ -280,3 +293,45 @@ class MqttConfig:
         self.port = port
         self.username = username
         self.password = password
+
+
+class Operator(Enum):
+    AND = 1
+    OR = 2
+
+
+class Condition(ABC):
+    @abstractmethod
+    def verify(self) -> bool:
+        pass
+
+
+class ConditionList(Condition):
+    def __init__(self, operator: Operator, conditions: list):
+        self.operator = operator
+        all(isinstance(el, Condition) for el in conditions)
+        self.conditions = conditions
+
+    def verify(self) -> bool:
+        if self.operator == Operator.AND:
+            for condition in self.conditions:
+                if not condition.verify():
+                    return False
+            return True
+        # Otherwise it's OR
+        for condition in self.conditions:
+            if condition.verify():
+                return True
+            return False
+
+
+class OutputPinCondition(Condition):
+    def verify(self) -> bool:
+        NotImplementedError
+        pass
+
+
+class TimeCondition(Condition):
+    def verify(self) -> bool:
+        NotImplementedError
+        pass
