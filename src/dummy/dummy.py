@@ -1,18 +1,10 @@
-import logging
+import src.irulez.log as log
 import src.irulez.db
 import src.irulez.constants as constants
 import src.irulez.util as util
 import lib.paho.mqtt.client as mqtt
 
-logger = logging.getLogger('dummy')
-logger.info('Dummy starting')
-logger.setLevel(logging.DEBUG)
-
-handler = logging.StreamHandler()
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = log.get_logger('dummy')
 
 # Get database, dummy for now
 db = src.irulez.db.get_dummy_db()
@@ -31,8 +23,8 @@ def on_connect(client, userdata, flags, rc):
     # Subscribe to all arduino hexnumber actions
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.actionTopic + "/hexnumber")
-    client.subscribe(constants.arduinoTopic + "/+/" + constants.actionTopic + "/hexnumber")
+    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.actionTopic + "/")
+    client.subscribe(constants.arduinoTopic + "/+/" + constants.actionTopic + "/")
     # TODO: Subscribe to dimmer values
 
 
@@ -62,12 +54,12 @@ def on_message(client, userdata, msg):
         return
 
     # Convert the incoming payload in hex to a binary with leading 0
-    action = bin(int(msg.payload, 16))[2:].zfill(arduino.number_of_pins * 2)
+    action = bin(int(msg.payload, 16))[2:].zfill(arduino.number_of_relay_pins * 2)
     on = list(action[:arduino.number_of_pins])
     off = list(action[arduino.number_of_pins:])
     # Loop over all relay_pins of the arduino and update if needed
     for pin in arduino.pins.values():
-        if pin.number < 0 or pin.number > (arduino.number_of_pins - 1):
+        if pin.number < 0 or pin.number > (arduino.number_of_relay_pins - 1):
             logger.warning(f"Arduino '{name}' has a pin with number '{pin.number}'.")
             # Continue hops to the next iteration of the for-loop
             continue
@@ -81,7 +73,7 @@ def on_message(client, userdata, msg):
     # Publish new status
     status = arduino.get_relay_status()
     logger.debug(f"Publishing new status of arduino '{name}': '{status}'")
-    client.publish(constants.arduinoTopic + name + '/status', status)
+    client.publish(constants.arduinoTopic + name + '/status', status,True)
 
 
 # Create client

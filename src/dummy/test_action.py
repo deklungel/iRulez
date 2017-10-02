@@ -10,20 +10,31 @@ db = src.irulez.db.get_dummy_db()
 mqttConfig = db.get_mqtt_config()
 
 
-arduino = input("Arduino name? <DEMO> " or "DEMO")
-pin = input("Pin 0 <-> 15 " or "5")
+arduino = input("Arduino name? <DEMO|virtual_IO_Board> ")
+number_of_pin = input("Numver of pins? <16|20>")
+pin = input("Pin ")
+button_action = input("B: Button , A: action ")
 
-pin_states = [0]*16
+pin_states = [0]*int(number_of_pin)
 
-list = pin.split('|');
-for relay in list:
-    pin_states[int(relay)] = 1
+if(pin != ""):
+    list = pin.split('|');
+    for relay in list:
+        pin_states[int(relay)] = 1
 
 
 payload = util.convert_array_to_hex(pin_states)
 
-print(constants.arduinoTopic + "/" + arduino + "/" + constants.actionTopic + "/" + payload)
+if(button_action == "A"):
+    print(constants.arduinoTopic + "/" + arduino + "/" + constants.actionTopic + "/" + payload)
 
-publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.actionTopic , payload,
+    publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.actionTopic , payload,
+               auth={'username': mqttConfig.username, 'password': mqttConfig.password}, hostname=mqttConfig.address,
+               port=mqttConfig.port, retain=False)
+
+elif(button_action == "B"):
+    print(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload)
+
+    publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic , payload,
                auth={'username': mqttConfig.username, 'password': mqttConfig.password}, hostname=mqttConfig.address,
                port=mqttConfig.port, retain=False)
