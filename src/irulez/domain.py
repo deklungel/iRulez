@@ -127,10 +127,6 @@ class ButtonPin(Pin):
     def get_button_pin_actions(self) -> list:
         return self.actions
 
-    def reset_is_executed(self):
-        for action in self.actions:
-            action.isExecuted = False
-
 
 class Notification(ABC):
     def __init__(self, enabled: False):
@@ -169,8 +165,7 @@ class Action(ABC):
                  delay: int,
                  output_pins: list,
                  notification: Notification,
-                 condition: Condition,
-                 isExecuted: bool):
+                 condition: Condition):
         self.trigger = trigger
         self.action_type = action_type
         self.delay = delay
@@ -178,7 +173,6 @@ class Action(ABC):
         self.output_pins = output_pins
         self.notification = notification
         self.condition = condition
-        self.isExecuted = isExecuted
 
     def should_trigger(self, value: bool):
         return self.trigger.should_trigger(value)
@@ -199,9 +193,8 @@ class OnAction(Action):
                  delay: int,
                  output_pins: list,
                  notification: Notification,
-                 condition: Condition,
-                 is_executed=False):
-        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, condition, is_executed)
+                 condition: Condition):
+        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, condition)
 
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         for pin in self.output_pins:
@@ -217,10 +210,8 @@ class OffAction(Action):
                  delay: int,
                  output_pins: list,
                  notification: Notification,
-                 condition: Condition,
-                 is_executed=False):
-        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, condition,
-                                        is_executed)
+                 condition: Condition):
+        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, condition)
 
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         for pin in self.output_pins:
@@ -235,10 +226,8 @@ class ToggleAction(Action):
                  output_pins: list,
                  notification: Notification,
                  master: OutputPin,
-                 condition: Condition,
-                 is_executed=False):
-        super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notification, condition,
-                                           is_executed)
+                 condition: Condition):
+        super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notification, condition)
         self.master = master
 
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
@@ -249,7 +238,6 @@ class ToggleAction(Action):
         else:
             for pin in self.output_pins:
                 pins_to_switch_on.setdefault(pin.parent, []).append(pin.number)
-        self.is_executed = True
 
 
 class Arduino:
@@ -338,18 +326,7 @@ class TimeCondition(Condition):
         self.toTime = toTime
 
     def verify(self) -> bool:
-        if self.fromTime <= datetime.now().time() <= self.toTime:
-            return True
-        return False
-
-
-class ActionCondition(Condition):
-    def set_action(self,  action: Action, executed=True):
-        self.action = action
-        self.executed = executed
-
-    def verify(self) -> bool:
-        return self.executed == self.action.isExecuted
+        return self.fromTime <= datetime.now().time() <= self.toTime
 
 
 class ArduinoConfig:
