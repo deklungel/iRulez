@@ -1,7 +1,7 @@
 import src.irulez.domain as domain
 from abc import ABC, abstractmethod
 import src.irulez.constants as constants
-
+from datetime import time
 
 class DbBase(ABC):
     """Base class, defining all methods a database class should implement"""
@@ -36,6 +36,21 @@ class DummyDb(DbBase):
 
         arduino.set_relay_pins(output_pins)
 
+        #create Time condition
+        condition1 = domain.TimeCondition(time(9, 0),time(12, 00))
+        condition2 = domain.TimeCondition(time(18, 0), time(23, 59))
+        #create OR Condition
+        conditionList1 = domain.ConditionList(domain.Operator.OR, [condition1, condition2])
+
+        #create output condition
+        condition3 = domain.OutputPinCondition(arduino.output_pins[15], True)
+
+        #create AND condition
+        conditionList2 = domain.ConditionList(domain.Operator.AND,[conditionList1,condition3])
+
+
+
+
         # Create 3 actions.
         # Action 1 execute immediately, pins 0 and 10 ON
         # Action 2 execute immediately, pins 2, 5 and 9 OFF
@@ -44,7 +59,7 @@ class DummyDb(DbBase):
 
         action1 = domain.OnAction(domain.ImmediatelyActionTrigger(), 0,
                                   [arduino.output_pins[0], arduino.output_pins[10]],
-                                  domain.MailNotification("Laurentmichel@me.com", True), None)
+                                  domain.MailNotification("Laurentmichel@me.com", True), conditionList2)
         action2 = domain.OffAction(domain.ImmediatelyActionTrigger(), 0,
                                    [arduino.output_pins[2], arduino.output_pins[5], arduino.output_pins[9]],
                                    domain.TelegramNotification("azerty", True), None)
@@ -76,10 +91,10 @@ class DummyDb(DbBase):
 
         action1 = domain.OnAction(domain.ImmediatelyActionTrigger(), 0,
                                   [Virtual_arduino.output_pins[0], arduino.output_pins[10]],
-                                  domain.MailNotification("Laurentmichel@me.com", True))
+                                  domain.MailNotification("Laurentmichel@me.com", True), None)
         action2 = domain.OffAction(domain.ImmediatelyActionTrigger(), 0,
                                   [Virtual_arduino.output_pins[0], Virtual_arduino.output_pins[4],  arduino.output_pins[10]],
-                                  domain.MailNotification("Laurentmichel@me.com", True))
+                                  domain.MailNotification("Laurentmichel@me.com", True), None)
 
         # Create array of button pins with a variable number of pins.
         button_pins = []

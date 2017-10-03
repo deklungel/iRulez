@@ -2,6 +2,7 @@ from enum import Enum
 import src.irulez.util as util
 from abc import ABC, abstractmethod
 import src.irulez.log as log
+from datetime import datetime, time
 
 logger = log.get_logger('domain')
 
@@ -126,6 +127,10 @@ class ButtonPin(Pin):
     def get_button_pin_actions(self) -> list:
         return self.actions
 
+    def reset_is_executed(self):
+        for action in self.actions:
+            action.isExecuted = False
+
 
 class Notification(ABC):
     def __init__(self, enabled: False):
@@ -144,6 +149,17 @@ class TelegramNotification(Notification):
         self.token = token
 
 
+class Operator(Enum):
+    AND = 1
+    OR = 2
+
+
+class Condition(ABC):
+    @abstractmethod
+    def verify(self) -> bool:
+        pass
+
+
 class Action(ABC):
     """Represents a single action"""
 
@@ -153,7 +169,8 @@ class Action(ABC):
                  delay: int,
                  output_pins: list,
                  notification: Notification,
-                 condition: Condition):
+                 condition: Condition,
+                 isExecuted: bool):
         self.trigger = trigger
         self.action_type = action_type
         self.delay = delay
@@ -161,6 +178,7 @@ class Action(ABC):
         self.output_pins = output_pins
         self.notification = notification
         self.condition = condition
+        self.isExecuted = isExecuted
 
     def should_trigger(self, value: bool):
         return self.trigger.should_trigger(value)
@@ -181,14 +199,16 @@ class OnAction(Action):
                  delay: int,
                  output_pins: list,
                  notification: Notification,
-                 condition: Condition):
-        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, condition)
+                 condition: Condition,
+                 is_executed=False):
+        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, condition, is_executed)
 
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         for pin in self.output_pins:
             logger.debug(f"pin number: '{pin.number}' with parent: '{pin.parent}'")
             pins_to_switch_on.setdefault(pin.parent, []).append(pin.number)
         logger.debug(f"Pins to switch on: '{pins_to_switch_on}'")
+        self.is_executed = True
 
 
 class OffAction(Action):
@@ -197,12 +217,15 @@ class OffAction(Action):
                  delay: int,
                  output_pins: list,
                  notification: Notification,
-                 condition: Condition):
-        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, condition)
+                 condition: Condition,
+                 is_executed=False):
+        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, condition,
+                                        is_executed)
 
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         for pin in self.output_pins:
             pins_to_switch_off.setdefault(pin.parent, []).append(pin.number)
+        self.is_executed = True
 
 
 class ToggleAction(Action):
@@ -212,8 +235,10 @@ class ToggleAction(Action):
                  output_pins: list,
                  notification: Notification,
                  master: OutputPin,
-                 condition: Condition):
-        super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notification, condition)
+                 condition: Condition,
+                 is_executed=False):
+        super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notification, condition,
+                                           is_executed)
         self.master = master
 
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
@@ -224,6 +249,7 @@ class ToggleAction(Action):
         else:
             for pin in self.output_pins:
                 pins_to_switch_on.setdefault(pin.parent, []).append(pin.number)
+        self.is_executed = True
 
 
 class Arduino:
@@ -278,34 +304,6 @@ class Arduino:
         return changed_pins
 
 
-class ArduinoConfig:
-    """Represents the configuration of all known arduinos"""
-
-    def __init__(self, arduinos: list):
-        self.arduinos = arduinos
-
-
-class MqttConfig:
-    """Represents the configuration of the mqtt service"""
-
-    def __init__(self, address: str, port: int, username: str, password: str):
-        self.address = address
-        self.port = port
-        self.username = username
-        self.password = password
-
-
-class Operator(Enum):
-    AND = 1
-    OR = 2
-
-
-class Condition(ABC):
-    @abstractmethod
-    def verify(self) -> bool:
-        pass
-
-
 class ConditionList(Condition):
     def __init__(self, operator: Operator, conditions: list):
         self.operator = operator
@@ -326,12 +324,46 @@ class ConditionList(Condition):
 
 
 class OutputPinCondition(Condition):
+    def __init__(self, output_pin: OutputPin, status: bool):
+        self.output_pin = output_pin
+        self.status = status
+
     def verify(self) -> bool:
-        NotImplementedError
-        pass
+        return self.output_pin.state == self.status
 
 
 class TimeCondition(Condition):
+    def __init__(self, fromTime: time, toTime: time):
+        self.fromTime = fromTime
+        self.toTime = toTime
+
     def verify(self) -> bool:
-        NotImplementedError
-        pass
+        if self.fromTime <= datetime.now().time() <= self.toTime:
+            return True
+        return False
+
+
+class ActionCondition(Condition):
+    def __init__(self, action: Action, executed=True):
+        self.action = action
+        self.executed = executed
+
+    def verify(self) -> bool:
+        return self.executed == self.action.isExecuted
+
+
+class ArduinoConfig:
+    """Represents the configuration of all known arduinos"""
+
+    def __init__(self, arduinos: list):
+        self.arduinos = arduinos
+
+
+class MqttConfig:
+    """Represents the configuration of the mqtt service"""
+
+    def __init__(self, address: str, port: int, username: str, password: str):
+        self.address = address
+        self.port = port
+        self.username = username
+        self.password = password

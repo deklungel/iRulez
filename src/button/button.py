@@ -65,6 +65,7 @@ def on_message(client, userdata, msg):
     elif util.is_arduino_button_topic(msg.topic):
         logger.debug(f"Button change received.")
         action_processor.process_button_message(name, msg.payload)
+
         return
 
 

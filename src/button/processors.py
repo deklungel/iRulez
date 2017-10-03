@@ -14,12 +14,15 @@ class ButtonActionProcessor:
         pins_to_switch_on = {}
         pins_to_switch_off = {}
         for action in actions:
-            if action.should_trigger(value):
+            if action.should_trigger(value) and action.check_condition():
                 logger.info(f"Process action with type '{action.action_type}'")
                 action.perform_action(pins_to_switch_on, pins_to_switch_off)
+            elif not action.check_condition():
+                logger.info(f"Condition not met")
 
         logger.debug(f"Pins to switch on: '{pins_to_switch_on}' & Pins to switch off: '{pins_to_switch_off}'")
         self.sender.send_relative_update(pins_to_switch_on, pins_to_switch_off)
+        arduino.button_pins[pin].reset_is_executed()
 
     def process_button_message(self, name, payload):
         arduino = self.arduinos.get(name, None)
