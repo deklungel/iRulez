@@ -344,7 +344,7 @@ class TimeCondition(Condition):
 
 
 class ActionCondition(Condition):
-    def __init__(self, action: Action, executed=True):
+    def set_action(self,  action: Action, executed=True):
         self.action = action
         self.executed = executed
 
