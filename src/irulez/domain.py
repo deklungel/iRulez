@@ -201,7 +201,6 @@ class OnAction(Action):
             logger.debug(f"pin number: '{pin.number}' with parent: '{pin.parent}'")
             pins_to_switch_on.setdefault(pin.parent, []).append(pin.number)
         logger.debug(f"Pins to switch on: '{pins_to_switch_on}'")
-        self.is_executed = True
 
 
 class OffAction(Action):
@@ -216,7 +215,6 @@ class OffAction(Action):
     def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         for pin in self.output_pins:
             pins_to_switch_off.setdefault(pin.parent, []).append(pin.number)
-        self.is_executed = True
 
 
 class ToggleAction(Action):
