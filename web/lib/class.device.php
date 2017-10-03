@@ -7,21 +7,22 @@
 		public $State;
 		public $LastModified;
 		public $Created;
-		
+		public $Naam;
 		
 		// Assigning the values
-		public function __construct($id, $MAC, $State, $Created, $LastModified)
+		public function __construct($id, $MAC, $State, $Created, $LastModified, $Naam)
 		{
 			$this->id = $id;
 			$this->MAC = $MAC;
 			$this->State = $State;
 			$this->Created = $Created;
 			$this->LastModified = $LastModified;
+			$this->Naam = $Naam;
 		}
 		
 		// Creating a method (function tied to an object)
 		public function toString() {
-			return $this->id . " " . $this->MAC . " " . $this->State . " " . $this->Created . " " . $this->LastModified;
+			return $this->  id . " " . $this->Naam . " " . $this->MAC . " " . $this->State . " " . $this->Created . " " . $this->LastModified;
 		}
 		public function toJSON()
 		{
