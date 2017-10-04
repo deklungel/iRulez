@@ -3,6 +3,7 @@ import src.irulez.util as util
 from abc import ABC, abstractmethod
 import src.irulez.log as log
 from datetime import datetime, time
+from typing import List, Dict, Optional
 
 logger = log.get_logger('domain')
 
@@ -38,6 +39,17 @@ class ActionTriggerType(IntEnum):
     TRIPLE_TAP = 5
 
 
+class Operator(IntEnum):
+    AND = 1
+    OR = 2
+
+
+class ConditionType(IntEnum):
+    LIST = 1
+    OUTPUT_PIN = 2
+    TIME = 3
+
+
 class ActionTrigger(ABC):
     def __init__(self, trigger_type: ActionTriggerType):
         self.trigger_type = trigger_type
@@ -48,6 +60,20 @@ class ActionTrigger(ABC):
     @abstractmethod
     def should_trigger(self, value: bool):
         pass
+
+
+class Condition(ABC):
+    def __init__(self, condition_type: ConditionType):
+        self.condition_type = condition_type
+
+    @abstractmethod
+    def verify(self) -> bool:
+        pass
+
+
+class Notification(ABC):
+    def __init__(self, enabled: False):
+        self.enabled = enabled
 
 
 class ImmediatelyActionTrigger(ActionTrigger):
@@ -113,24 +139,48 @@ class OutputPin(Pin):
         self.parent = parent
 
 
+class Action(ABC):
+    """Represents a single action"""
+
+    def __init__(self,
+                 trigger: ActionTrigger,
+                 action_type: ActionType,
+                 delay: int,
+                 output_pins: List[OutputPin],
+                 notification: Optional[Notification],
+                 condition: Optional[Condition]):
+        self.trigger = trigger
+        self.action_type = action_type
+        self.delay = delay
+        self.output_pins = output_pins
+        self.notification = notification
+        self.condition = condition
+
+    def should_trigger(self, value: bool):
+        return self.trigger.should_trigger(value)
+
+    @abstractmethod
+    def perform_action(self, pins_to_switch_on: Dict[str, List[int]], pins_to_switch_off: Dict[str, List[int]]):
+        pass
+
+    def check_condition(self):
+        if self.condition is None:
+            return True
+        return self.condition.verify()
+
+
 class ButtonPin(Pin):
     """Represents a single input pin on an arduino"""
 
-    def __init__(self, number: int, actions: list, state=False):
+    def __init__(self, number: int, actions: List[Action], state=False):
         super(ButtonPin, self).__init__(number, ArduinoPinType.BUTTON, state)
-        all(isinstance(el, Action) for el in actions)
         self.actions = actions
 
-    def set_button_pin_actions(self, actions: list):
+    def set_button_pin_actions(self, actions: List[Action]):
         self.actions = actions
 
-    def get_button_pin_actions(self) -> list:
+    def get_button_pin_actions(self) -> List[Action]:
         return self.actions
-
-
-class Notification(ABC):
-    def __init__(self, enabled: False):
-        self.enabled = enabled
 
 
 class MailNotification(Notification):
@@ -145,58 +195,55 @@ class TelegramNotification(Notification):
         self.token = token
 
 
-class Operator(IntEnum):
-    AND = 1
-    OR = 2
+class ConditionList(Condition):
+    def __init__(self, operator: Operator, conditions: List[Condition]):
+        super(ConditionList, self).__init__(ConditionType.LIST)
+        self.operator = operator
+        self.conditions = conditions
 
-
-class Condition(ABC):
-    @abstractmethod
     def verify(self) -> bool:
-        pass
-
-
-class Action(ABC):
-    """Represents a single action"""
-
-    def __init__(self,
-                 trigger: ActionTrigger,
-                 action_type: ActionType,
-                 delay: int,
-                 output_pins: list,
-                 notification: Notification,
-                 condition: Condition):
-        self.trigger = trigger
-        self.action_type = action_type
-        self.delay = delay
-        all(isinstance(el, OutputPin) for el in output_pins)
-        self.output_pins = output_pins
-        self.notification = notification
-        self.condition = condition
-
-    def should_trigger(self, value: bool):
-        return self.trigger.should_trigger(value)
-
-    @abstractmethod
-    def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
-        pass
-
-    def check_condition(self):
-        if self.condition is None:
+        if self.operator == Operator.AND:
+            for condition in self.conditions:
+                if not condition.verify():
+                    return False
             return True
-        return self.condition.verify()
+        # Otherwise it's OR
+        for condition in self.conditions:
+            if condition.verify():
+                return True
+            return False
+
+
+class OutputPinCondition(Condition):
+    def __init__(self, output_pin: OutputPin, status: bool):
+        super(OutputPinCondition, self).__init__(ConditionType.OUTPUT_PIN)
+        self.output_pin = output_pin
+        self.status = status
+
+    def verify(self) -> bool:
+        return self.output_pin.state == self.status
+
+
+class TimeCondition(Condition):
+    def __init__(self, from_time: time, to_time: time):
+        super(TimeCondition, self).__init__(ConditionType.TIME)
+        self.from_time = from_time
+        self.to_time = to_time
+
+    def verify(self) -> bool:
+        return self.from_time <= datetime.now().time() <= self.to_time
 
 
 class OnAction(Action):
     def __init__(self,
                  trigger: ActionTrigger,
                  delay: int,
-                 output_pins: list,
-                 notification: Notification,
-                 condition: Condition):
+                 output_pins: List[OutputPin],
+                 notification: Optional[Notification],
+                 condition: Optional[Condition]):
         super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, condition)
 
-    def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
+    def perform_action(self, pins_to_switch_on: Dict[str, List[int]], pins_to_switch_off: Dict[str, List[int]]):
         for pin in self.output_pins:
             logger.debug(f"pin number: '{pin.number}' with parent: '{pin.parent}'")
             pins_to_switch_on.setdefault(pin.parent, []).append(pin.number)
@@ -207,12 +254,12 @@ class OffAction(Action):
     def __init__(self,
                  trigger: ActionTrigger,
                  delay: int,
-                 output_pins: list,
-                 notification: Notification,
-                 condition: Condition):
+                 output_pins: List[OutputPin],
+                 notification: Optional[Notification],
+                 condition: Optional[Condition]):
         super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, condition)
 
-    def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
+    def perform_action(self, pins_to_switch_on: Dict[str, List[int]], pins_to_switch_off: Dict[str, List[int]]):
         for pin in self.output_pins:
             pins_to_switch_off.setdefault(pin.parent, []).append(pin.number)
 
@@ -221,14 +268,14 @@ class ToggleAction(Action):
     def __init__(self,
                  trigger: ActionTrigger,
                  delay: int,
-                 output_pins: list,
-                 notification: Notification,
+                 output_pins: List[OutputPin],
+                 notification: Optional[Notification],
                  master: OutputPin,
-                 condition: Condition):
+                 condition: Optional[Condition]):
         super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notification, condition)
         self.master = master
 
-    def perform_action(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
+    def perform_action(self, pins_to_switch_on: Dict[str, List[int]], pins_to_switch_off: Dict[str, List[int]]):
         # if master is on put all the lights of and visa versa
         if self.master.state:
             for pin in self.output_pins:
@@ -245,19 +292,20 @@ class Arduino:
         self.name = name
         self.number_of_output_pins = number_of_outputs_pins
         self.number_of_button_pins = number_of_button_pins
-        self.output_pins = {}
-        self.button_pins = {}
+        self.output_pins = dict()
+        self.button_pins = dict()
 
-    def set_output_pins(self, output_pins: list):
-        # Check that all elements in our list are actual OutputPin objects
-        # This check is completely unnecessary, but gives us some assurances
-        all(isinstance(el, OutputPin) for el in output_pins)
+    def set_output_pin(self, output_pin: OutputPin):
+        self.output_pins[output_pin.number] = output_pin
+
+    def set_output_pins(self, output_pins: List[OutputPin]):
         for pin in output_pins:
             self.output_pins[pin.number] = pin
 
-    def set_button_pins(self, button_pins: list):
-        # Check that all elements in our list are actual button_pins objects
-        all(isinstance(el, ButtonPin) for el in button_pins)
+    def set_button_pin(self, button_pin: ButtonPin):
+        self.button_pins[button_pin.number] = button_pin
+
+    def set_button_pins(self, button_pins: List[ButtonPin]):
         for pin in button_pins:
             self.button_pins[pin.number] = pin
 
@@ -280,9 +328,9 @@ class Arduino:
             else:
                 pin.state = False
 
-    def get_changed_pins(self, payload: str) -> {}:
+    def get_changed_pins(self, payload: str) -> Dict[int, bool]:
         status = util.convert_hex_to_array(payload, self.number_of_output_pins)
-        changed_pins = {}
+        changed_pins = dict()
         for pin in self.button_pins.values():
             if bool(int(status[pin.number])) != pin.state:
                 changed_pins[pin.number] = bool(int(status[pin.number]))
@@ -290,47 +338,10 @@ class Arduino:
         return changed_pins
 
 
-class ConditionList(Condition):
-    def __init__(self, operator: Operator, conditions: list):
-        self.operator = operator
-        all(isinstance(el, Condition) for el in conditions)
-        self.conditions = conditions
-
-    def verify(self) -> bool:
-        if self.operator == Operator.AND:
-            for condition in self.conditions:
-                if not condition.verify():
-                    return False
-            return True
-        # Otherwise it's OR
-        for condition in self.conditions:
-            if condition.verify():
-                return True
-            return False
-
-
-class OutputPinCondition(Condition):
-    def __init__(self, output_pin: OutputPin, status: bool):
-        self.output_pin = output_pin
-        self.status = status
-
-    def verify(self) -> bool:
-        return self.output_pin.state == self.status
-
-
-class TimeCondition(Condition):
-    def __init__(self, from_time: time, to_time: time):
-        self.from_time = from_time
-        self.to_time = to_time
-
-    def verify(self) -> bool:
-        return self.from_time <= datetime.now().time() <= self.to_time
-
-
 class ArduinoConfig:
     """Represents the configuration of all known arduinos"""
 
-    def __init__(self, arduinos: list):
+    def __init__(self, arduinos: List[Arduino]):
         self.arduinos = arduinos
 
 

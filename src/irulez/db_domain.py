@@ -1,4 +1,5 @@
 from datetime import time
+from typing import List, Optional
 
 
 class Arduino:
@@ -24,18 +25,19 @@ class OutputPin:
 
 
 class InputPin:
-    def __init__(self, id: int, number: int, action_ids: list):
+    def __init__(self, id: int, number: int, action_ids: List[int], parent_id: int):
+        self.parent_id = parent_id
         self.action_ids = action_ids
         self.number = number
         self.id = id
 
 
 class Action:
-    def __init__(self, id: int, action_type: int, trigger_id: int, delay: int, output_pin_ids: list, notification_id: int,
-                 condition_id: int):
+    def __init__(self, id: int, action_type: int, trigger_id: int, delay: int, output_pin_ids: List[int],
+                 condition_id: Optional[int], master_id: Optional[int]):
+        self.master_id = master_id
         self.id = id
         self.condition_id = condition_id
-        self.notification_id = notification_id
         self.output_pin_ids = output_pin_ids
         self.delay = delay
         self.action_type = action_type
@@ -43,7 +45,7 @@ class Action:
 
 
 class Trigger:
-    def __init__(self, id: int, trigger_type: int, seconds_down: int, time_between_tap: int):
+    def __init__(self, id: int, trigger_type: int, seconds_down: Optional[int], time_between_tap: Optional[int]):
         self.id = id
         self.time_between_tap = time_between_tap
         self.seconds_down = seconds_down
@@ -51,8 +53,9 @@ class Trigger:
 
 
 class Condition:
-    def __init__(self, id: int, type: str, operator: int, condition_ids: list, output_pin_id: int, status: bool,
-                 from_time: time, to_time: time):
+    def __init__(self, id: int, type: int, operator: Optional[int], condition_ids: Optional[list],
+                 output_pin_id: Optional[int], status: Optional[bool], from_time: Optional[time],
+                 to_time: Optional[time]):
         self.id = id
         self.type = type
         self.to_time = to_time

@@ -7,16 +7,18 @@ import src.irulez.util as util
 import src.communication.mqtt_sender as mqtt_sender
 import src.button.processors as button_processor
 import src.irulez.configuration as configuration
+import src.irulez.factory as factory
 
 logger = log.get_logger('button')
 
 # Get database, dummy for now
 db = src.irulez.db.get_dummy_db()
+factory = factory.ArduinoConfigFactory(db)
 
 # Get arduinos from database and store them in a dictionary
 # Key is the name of the arduino
 arduinos = {}
-for arduino in db.get_arduino_config().arduinos:
+for arduino in factory.create_arduino_config().arduinos:
     arduinos[arduino.name] = arduino
 
 # Create client
