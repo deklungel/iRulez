@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import IntEnum
 import src.irulez.util as util
 from abc import ABC, abstractmethod
 import src.irulez.log as log
@@ -7,14 +7,14 @@ from datetime import datetime, time
 logger = log.get_logger('domain')
 
 
-class ArduinoPinType(Enum):
+class ArduinoPinType(IntEnum):
     """Represents the purpose of a pin on an arduino"""
     BUTTON = 1
     OUTPUT = 2
     DIMMER = 3
 
 
-class ActionType(Enum):
+class ActionType(IntEnum):
     """Represents what should happen.
         Toggle --> Relay H <-> L,
         On --> Relay H,
@@ -29,7 +29,7 @@ class ActionType(Enum):
     DOOR_PHONE = 6
 
 
-class ActionTriggerType(Enum):
+class ActionTriggerType(IntEnum):
     """Represents when a action need to be executed"""
     IMMEDIATELY = 1
     AFTER_RELEASE = 2
@@ -62,7 +62,7 @@ class AfterReleaseActionTrigger(ActionTrigger):
     def should_trigger(self, value: bool):
         return not value
 
-    def _init_(self):
+    def __init__(self):
         super(AfterReleaseActionTrigger, self).__init__(ActionTriggerType.AFTER_RELEASE)
 
 
@@ -71,7 +71,7 @@ class LongDownActionTrigger(ActionTrigger):
         NotImplementedError
         pass
 
-    def _init_(self, seconds_down: int):
+    def __init__(self, seconds_down: int):
         super(LongDownActionTrigger, self).__init__(ActionTriggerType.LONG_DOWN)
         self.seconds_down = seconds_down
 
@@ -81,7 +81,7 @@ class DoubleTapActionTrigger(ActionTrigger):
         NotImplementedError
         pass
 
-    def _init_(self, time_between_tap: int):
+    def __init__(self, time_between_tap: int):
         super(DoubleTapActionTrigger, self).__init__(ActionTriggerType.DOUBLE_TAP)
         self.time_between_tap = time_between_tap
 
@@ -91,7 +91,7 @@ class TripleTapActionTrigger(ActionTrigger):
         NotImplementedError
         pass
 
-    def _init_(self, time_between_tap: int):
+    def __init__(self, time_between_tap: int):
         super(TripleTapActionTrigger, self).__init__(ActionTriggerType.TRIPLE_TAP)
         self.time_between_tap = time_between_tap
 
@@ -145,7 +145,7 @@ class TelegramNotification(Notification):
         self.token = token
 
 
-class Operator(Enum):
+class Operator(IntEnum):
     AND = 1
     OR = 2
 
@@ -319,12 +319,12 @@ class OutputPinCondition(Condition):
 
 
 class TimeCondition(Condition):
-    def __init__(self, fromTime: time, toTime: time):
-        self.fromTime = fromTime
-        self.toTime = toTime
+    def __init__(self, from_time: time, to_time: time):
+        self.from_time = from_time
+        self.to_time = to_time
 
     def verify(self) -> bool:
-        return self.fromTime <= datetime.now().time() <= self.toTime
+        return self.from_time <= datetime.now().time() <= self.to_time
 
 
 class ArduinoConfig:

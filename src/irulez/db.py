@@ -1,4 +1,5 @@
 import src.irulez.domain as domain
+import src.irulez.db_domain as db_domain
 from abc import ABC, abstractmethod
 import src.irulez.constants as constants
 from datetime import time
@@ -10,6 +11,41 @@ class DbBase(ABC):
     @abstractmethod
     def get_arduino_config(self) -> domain.ArduinoConfig:
         """Retrieves the configuration of the arduinos"""
+        pass
+
+    @abstractmethod
+    def get_arduinos(self) -> list:
+        """Retrieves the arduinos as they are known in the database"""
+        pass
+
+    @abstractmethod
+    def get_templates(self) -> list:
+        """Retrieves the templates as they are known in the database"""
+        pass
+
+    @abstractmethod
+    def get_input_pins(self) -> list:
+        """Retrieves the input pins as they are known in the database"""
+        pass
+
+    @abstractmethod
+    def get_output_pins(self) -> list:
+        """Retrieves the output pins as they are known in the database"""
+        pass
+
+    @abstractmethod
+    def get_actions(self) -> list:
+        """Retrieves the actions as they are known in the database"""
+        pass
+
+    @abstractmethod
+    def get_triggers(self) -> list:
+        """Retrieves the triggers as they are known in the database"""
+        pass
+
+    @abstractmethod
+    def get_conditions(self) -> list:
+        """Retrieves the conditions as they are known in the database"""
         pass
 
 
@@ -101,11 +137,6 @@ class DummyDb(DbBase):
         # Key is name of the arduino
         # return domain.ArduinoConfig([arduino, virtual_arduino])
         return domain.ArduinoConfig([virtual_arduino])
-
-
-class MySQL(DbBase):
-    def get_arduino_config(self) -> domain.ArduinoConfig:
-        pass
 
 
 def get_dummy_db() -> DbBase:
