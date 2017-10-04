@@ -49,8 +49,8 @@ class DummyDb(DbBase):
         # create AND condition
         condition_list2 = domain.ConditionList(domain.Operator.AND, [condition_list1, condition3])
 
-        # create condition ActionCondition
-        condition3 = domain.ActionCondition()
+
+
 
         # Create 3 actions.
         # Action 1 execute immediately, pins 0 and 10 ON
@@ -62,13 +62,12 @@ class DummyDb(DbBase):
                                   domain.MailNotification("Laurentmichel@me.com", True), condition_list2)
         action2 = domain.OffAction(domain.ImmediatelyActionTrigger(), 0,
                                    [arduino.output_pins[2], arduino.output_pins[5], arduino.output_pins[9]],
-                                   domain.TelegramNotification("azerty", True), condition3)
+                                   domain.TelegramNotification("azerty", True), None)
         action3 = domain.ToggleAction(domain.ImmediatelyActionTrigger(), 0,
                                       [arduino.output_pins[8], arduino.output_pins[9], arduino.output_pins[10]],
                                       domain.TelegramNotification("azerty", True), arduino.output_pins[8], None)
 
-        # add action to condition3
-        condition3.set_action(action1)
+
 
         # Create array of button pins with a variable number of pins.
         button_pins = []

@@ -40,6 +40,7 @@
 		function renderDevice(device) // visual representation of this device
 		{
 			return "<div class='device' data-mac='"+ device.MAC +"'>" +
+						"<b>Name:</b> "+ device.Naam + "<br />" +
 						"<b>Mac:</b> " + device.MAC + "<br />" +
 						"<b>State:</b> " + device.State + "<br />"+
 						"<b>Created:</b> " + device.Created + "<br />"+

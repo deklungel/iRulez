@@ -203,6 +203,7 @@
 				iRulez.Data.getDevice($(".chippiemac").val(), function(data)
 				{
 					var _details = "id: " + data.id
+							+"<br />Naam: " + data.Naam
 							+ "<br />Created: "+ data.Created 
 							+ "<br />LastModified: " + data.LastModified
 							+ "<br />Mac: " + data.MAC
