@@ -12,11 +12,6 @@ class DbBase(ABC):
         """Retrieves the configuration of the arduinos"""
         pass
 
-    @abstractmethod
-    def get_mqtt_config(self) -> domain.MqttConfig:
-        """Retrieves the configuration of mqtt"""
-        pass
-
 
 class DummyDb(DbBase):
     """Dummy implementation of a database class. Returns fixed data for all operations"""
@@ -107,14 +102,8 @@ class DummyDb(DbBase):
         # return domain.ArduinoConfig([arduino, virtual_arduino])
         return domain.ArduinoConfig([virtual_arduino])
 
-    def get_mqtt_config(self):
-        return domain.MqttConfig("10.0.50.50", 1883, "iRulezMqtt", "iRulez4MQTT")
-
 
 class MySQL(DbBase):
-    def get_mqtt_config(self) -> domain.MqttConfig:
-        pass
-
     def get_arduino_config(self) -> domain.ArduinoConfig:
         pass
 

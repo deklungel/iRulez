@@ -1,12 +1,15 @@
 import configparser
 
-class configuration():
+
+class Configuration:
     def __init__(self):
         self.config = configparser.ConfigParser()
-        self.config.read('config.ini')
+        self.config.read('../irulez/config.ini')
 
-    def GetConfig(self,section: str) -> {}:
-        print(self.config.sections())
+    def get_config(self, section: str) -> {}:
         if section in self.config:
-            return self.config['MQTT']
+            return self.config[section]
         return None
+
+    def get_mqtt_config(self) -> {}:
+        return self.get_config('MQTT')
