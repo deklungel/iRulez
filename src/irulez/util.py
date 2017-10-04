@@ -3,8 +3,11 @@ import src.irulez.log as log
 
 logger = log.get_logger('util')
 
+
 def is_arduino_topic(topic: str) -> bool:
     """Checks if the given topic is a topic of an arduino"""
+    if topic is None:
+        return False
     return topic.startswith(constants.arduinoTopic)
 
 
