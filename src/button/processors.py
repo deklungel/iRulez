@@ -47,5 +47,5 @@ class RelayStatusProcessor:
             logger.info(f"Could not find arduino with name '{name}'.")
             return
         logger.debug(f"Board with name '{name}' found")
-        arduino.set_relay_status(payload)
-        logger.debug(f"relay status HEX: '{arduino.get_relay_status()}'.")
+        arduino.set_output_pin_status(payload)
+        logger.debug(f"relay status HEX: '{arduino.get_output_pin_status()}'.")

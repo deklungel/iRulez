@@ -35,7 +35,7 @@ class DummyDb(DbBase):
             output_pins.append([])
             output_pins[x] = domain.OutputPin(x, arduino.name)
 
-        arduino.set_relay_pins(output_pins)
+        arduino.set_output_pins(output_pins)
 
         # create Time condition
         condition1 = domain.TimeCondition(time(9, 0), time(12, 00))
@@ -83,7 +83,7 @@ class DummyDb(DbBase):
             output_pins.append([])
             output_pins[x] = domain.OutputPin(x, virtual_arduino.name)
 
-            virtual_arduino.set_relay_pins(output_pins)
+            virtual_arduino.set_output_pins(output_pins)
 
         action1 = domain.OnAction(domain.ImmediatelyActionTrigger(), 0,
                                   [virtual_arduino.output_pins[0]],

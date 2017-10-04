@@ -248,11 +248,11 @@ class Arduino:
         self.output_pins = {}
         self.button_pins = {}
 
-    def set_relay_pins(self, relay_pins: list):
+    def set_output_pins(self, output_pins: list):
         # Check that all elements in our list are actual OutputPin objects
         # This check is completely unnecessary, but gives us some assurances
-        all(isinstance(el, OutputPin) for el in relay_pins)
-        for pin in relay_pins:
+        all(isinstance(el, OutputPin) for el in output_pins)
+        for pin in output_pins:
             self.output_pins[pin.number] = pin
 
     def set_button_pins(self, button_pins: list):
@@ -261,18 +261,18 @@ class Arduino:
         for pin in button_pins:
             self.button_pins[pin.number] = pin
 
-    def get_relay_status(self) -> str:
-        """Gets the status array of the relay_pins of this arduino"""
+    def get_output_pin_status(self) -> str:
+        """Gets the status array of the output_pins of this arduino"""
         # Initialize empty state array
         pin_states = [0] * self.number_of_output_pins
-        # Loop over all relay_pins and set their state in the array
+        # Loop over all output_pins and set their state in the array
         for pin in self.output_pins.values():
             pin_states[pin.number] = 1 if pin.state else 0
 
         # convert array to hex string
         return util.convert_array_to_hex(pin_states)
 
-    def set_relay_status(self, payload: str):
+    def set_output_pin_status(self, payload: str):
         status = util.convert_hex_to_array(payload, self.number_of_output_pins)
         for pin in self.output_pins.values():
             if int(status[pin.number]) == 1:

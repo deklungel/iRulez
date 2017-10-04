@@ -68,7 +68,7 @@ def on_message(client, userdata, msg):
             pin.state = False
 
     # Publish new status
-    status = arduino.get_relay_status()
+    status = arduino.get_output_pin_status()
     logger.debug(f"Publishing new status of arduino '{name}': '{status}'")
     client.publish(constants.arduinoTopic + '/' + name + '/status', status, True)
 
