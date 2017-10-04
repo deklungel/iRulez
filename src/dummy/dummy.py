@@ -23,8 +23,8 @@ def on_connect(client, userdata, flags, rc):
     # Subscribe to all arduino hexnumber actions
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.actionTopic + "/")
-    client.subscribe(constants.arduinoTopic + "/+/" + constants.actionTopic + "/")
+    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.actionTopic)
+    client.subscribe(constants.arduinoTopic + "/+/" + constants.actionTopic)
     # TODO: Subscribe to dimmer values
 
 
@@ -54,26 +54,23 @@ def on_message(client, userdata, msg):
         return
 
     # Convert the incoming payload in hex to a binary with leading 0
-    action = bin(int(msg.payload, 16))[2:].zfill(arduino.number_of_relay_pins * 2)
-    on = list(action[:arduino.number_of_pins])
-    off = list(action[arduino.number_of_pins:])
+    output_pin_actions = util.convert_hex_to_array(msg.payload, arduino.number_of_output_pins)
     # Loop over all relay_pins of the arduino and update if needed
-    for pin in arduino.pins.values():
-        if pin.number < 0 or pin.number > (arduino.number_of_relay_pins - 1):
+    for pin in arduino.output_pins.values():
+        if pin.number < 0 or pin.number > (arduino.number_of_output_pins - 1):
             logger.warning(f"Arduino '{name}' has a pin with number '{pin.number}'.")
             # Continue hops to the next iteration of the for-loop
             continue
 
-        if on[pin.number] == '1':
+        if output_pin_actions[pin.number] == '1':
             pin.state = True
-            continue
-        if off[pin.number] == '1':
+        else:
             pin.state = False
 
     # Publish new status
     status = arduino.get_relay_status()
     logger.debug(f"Publishing new status of arduino '{name}': '{status}'")
-    client.publish(constants.arduinoTopic + name + '/status', status,True)
+    client.publish(constants.arduinoTopic + '/' + name + '/status', status, True)
 
 
 # Create client

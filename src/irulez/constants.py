@@ -10,7 +10,7 @@ statusTopic = 'status'
 # Name of an action topic
 buttonTopic = 'button'
 
-#name of the virtual_IO_board
+# Name of the virtual_IO_board
 virtual_IO_board_name = 'virtual_IO_Board'
 virtual_IO_board_buttons = 20
 virtual_IO_board_outputs = 20
