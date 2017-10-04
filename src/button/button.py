@@ -6,6 +6,7 @@ import src.irulez.db
 import src.irulez.util as util
 import src.communication.mqtt_sender as mqtt_sender
 import src.button.processors as button_processor
+import src.irulez.configuration as configuration
 
 logger = log.get_logger('button')
 
@@ -77,8 +78,13 @@ client.on_subscribe = on_subscribe
 # Connect
 mqttConfig = db.get_mqtt_config()
 
+config = configuration.configuration()
+MqttConfig2 = config.GetConfig('MQTT')
+
+print(MqttConfig2)
+
 client.username_pw_set(mqttConfig.username, mqttConfig.password)
-client.connect(mqttConfig.address, mqttConfig.port, 60)
+client.connect(MqttConfig2['ip'], MqttConfig2['port'], 60)
 
 
 logger.info("Starting loop forever")
