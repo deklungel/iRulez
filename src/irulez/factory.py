@@ -22,6 +22,8 @@ class ArduinoConfigFactory:
         triggers = self.db.get_triggers()
         conditions = self.db.get_conditions()
 
+        logger.info("Got all data from database")
+
         # Map templates
         mapped_templates = dict()
         for template in templates:
@@ -30,34 +32,42 @@ class ArduinoConfigFactory:
         # Create arduinos
         created_arduinos = dict()
         for arduino in arduinos:
+            logger.debug(arduino.name)
             created_arduinos[arduino.id] = self.__create_arduino(arduino, mapped_templates)
 
         # Create output pins
         created_output_pins = dict()
         for output_pin in output_pins:
+            logger.debug(output_pin.id)
             created_pin = self.__create_output_pin_and_add_to_arduino(output_pin, created_arduinos)
             if created_pin is not None:
                 created_output_pins[output_pin.id] = created_pin
 
+        logger.debug("Before created_arduinos.values")
         # Verify all output pins are set in arduinos
         for arduino in created_arduinos.values():
             self.__validate_output_pins(arduino)
 
+        logger.debug("Before created_conditions")
         # Create conditions
         # We have to do these all at once since they reference each other
         created_conditions = self.__create_conditions(conditions, created_output_pins)
 
+        logger.debug("Before created_triggers")
         # Create triggers
         created_triggers = dict()
         for trigger in triggers:
             created_triggers[trigger.id] = self.__create_trigger(trigger)
 
+        logger.debug("Before created_actions")
         # Create actions
         created_actions = dict()
         for action in actions:
             created_action = self.__create_action(action, created_triggers, created_output_pins, created_conditions)
             if created_action is not None:
                 created_actions[action.id] = created_action
+
+
 
         # Create input pins
         created_input_pins = dict()
@@ -70,6 +80,7 @@ class ArduinoConfigFactory:
         for arduino in created_arduinos.values():
             self.__validate_input_pins(arduino)
 
+        logger.info("Before Return")
         return domain.ArduinoConfig(created_arduinos.values())
 
     def __create_trigger(self, trigger: db_domain.Trigger) -> domain.ActionTrigger:
@@ -117,9 +128,13 @@ class ArduinoConfigFactory:
 
     def __create_conditions(self, conditions: List[db_domain.Condition],
                             output_pins: Dict[int, domain.OutputPin]) -> Dict[int, domain.Condition]:
+
+        logger.debug("in __create_conditions")
         to_process = []
         to_process.extend(conditions)
         previous_length = len(to_process) + 1  # Trigger first loop always
+        logger.debug(" previous_length" + str(previous_length))
+        logger.debug("to_process" + str(to_process))
         to_return = dict()
 
         # While we have items to process and we aren't stuck with the same amount as previous loop
@@ -144,7 +159,7 @@ class ArduinoConfigFactory:
                         unprocessed.append(condition)
 
             to_process = unprocessed
-
+            #logger.debug("end __create_conditions")
         return to_return
 
     def __create_output_pin_condition(self, condition: db_domain.Condition,

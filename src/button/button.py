@@ -12,7 +12,7 @@ import src.irulez.factory as factory
 logger = log.get_logger('button')
 
 # Get database, dummy for now
-db = src.irulez.db.get_dummy_db()
+db = src.irulez.db.get_MarinaDB_db()
 factory = factory.ArduinoConfigFactory(db)
 
 # Get arduinos from database and store them in a dictionary

@@ -1,7 +1,13 @@
 import src.irulez.db_domain as db_domain
+import lib.mysql.connector as mariadb
 from abc import ABC, abstractmethod
 from datetime import time
 from typing import List
+import src.irulez.configuration as configuration
+
+# Configuration
+config = configuration.Configuration()
+databaseConfig = config.get_database_config()
 
 
 class DbBase(ABC):
@@ -88,6 +94,104 @@ class DummyDb(DbBase):
         return to_return
 
 
+class MariaDB(DbBase):
+    def __init__(self):
+        self.connection = mariadb.connect(host= databaseConfig['ip'], port=databaseConfig['port'],
+                                                  user=databaseConfig['username'], password=databaseConfig['password'],
+                                                  database=databaseConfig['database'])
+        self.cursor = self.connection.cursor()
+
+    def get_templates(self) -> List[db_domain.Template]:
+        self.cursor.execute("SELECT id, name, nb_input_pins, nb_output_pins FROM tbl_Template")
+        templates = []
+        for id, name, nb_input_pins, nb_output_pins in self.cursor:
+            templates.append(db_domain.Template(id, name, nb_input_pins, nb_output_pins))
+        return templates
+
+    def get_arduinos(self) -> List[db_domain.Arduino]:
+        self.cursor.execute("SELECT id, name, template_id FROM tbl_Arduino")
+        arduinos = []
+        for id, name, template_id in self.cursor:
+            arduinos.append(db_domain.Arduino(id, name, template_id))
+        return arduinos
+
+
+    def get_conditions(self) -> List[db_domain.Condition]:
+        self.cursor.execute("SELECT id, type, operator, output_pin_id, status, from_time_hour, from_time_min, to_time_hour, to_time_min FROM tbl_Condition")
+        conditions = []
+        for id, type, operator, output_pin_id, status, from_time_hour, from_time_min, to_time_hour, to_time_min in self.cursor:
+            conditions_connection = mariadb.connect(host=databaseConfig['ip'], port=databaseConfig['port'],
+                                               user=databaseConfig['username'], password=databaseConfig['password'],
+                                               database=databaseConfig['database'])
+            condition_cursor = conditions_connection.cursor()
+            condition_cursor.execute("SELECT Condition_Child FROM tbl_Condition_Condition WHERE Condition_Parent=%s", (id,))
+            condition_condition = []
+            for Condition_Child in condition_cursor:
+                condition_condition.append(Condition_Child)
+
+            if(from_time_hour is not None and from_time_min is not None and to_time_hour is not None and to_time_min is not None):
+                from_time = time(from_time_hour, from_time_min)
+                to_time = time(to_time_hour, to_time_min)
+            else:
+                from_time = None
+                to_time = None
+            conditions.append(db_domain.Condition(id, type, operator, condition_condition, output_pin_id, status, from_time, to_time))
+
+        return conditions
+
+
+
+    def get_triggers(self) -> List[db_domain.Trigger]:
+        self.cursor.execute("SELECT id, trigger_type, seconds_down, time_between_tap FROM tbl_Trigger")
+        triggers = []
+        for id, trigger_type, seconds_down, time_between_tap in self.cursor:
+            triggers.append(db_domain.Trigger(id,trigger_type, seconds_down, time_between_tap))
+        return triggers
+
+    def get_input_pins(self) -> List[db_domain.InputPin]:
+        self.cursor.execute("SELECT id, number, parent_id FROM tbl_InputPin")
+        inputPins = []
+        for id, number, parent_id in self.cursor:
+            input_connection = mariadb.connect(host=databaseConfig['ip'], port=databaseConfig['port'],
+                                              user=databaseConfig['username'], password=databaseConfig['password'],
+                                              database=databaseConfig['database'])
+            input_cursor = input_connection.cursor()
+            input_cursor.execute("SELECT Action_ID FROM tbl_InputPin_Action WHERE InputPin_ID=%s", (id,))
+            InputPin_Action = []
+            for Action_ID in input_cursor:
+                InputPin_Action.append(Action_ID)
+            inputPins.append(db_domain.InputPin(id, number, InputPin_Action, parent_id))
+
+        return inputPins
+
+    def get_output_pins(self) -> List[db_domain.OutputPin]:
+        self.cursor.execute("SELECT id, number, parent_id FROM tbl_OutputPin")
+        outputPins = []
+        for id, number, parent_id in self.cursor:
+            outputPins.append(db_domain.OutputPin(id, number, parent_id))
+        return outputPins
+
+    def get_actions(self) -> List[db_domain.Action]:
+        self.cursor.execute("SELECT id, action_type, trigger_id, delay, condition_id, master_id FROM tbl_Action")
+        Actions = []
+        for id, action_type, trigger_id, delay, condition_id, master_id in self.cursor:
+            action_connection = mariadb.connect(host=databaseConfig['ip'], port=databaseConfig['port'],
+                                               user=databaseConfig['username'], password=databaseConfig['password'],
+                                               database=databaseConfig['database'])
+            action_cursor = action_connection.cursor()
+            action_cursor.execute("SELECT OutputPin_ID FROM tbl_Action_OutputPin WHERE Action_ID=%s", (id,))
+            output_pin_ids = []
+            for OutputPin_ID in action_cursor:
+                output_pin_ids.append(OutputPin_ID)
+            Actions.append(db_domain.Action(id, action_type, trigger_id, delay, output_pin_ids, condition_id, master_id))
+
+        return Actions
+
+
 def get_dummy_db() -> DbBase:
     """Returns a dummy database"""
     return DummyDb()
+
+def get_MarinaDB_db() -> DbBase:
+    """Returns a dummy database"""
+    return MariaDB()

@@ -53,7 +53,7 @@ class Trigger:
 
 
 class Condition:
-    def __init__(self, id: int, type: int, operator: Optional[int], condition_ids: Optional[list],
+    def __init__(self, id: int, type: int, operator: Optional[int], condition_ids: Optional[List[int]],
                  output_pin_id: Optional[int], status: Optional[bool], from_time: Optional[time],
                  to_time: Optional[time]):
         self.id = id

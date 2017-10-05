@@ -13,3 +13,6 @@ class Configuration:
 
     def get_mqtt_config(self) -> {}:
         return self.get_config('MQTT')
+
+    def get_database_config(self) -> {}:
+        return self.get_config('Database')
