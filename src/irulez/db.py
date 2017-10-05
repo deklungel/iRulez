@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from datetime import time
 from typing import List
 import src.irulez.configuration as configuration
+from contextlib import closing
 
 # Configuration
 config = configuration.Configuration()
@@ -95,10 +96,14 @@ class DummyDb(DbBase):
 
 
 class MariaDB(DbBase):
-    def __init__(self):
-        self.connection = mariadb.connect(host=databaseConfig['ip'], port=databaseConfig['port'],
-                                          user=databaseConfig['username'], password=databaseConfig['password'],
-                                          database=databaseConfig['database'])
+    def __init__(self, ip: str, port: int, username: str, password: str, database: str):
+        self.database = database
+        self.password = password
+        self.username = username
+        self.port = port
+        self.ip = ip
+        # TODO: remove these
+        self.connection = self.__create_connection()
         self.cursor = self.connection.cursor()
 
     def get_templates(self) -> List[db_domain.Template]:
@@ -117,7 +122,8 @@ class MariaDB(DbBase):
 
     def get_conditions(self) -> List[db_domain.Condition]:
         self.cursor.execute(
-            "SELECT id, type, operator, output_pin_id, status, from_time_hour, from_time_min, to_time_hour, to_time_min FROM tbl_Condition")
+            "SELECT id, type, operator, output_pin_id, status, from_time_hour, from_time_min, to_time_hour, "
+            "to_time_min FROM tbl_Condition")
         conditions = []
         for id, type, operator, output_pin_id, status, from_time_hour, from_time_min, to_time_hour, to_time_min in self.cursor:
             conditions_connection = mariadb.connect(host=databaseConfig['ip'], port=databaseConfig['port'],
@@ -131,8 +137,7 @@ class MariaDB(DbBase):
             for Condition_Child in condition_cursor:
                 condition_condition.append(Condition_Child[0])
 
-            if (
-                            from_time_hour is not None and from_time_min is not None and to_time_hour is not None and to_time_min is not None):
+            if (from_time_hour is not None and from_time_min is not None and to_time_hour is not None and to_time_min is not None):
                 from_time = time(from_time_hour, from_time_min)
                 to_time = time(to_time_hour, to_time_min)
             else:
@@ -159,36 +164,40 @@ class MariaDB(DbBase):
                                                database=databaseConfig['database'])
             input_cursor = input_connection.cursor()
             input_cursor.execute("SELECT Action_ID FROM tbl_InputPin_Action WHERE InputPin_ID=%s", (id,))
-            InputPin_Action = []
+            input_pin_action = []
             for Action_ID in input_cursor:
-                InputPin_Action.append(Action_ID[0])
-            input_pins.append(db_domain.InputPin(id, number, InputPin_Action, parent_id))
+                input_pin_action.append(Action_ID[0])
+            input_pins.append(db_domain.InputPin(id, number, input_pin_action, parent_id))
 
         return input_pins
 
     def get_output_pins(self) -> List[db_domain.OutputPin]:
         self.cursor.execute("SELECT id, number, parent_id FROM tbl_OutputPin")
-        outputPins = []
+        output_pins = []
         for id, number, parent_id in self.cursor:
-            outputPins.append(db_domain.OutputPin(id, number, parent_id))
-        return outputPins
+            output_pins.append(db_domain.OutputPin(id, number, parent_id))
+        return output_pins
 
     def get_actions(self) -> List[db_domain.Action]:
-        self.cursor.execute("SELECT id, action_type, trigger_id, delay, condition_id, master_id FROM tbl_Action")
-        actions = []
-        for id, action_type, trigger_id, delay, condition_id, master_id in self.cursor:
-            action_connection = mariadb.connect(host=databaseConfig['ip'], port=databaseConfig['port'],
-                                                user=databaseConfig['username'], password=databaseConfig['password'],
-                                                database=databaseConfig['database'])
-            action_cursor = action_connection.cursor()
-            action_cursor.execute("SELECT OutputPin_ID FROM tbl_Action_OutputPin WHERE Action_ID=%s", (id,))
-            output_pin_ids = []
-            for OutputPin_ID in action_cursor:
-                output_pin_ids.append(OutputPin_ID[0])
-            actions.append(
-                db_domain.Action(id, action_type, trigger_id, delay, output_pin_ids, condition_id, master_id))
+        with closing(self.__create_connection()) as conn:
+            with closing(conn.cursor(buffered=True)) as cursor:
+                cursor.execute("SELECT id, action_type, trigger_id, delay, condition_id, master_id FROM tbl_Action")
+                actions = []
+                for id, action_type, trigger_id, delay, condition_id, master_id in cursor:
+                    with closing(conn.cursor(buffered=True)) as action_cursor:
+                        action_cursor.execute("SELECT OutputPin_ID FROM tbl_Action_OutputPin WHERE Action_ID=%s", (id,))
+                        output_pin_ids = []
+                        for OutputPin_ID in action_cursor:
+                            output_pin_ids.append(OutputPin_ID[0])
+                        actions.append(
+                            db_domain.Action(id, action_type, trigger_id, delay, output_pin_ids, condition_id,
+                                             master_id))
 
         return actions
+
+    def __create_connection(self):
+        return mariadb.connect(host=self.ip, port=self.port, user=self.username, password=self.password,
+                               database=self.database)
 
 
 def get_dummy_db() -> DbBase:
@@ -197,5 +206,6 @@ def get_dummy_db() -> DbBase:
 
 
 def get_maria_db() -> DbBase:
-    """Returns a dummy database"""
-    return MariaDB()
+    """Returns an instance connecting to a maria database"""
+    return MariaDB(databaseConfig['ip'], int(databaseConfig['port']), databaseConfig['username'],
+                   databaseConfig['password'], databaseConfig['database'])
