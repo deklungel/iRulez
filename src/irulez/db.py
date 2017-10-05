@@ -102,80 +102,81 @@ class MariaDB(DbBase):
         self.username = username
         self.port = port
         self.ip = ip
-        # TODO: remove these
-        self.connection = self.__create_connection()
-        self.cursor = self.connection.cursor()
 
     def get_templates(self) -> List[db_domain.Template]:
-        self.cursor.execute("SELECT id, name, nb_input_pins, nb_output_pins FROM tbl_Template")
-        templates = []
-        for id, name, nb_input_pins, nb_output_pins in self.cursor:
-            templates.append(db_domain.Template(id, name, nb_input_pins, nb_output_pins))
+        with closing(self.__create_connection()) as conn:
+            with closing(conn.cursor(buffered=True)) as cursor:
+                cursor.execute("SELECT id, name, nb_input_pins, nb_output_pins FROM tbl_Template")
+                templates = []
+                for id, name, nb_input_pins, nb_output_pins in cursor:
+                    templates.append(db_domain.Template(id, name, nb_input_pins, nb_output_pins))
         return templates
 
     def get_arduinos(self) -> List[db_domain.Arduino]:
-        self.cursor.execute("SELECT id, name, template_id FROM tbl_Arduino")
-        arduinos = []
-        for id, name, template_id in self.cursor:
-            arduinos.append(db_domain.Arduino(id, name, template_id))
+        with closing(self.__create_connection()) as conn:
+            with closing(conn.cursor(buffered=True)) as cursor:
+                cursor.execute("SELECT id, name, template_id FROM tbl_Arduino")
+                arduinos = []
+                for id, name, template_id in cursor:
+                    arduinos.append(db_domain.Arduino(id, name, template_id))
         return arduinos
 
     def get_conditions(self) -> List[db_domain.Condition]:
-        self.cursor.execute(
-            "SELECT id, type, operator, output_pin_id, status, from_time_hour, from_time_min, to_time_hour, "
-            "to_time_min FROM tbl_Condition")
-        conditions = []
-        for id, type, operator, output_pin_id, status, from_time_hour, from_time_min, to_time_hour, to_time_min in self.cursor:
-            conditions_connection = mariadb.connect(host=databaseConfig['ip'], port=databaseConfig['port'],
-                                                    user=databaseConfig['username'],
-                                                    password=databaseConfig['password'],
-                                                    database=databaseConfig['database'])
-            condition_cursor = conditions_connection.cursor()
-            condition_cursor.execute("SELECT Condition_Child FROM tbl_Condition_Condition WHERE Condition_Parent=%s",
-                                     (id,))
-            condition_condition = []
-            for Condition_Child in condition_cursor:
-                condition_condition.append(Condition_Child[0])
+        with closing(self.__create_connection()) as conn:
+            with closing(conn.cursor(buffered=True)) as cursor:
+                cursor.execute(
+                    "SELECT id, type, operator, output_pin_id, status, from_time_hour, from_time_min, to_time_hour, "
+                    "to_time_min FROM tbl_Condition")
+                conditions = []
+                for id, type, operator, output_pin_id, status, from_time_hour, from_time_min, to_time_hour, to_time_min in cursor:
+                    with closing(conn.cursor(buffered=True)) as condition_cursor:
+                        condition_cursor.execute("SELECT Condition_Child FROM tbl_Condition_Condition WHERE Condition_Parent=%s",
+                                                 (id,))
+                        condition_condition = []
+                        for Condition_Child in condition_cursor:
+                            condition_condition.append(Condition_Child[0])
 
-            if (from_time_hour is not None and from_time_min is not None and to_time_hour is not None and to_time_min is not None):
-                from_time = time(from_time_hour, from_time_min)
-                to_time = time(to_time_hour, to_time_min)
-            else:
-                from_time = None
-                to_time = None
-            conditions.append(
-                db_domain.Condition(id, type, operator, condition_condition, output_pin_id, status, from_time, to_time))
+                        if (from_time_hour is not None and from_time_min is not None and to_time_hour is not None and to_time_min is not None):
+                            from_time = time(from_time_hour, from_time_min)
+                            to_time = time(to_time_hour, to_time_min)
+                        else:
+                            from_time = None
+                            to_time = None
+                        conditions.append(
+                            db_domain.Condition(id, type, operator, condition_condition, output_pin_id, status, from_time, to_time))
 
         return conditions
 
     def get_triggers(self) -> List[db_domain.Trigger]:
-        self.cursor.execute("SELECT id, trigger_type, seconds_down, time_between_tap FROM tbl_Trigger")
-        triggers = []
-        for id, trigger_type, seconds_down, time_between_tap in self.cursor:
-            triggers.append(db_domain.Trigger(id, trigger_type, seconds_down, time_between_tap))
+        with closing(self.__create_connection()) as conn:
+            with closing(conn.cursor(buffered=True)) as cursor:
+                cursor.execute("SELECT id, trigger_type, seconds_down, time_between_tap FROM tbl_Trigger")
+                triggers = []
+                for id, trigger_type, seconds_down, time_between_tap in cursor:
+                    triggers.append(db_domain.Trigger(id, trigger_type, seconds_down, time_between_tap))
         return triggers
 
     def get_input_pins(self) -> List[db_domain.InputPin]:
-        self.cursor.execute("SELECT id, number, parent_id FROM tbl_InputPin")
-        input_pins = []
-        for id, number, parent_id in self.cursor:
-            input_connection = mariadb.connect(host=databaseConfig['ip'], port=databaseConfig['port'],
-                                               user=databaseConfig['username'], password=databaseConfig['password'],
-                                               database=databaseConfig['database'])
-            input_cursor = input_connection.cursor()
-            input_cursor.execute("SELECT Action_ID FROM tbl_InputPin_Action WHERE InputPin_ID=%s", (id,))
-            input_pin_action = []
-            for Action_ID in input_cursor:
-                input_pin_action.append(Action_ID[0])
-            input_pins.append(db_domain.InputPin(id, number, input_pin_action, parent_id))
-
+        with closing(self.__create_connection()) as conn:
+            with closing(conn.cursor(buffered=True)) as cursor:
+                cursor.execute("SELECT id, number, parent_id FROM tbl_InputPin")
+                input_pins = []
+                for id, number, parent_id in cursor:
+                    with closing(conn.cursor(buffered=True)) as input_pins_cursor:
+                        input_pins_cursor.execute("SELECT Action_ID FROM tbl_InputPin_Action WHERE InputPin_ID=%s", (id,))
+                        input_pin_action = []
+                        for Action_ID in input_pins_cursor:
+                            input_pin_action.append(Action_ID[0])
+                        input_pins.append(db_domain.InputPin(id, number, input_pin_action, parent_id))
         return input_pins
 
     def get_output_pins(self) -> List[db_domain.OutputPin]:
-        self.cursor.execute("SELECT id, number, parent_id FROM tbl_OutputPin")
-        output_pins = []
-        for id, number, parent_id in self.cursor:
-            output_pins.append(db_domain.OutputPin(id, number, parent_id))
+        with closing(self.__create_connection()) as conn:
+            with closing(conn.cursor(buffered=True)) as cursor:
+                cursor.execute("SELECT id, number, parent_id FROM tbl_OutputPin")
+                output_pins = []
+                for id, number, parent_id in cursor:
+                    output_pins.append(db_domain.OutputPin(id, number, parent_id))
         return output_pins
 
     def get_actions(self) -> List[db_domain.Action]:
