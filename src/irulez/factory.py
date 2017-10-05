@@ -14,12 +14,19 @@ class ArduinoConfigFactory:
 
     def create_arduino_config(self) -> domain.ArduinoConfig:
         # Retrieve the whole universe from the database
+        logger.debug('Retrieving arduinos from database')
         arduinos = self.db.get_arduinos()
+        logger.debug('Retrieving templates from database')
         templates = self.db.get_templates()
+        logger.debug('Retrieving input pins from database')
         input_pins = self.db.get_input_pins()
+        logger.debug('Retrieving output pins from database')
         output_pins = self.db.get_output_pins()
+        logger.debug('Retrieving actions from database')
         actions = self.db.get_actions()
+        logger.debug('Retrieving triggers from database')
         triggers = self.db.get_triggers()
+        logger.debug('Retrieving conditions from database')
         conditions = self.db.get_conditions()
 
         logger.info("Got all data from database")
@@ -32,13 +39,11 @@ class ArduinoConfigFactory:
         # Create arduinos
         created_arduinos = dict()
         for arduino in arduinos:
-            logger.debug(arduino.name)
             created_arduinos[arduino.id] = self.__create_arduino(arduino, mapped_templates)
 
         # Create output pins
         created_output_pins = dict()
         for output_pin in output_pins:
-            logger.debug(output_pin.id)
             created_pin = self.__create_output_pin_and_add_to_arduino(output_pin, created_arduinos)
             if created_pin is not None:
                 created_output_pins[output_pin.id] = created_pin
@@ -66,8 +71,6 @@ class ArduinoConfigFactory:
             created_action = self.__create_action(action, created_triggers, created_output_pins, created_conditions)
             if created_action is not None:
                 created_actions[action.id] = created_action
-
-
 
         # Create input pins
         created_input_pins = dict()
@@ -133,12 +136,12 @@ class ArduinoConfigFactory:
         to_process = []
         to_process.extend(conditions)
         previous_length = len(to_process) + 1  # Trigger first loop always
-        logger.debug(" previous_length" + str(previous_length))
-        logger.debug("to_process" + str(to_process))
         to_return = dict()
 
         # While we have items to process and we aren't stuck with the same amount as previous loop
-        while len(to_process) > 0 & previous_length != len(to_process):
+        while 0 < len(to_process) < previous_length:
+            logger.debug("__create_conditions: previous_length: " + str(previous_length))
+            logger.debug("__create_conditions: len(to_process): " + str(len(to_process)))
             # Update length to process
             previous_length = len(to_process)
             unprocessed = []

@@ -11,7 +11,7 @@ mqttConfig = config.get_mqtt_config()
 databaseConfig = config.get_database_config()
 
 # Get database, dummy for now
-database = src.irulez.db.get_MarinaDB_db()
+database = src.irulez.db.get_maria_db()
 
 Test = database.get_templates()
 

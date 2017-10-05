@@ -1,5 +1,6 @@
 import src.irulez.constants as constants
 import src.irulez.log as log
+from typing import Optional
 
 logger = log.get_logger('util')
 
@@ -29,7 +30,7 @@ def is_arduino_status_topic(topic: str) -> bool:
     return is_arduino_topic(topic) and '/' + constants.statusTopic in topic
 
 
-def get_arduino_name_from_topic(topic: str) -> str:
+def get_arduino_name_from_topic(topic: str) -> Optional[str]:
     """Retrieves the name of the arduino from an arduino topic, or None if it couldn't be found"""
     if not(is_arduino_topic(topic)):
         return None
