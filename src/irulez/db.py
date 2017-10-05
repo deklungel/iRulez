@@ -129,7 +129,7 @@ class MariaDB(DbBase):
                                      (id,))
             condition_condition = []
             for Condition_Child in condition_cursor:
-                condition_condition.append(Condition_Child)
+                condition_condition.append(Condition_Child[0])
 
             if (
                             from_time_hour is not None and from_time_min is not None and to_time_hour is not None and to_time_min is not None):
@@ -161,7 +161,7 @@ class MariaDB(DbBase):
             input_cursor.execute("SELECT Action_ID FROM tbl_InputPin_Action WHERE InputPin_ID=%s", (id,))
             InputPin_Action = []
             for Action_ID in input_cursor:
-                InputPin_Action.append(Action_ID)
+                InputPin_Action.append(Action_ID[0])
             input_pins.append(db_domain.InputPin(id, number, InputPin_Action, parent_id))
 
         return input_pins
@@ -184,7 +184,7 @@ class MariaDB(DbBase):
             action_cursor.execute("SELECT OutputPin_ID FROM tbl_Action_OutputPin WHERE Action_ID=%s", (id,))
             output_pin_ids = []
             for OutputPin_ID in action_cursor:
-                output_pin_ids.append(OutputPin_ID)
+                output_pin_ids.append(OutputPin_ID[0])
             actions.append(
                 db_domain.Action(id, action_type, trigger_id, delay, output_pin_ids, condition_id, master_id))
 
