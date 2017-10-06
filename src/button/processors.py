@@ -23,6 +23,10 @@ class ButtonActionProcessor:
         logger.debug(f"Pins to switch on: '{pins_to_switch_on}' & Pins to switch off: '{pins_to_switch_off}'")
         self.sender.send_relative_update(pins_to_switch_on, pins_to_switch_off)
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     def process_button_message(self, name, payload):
         arduino = self.arduinos.get(name, None)
         if arduino is None:
