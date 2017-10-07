@@ -41,7 +41,7 @@ def on_connect(client, userdata, flags, rc):
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.statusTopic)
     client.subscribe(constants.arduinoTopic + "/+/" + constants.statusTopic)
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.actionTopic + "/" + constants.relative)
-    client.subscribe(constants.arduinoTopic + "/+/" + constants.statusTopic + "/" + constants.relative)
+    client.subscribe(constants.arduinoTopic + "/+/" + constants.actionTopic + "/" + constants.relative)
 
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
@@ -53,7 +53,7 @@ def on_message(client, userdata, msg):
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
 
     # Find arduino name of topic
-    if not (util.is_arduino_status_topic(msg.topic) or util.is_arduino_button_topic(msg.topic)):
+    if not (util.is_arduino_status_topic(msg.topic) or util.is_arduino_relative_action_topic(msg.topic)):
         logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
         # Unknown topic
         return
@@ -67,9 +67,9 @@ def on_message(client, userdata, msg):
         update_processor.update_arduino_output_pins(name, msg.payload)
         return
 
-    if util.is_arduino_action_relative_topic(msg.topic):
+    if util.is_arduino_relative_action_topic(msg.topic):
         logger.debug(f"Convert relative to absolute ")
-        relative_action_processor.process_relative_action_message(name, msg.payload)
+        relative_action_processor.process_relative_action_message(name, str(msg.payload))
         pass
 
 

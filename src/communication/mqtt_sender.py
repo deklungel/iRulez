@@ -24,19 +24,18 @@ class MqttSender:
             logger.debug(f"Publishing: {topic}/{payload}")
             self.client.publish(topic, payload, 0, True)
 
-    def publish_relative_action(self,on_pins: list, off_pins: list):
-        
-        for name in on_pins:
-            payload = util.convert_array_to_hex(absolute)
-            topic = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic
-            logger.debug(f"Publishing: {topic}/{payload}")
-            self.client.publish(topic, payload, 0, True)
+    def publish_relative_action(self, relative: str):
+        for name in relative:
+            payload = relative[name].replace('||', '|')
+            topic = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic + '/' + constants.relative
+            logger.debug(f"Publishing: {topic}/{relative[name]}")
+            self.client.publish(topic, payload, 0, False)
 
     def publish_absolute_action(self, name: str, absolute: []):
         payload = util.convert_array_to_hex(absolute)
         topic = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic
         logger.debug(f"Publishing: {topic}/{payload}")
-        self.client.publish(topic, payload, 0, True)
+        #self.client.publish(topic, payload, 0, True)
 
     def send_absolute_update(self,name: list, on_pins: list, off_pins: int):
         # Accepts relative pins as input, converts them to absolute updates
@@ -70,8 +69,6 @@ class MqttSender:
             self.publish_absolute_action(name, absolute)
         else:
             logger.info("No change to publish")
-
-
 
     # TODO: Delete send_absolute_update2
     def send_absolute_update2(self, on_pins: {}, off_pins: {}):
@@ -125,8 +122,33 @@ class MqttSender:
         logger.debug('Convert off pins')
         self.convert_individual_pins_dict_to_complete_array_dict(pins_to_switch_off, off_pins)
         logger.debug(f"on Pins: '{on_pins}' & off pins: '{off_pins}'")
-        #self.send_absolute_update(on_pins, off_pins)
-        self.publish_relative_action(on_pins,off_pins)
+
+        relative = {}
+        for name in on_pins:
+            arduino = self.arduinos.get(name, None)
+            if arduino is None:
+                # Unknown arduino
+                logger.info(f"Could not find arduino with name '{name}'.")
+                # Continue means hop to the next cycle of the for loop
+                continue
+            relative[name] = util.convert_array_to_hex(on_pins[name])  + "|"
+            logger.debug(f"Arduino '{name}' hex value '{relative[name]}'")
+
+        for name in off_pins:
+            arduino = self.arduinos.get(name, None)
+            if arduino is None:
+                # Unknown arduino
+                logger.info(f"Could not find arduino with name '{name}'.")
+                # Continue means hop to the next cycle of the for loop
+                continue
+            if name not in relative.keys():
+                relative[name] = ""
+            relative[name] = relative[name] + "|" + util.convert_array_to_hex(off_pins[name])
+
+        # TODO: change send_absolute_update to publish_relative_action
+
+        self.send_absolute_update2(on_pins, off_pins)
+        #self.publish_relative_action(relative)
 
 
     def convert_individual_pins_dict_to_complete_array_dict(self, individual_pins: {}, complete_array: {}):

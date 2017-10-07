@@ -10,7 +10,8 @@ class RelativeActionProcessor:
         self.sender = sender
         self.arduinos = arduinos
 
-    def process_relative_action_message(self, name, payload):
+    def process_relative_action_message(self, name: str, payload: str):
+        logger.debug(f"payload '{payload}'")
         on, off = payload.split('|')
 
         arduino = self.arduinos.get(name, None)
