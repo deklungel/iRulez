@@ -6,7 +6,7 @@ import lib.paho.mqtt.client as mqtt
 import src.irulez.configuration as configuration
 import src.irulez.factory as factory
 import src.button.processors as button_processor
-import src.absoluteActions.processors as absolute_actions_processor
+import src.relative_convertor.processors as relative_processor
 import src.communication.mqtt_sender as mqtt_sender
 
 
@@ -29,7 +29,7 @@ client = mqtt.Client()
 
 sender = mqtt_sender.MqttSender(client, arduinos)
 update_processor = button_processor.RelayStatusProcessor(arduinos)
-absolute_update_processor =  absolute_actions_processor.RelativeActionProcessor(sender, arduino)
+relative_action_processor =  relative_processor.RelativeActionProcessor(sender, arduino)
 
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""
@@ -69,7 +69,7 @@ def on_message(client, userdata, msg):
 
     if util.is_arduino_action_relative_topic(msg.topic):
         logger.debug(f"Convert relative to absolute ")
-        absolute_update_processor.process_relative_action_message(name, msg.payload)
+        relative_action_processor.process_relative_action_message(name, msg.payload)
         pass
 
 

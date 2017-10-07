@@ -10,10 +10,6 @@ config = configuration.Configuration()
 mqttConfig = config.get_mqtt_config()
 databaseConfig = config.get_database_config()
 
-# Get database, dummy for now
-database = src.irulez.db.get_maria_db()
-
-Test = database.get_templates()
 
 
 arduino = input("Arduino name? <DEMO|virtual_IO_Board> ")
@@ -44,4 +40,4 @@ elif (button_action == "B"):
     publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic, payload,
                    auth={'username': mqttConfig['username'], 'password': mqttConfig['password']},
                    hostname=mqttConfig['ip'],
-                   port=mqttConfig['port'], retain=False)
+                   port=int(mqttConfig['port']), retain=False)

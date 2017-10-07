@@ -11,8 +11,6 @@ class RelativeActionProcessor:
         self.arduinos = arduinos
 
     def process_relative_action_message(self, name, payload):
-        pinOn = {}
-        pinOff = {}
         on, off = payload.split('|')
 
         arduino = self.arduinos.get(name, None)
@@ -21,6 +19,4 @@ class RelativeActionProcessor:
             logger.info(f"Could not find arduino with name '{name}'.")
             return
 
-        pinOn[name] = util.convert_hex_to_array(on, arduino.number_of_output_pins)
-        pinOff[name] = util.convert_hex_to_array(off, arduino.number_of_output_pins)
-        self.sender.send_absolute_update(pinOn, pinOff)
+        self.sender.send_absolute_update(name, util.convert_hex_to_array(on, arduino.number_of_output_pins), util.convert_hex_to_array(off, arduino.number_of_output_pins))
