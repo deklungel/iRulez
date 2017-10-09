@@ -17,13 +17,6 @@ class MqttSender:
         self.client = client
         self.arduinos = arduinos
 
-    def publish_action(self, absolute):
-        for name in absolute:
-            payload = util.convert_array_to_hex(absolute[name])
-            topic = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic
-            logger.debug(f"Publishing: {topic}/{payload}")
-            self.client.publish(topic, payload, 0, True)
-
     def publish_relative_action(self, relative: str):
         for name in relative:
             payload = relative[name].replace('||', '|')
@@ -35,9 +28,9 @@ class MqttSender:
         payload = util.convert_array_to_hex(absolute)
         topic = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic
         logger.debug(f"Publishing: {topic}/{payload}")
-        #self.client.publish(topic, payload, 0, True)
+        self.client.publish(topic, payload, 0, False)
 
-    def send_absolute_update(self,name: list, on_pins: list, off_pins: int):
+    def send_absolute_update(self,name: list, on_pins: list, off_pins: list):
         # Accepts relative pins as input, converts them to absolute updates
         # TODO: improve 'send_update' mechanism to only send updates to arduinos with updates.
         #  Current implementation sends updates to all arduinos or none.
@@ -53,65 +46,24 @@ class MqttSender:
         for pin in arduino.output_pins.values():
             if pin.state:
                 absolute[pin.number] = True
-            if on_pins[pin.number] and not pin.state:
+            if bool(int(on_pins[pin.number])) and not pin.state:
                 send_update = True
                 absolute[pin.number] = True
+
+        logger.debug(f"absolute: '{absolute}'")
 
         for pin in arduino.output_pins.values():
             if pin.state:
                 absolute[pin.number] = True
-            if off_pins[pin.number] and pin.state:
+            if bool(int(off_pins[pin.number])) and pin.state:
                 absolute[pin.number] = False
                 send_update = True
 
-        logger.debug(f"absolute: '{absolute}'")
         if send_update:
             self.publish_absolute_action(name, absolute)
         else:
             logger.info("No change to publish")
 
-    # TODO: Delete send_absolute_update2
-    def send_absolute_update2(self, on_pins: {}, off_pins: {}):
-        # Accepts relative pins as input, converts them to absolute updates
-        # TODO: improve 'send_update' mechanism to only send updates to arduinos with updates.
-        #  Current implementation sends updates to all arduinos or none.
-        send_update = False
-        absolute = {}
-        for name in on_pins:
-            arduino = self.arduinos.get(name, None)
-            if arduino is None:
-                # Unknown arduino
-                logger.info(f"Could not find arduino with name '{name}'.")
-                # Continue means hop to the next cycle of the for loop
-                continue
-            absolute[name] = [False] * arduino.number_of_output_pins
-            for pin in arduino.output_pins.values():
-                if pin.state:
-                    absolute[name][pin.number] = True
-                if on_pins[name][pin.number] and not pin.state:
-                    send_update = True
-                    absolute[name][pin.number] = True
-
-        for name in off_pins:
-            arduino = self.arduinos.get(name, None)
-            if arduino is None:
-                # Unknown arduino
-                logger.info(f"Could not find arduino with name '{name}'.")
-                return
-            if name not in absolute.keys():
-                absolute[name] = [False] * arduino.number_of_output_pins
-            for pin in arduino.output_pins.values():
-                if pin.state:
-                    absolute[name][pin.number] = True
-                if off_pins[name][pin.number] and pin.state:
-                    absolute[name][pin.number] = False
-                    send_update = True
-
-        logger.debug(f"absolute: '{absolute}'")
-        if send_update:
-            self.publish_action(absolute)
-        else:
-            logger.info("No change to publish")
 
     def send_relative_update(self, pins_to_switch_on: {}, pins_to_switch_off: {}):
         # Accepts a dictionary with as key arduino name and value an array of pins to change
@@ -145,10 +97,7 @@ class MqttSender:
                 relative[name] = ""
             relative[name] = relative[name] + "|" + util.convert_array_to_hex(off_pins[name])
 
-        # TODO: change send_absolute_update to publish_relative_action
-
-        self.send_absolute_update2(on_pins, off_pins)
-        #self.publish_relative_action(relative)
+        self.publish_relative_action(relative)
 
 
     def convert_individual_pins_dict_to_complete_array_dict(self, individual_pins: {}, complete_array: {}):

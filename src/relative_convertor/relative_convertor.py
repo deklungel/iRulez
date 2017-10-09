@@ -29,7 +29,7 @@ client = mqtt.Client()
 
 sender = mqtt_sender.MqttSender(client, arduinos)
 update_processor = button_processor.RelayStatusProcessor(arduinos)
-relative_action_processor =  relative_processor.RelativeActionProcessor(sender, arduino)
+relative_action_processor =  relative_processor.RelativeActionProcessor(sender, arduinos)
 
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""
@@ -69,7 +69,7 @@ def on_message(client, userdata, msg):
 
     if util.is_arduino_relative_action_topic(msg.topic):
         logger.debug(f"Convert relative to absolute ")
-        relative_action_processor.process_relative_action_message(name, str(msg.payload))
+        relative_action_processor.process_relative_action_message(name, str(msg.payload.decode('UTF-8')))
         pass
 
 

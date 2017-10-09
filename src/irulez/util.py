@@ -47,9 +47,13 @@ def convert_array_to_hex(status: list) -> str:
     logger.debug("status " + str(status))
     for digit in status:
         binary += str(int(digit))
+    logger.debug("hex " + str(hex(int(binary, 2)))[2:])
     return str(hex(int(binary, 2)))[2:]
 
 
 def convert_hex_to_array(payload: str, number_of_pins: int) -> list:
+    if payload == '':
+        logger.debug("empty payload")
+        payload = "0"
     logger.debug("convert_hex_to_array " + bin(int(payload, 16))[2:].zfill(number_of_pins))
     return bin(int(payload, 16))[2:].zfill(number_of_pins)
