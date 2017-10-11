@@ -134,7 +134,7 @@ class Pin(ABC):
 class OutputPin(Pin):
     """Represents a single pin on an arduino"""
 
-    def __init__(self, number: int, parent: str, state=False):
+    def __init__(self, number: int, parent: int, state=False):
         super(OutputPin, self).__init__(number, ArduinoPinType.OUTPUT, state)
         self.parent = parent
 

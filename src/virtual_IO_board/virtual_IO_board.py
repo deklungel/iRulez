@@ -6,6 +6,7 @@ import lib.paho.mqtt.client as mqtt
 
 logger = log.get_logger('virtual_IO_board')
 
+#TODO: update code to get_virtual_IO not dummy DB
 # Get database, dummy for now
 db = src.irulez.db.get_dummy_db()
 

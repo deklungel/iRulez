@@ -24,7 +24,7 @@ class ButtonActionProcessor:
         self.sender.send_relative_update(pins_to_switch_on, pins_to_switch_off)
 
 
-    def process_button_message(self, name, payload):
+    def process_button_message(self, name:str, payload: str):
         arduino = self.arduinos.get(name, None)
         if arduino is None:
             # Unknown arduino
@@ -41,7 +41,7 @@ class RelayStatusProcessor:
     def __init__(self, arduinos: {}):
         self.arduinos = arduinos
 
-    def update_arduino_output_pins(self, name, payload):
+    def update_arduino_output_pins(self, name: str, payload: str):
         arduino = self.arduinos.get(name, None)
         if arduino is None:
             # Unknown arduino
