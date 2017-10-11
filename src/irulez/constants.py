@@ -17,3 +17,8 @@ virtual_IO_board_outputs = 20
 
 # Name of an relative action topic
 relative = 'relative'
+
+
+
+# Name of action topic with timer
+timer = 'timer'

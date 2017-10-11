@@ -40,13 +40,13 @@ cnx.close()
 	
 debug = "DEBUG"
 info = "INFO"
-TimerService = "Timer"
+TimerService = "timer"
 	
 def printLog(level,message):
 	if (level.upper() == Loglevel.upper() or (level.upper() == info.upper() and Loglevel.upper() == debug.upper())):
 		print(level +"["+str(datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S')) + "]: " +str(message))
 
-printLog(info,"Timer started!")
+printLog(info,"timer started!")
 
 printLog(debug,MySQL_database)
 printLog(debug,MySQL_username)
