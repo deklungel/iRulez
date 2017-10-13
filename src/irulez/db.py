@@ -77,12 +77,13 @@ class DummyDb(DbBase):
 
     def get_actions(self) -> List[db_domain.Action]:
         # Create 3 actions.
-        # Action 1 execute immediately, pins 0 and 10 ON, condition 4
-        # Action 2 execute immediately, pins 2 and 9 OFF
-        # Action 3 execute immediately, ping 8,9,10 TOGGLE, master 8
+        # Action 0 execute immediately, pins 0 and 10 ON, condition 4
+        # Action 1 execute immediately, pins 2 and 9 OFF
+        # Action 2 execute immediately, ping 8,9,10 TOGGLE, master 8
         return [db_domain.Action(0, 2, 0, 0, [0, 10], 4, None),
                 db_domain.Action(1, 3, 0, 0, [2, 9], None, None),
-                db_domain.Action(2, 1, 0, 0, [8, 9, 10], None, 8)]
+                db_domain.Action(2, 1, 0, 30, [8, 9, 10], None, 8)]
+
 
     def get_input_pins(self) -> List[db_domain.InputPin]:
         to_return = []

@@ -69,7 +69,7 @@ def on_message(client, userdata, msg):
 
     if util.is_arduino_relative_action_topic(msg.topic):
         logger.debug(f"Convert relative to absolute ")
-        relative_action_processor.process_relative_action_message(name, str(msg.payload.decode('UTF-8')))
+        relative_action_processor.process_relative_action_message(name, msg.payload.decode("utf-8"))
         pass
 
 

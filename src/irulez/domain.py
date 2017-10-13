@@ -134,7 +134,7 @@ class Pin(ABC):
 class OutputPin(Pin):
     """Represents a single pin on an arduino"""
 
-    def __init__(self, number: int, parent: int, state=False):
+    def __init__(self, number: int, parent: str, state=False):
         super(OutputPin, self).__init__(number, ArduinoPinType.OUTPUT, state)
         self.parent = parent
 
@@ -233,6 +233,18 @@ class TimeCondition(Condition):
     def verify(self) -> bool:
         return self.from_time <= datetime.now().time() <= self.to_time
 
+class IndividualAction:
+    def __init__(self, delay: int, pinNumbers: []):
+        self.delay = delay
+        self.pinNumbers = pinNumbers
+
+    def addpin(self, pinNumber: int):
+        self.pinNumbers.append(pinNumber)
+
+    def hasvalues(self) -> bool:
+        if len(self.pinNumbers) > 0:
+            return True
+        return False
 
 class OnAction(Action):
     def __init__(self,
@@ -244,10 +256,13 @@ class OnAction(Action):
         super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, condition)
 
     def perform_action(self, pins_to_switch_on: Dict[str, List[int]], pins_to_switch_off: Dict[str, List[int]]):
+        pinAction = IndividualAction(self.delay, [])
         for pin in self.output_pins:
             logger.debug(f"pin number: '{pin.number}' with parent: '{pin.parent}'")
-            pins_to_switch_on.setdefault(pin.parent, []).append(pin.number)
-        logger.debug(f"Pins to switch on: '{pins_to_switch_on}'")
+            pinAction.addpin(pin.number)
+        if pinAction.hasvalues:
+                pins_to_switch_on.setdefault(pin.parent, []).append(pinAction)
+        logger.debug(f"Pins to switch on: '{str(pinAction.pinNumbers)}'")
 
 
 class OffAction(Action):
@@ -260,8 +275,11 @@ class OffAction(Action):
         super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, condition)
 
     def perform_action(self, pins_to_switch_on: Dict[str, List[int]], pins_to_switch_off: Dict[str, List[int]]):
+        pinAction = IndividualAction(self.delay, [])
         for pin in self.output_pins:
-            pins_to_switch_off.setdefault(pin.parent, []).append(pin.number)
+            pinAction.addpin(pin.number)
+        if pinAction.hasvalues:
+            pins_to_switch_off.setdefault(pin.parent, []).append(pinAction)
 
 
 class ToggleAction(Action):
@@ -275,14 +293,23 @@ class ToggleAction(Action):
         super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notification, condition)
         self.master = master
 
-    def perform_action(self, pins_to_switch_on: Dict[str, List[int]], pins_to_switch_off: Dict[str, List[int]]):
+    def perform_action(self, pins_to_switch_on: Dict[str, IndividualAction], pins_to_switch_off: Dict[str, IndividualAction]):
         # if master is on put all the lights of and visa versa
+        pinAction = IndividualAction(self.delay,[])
         if self.master.state:
             for pin in self.output_pins:
-                pins_to_switch_off.setdefault(pin.parent, []).append(pin.number)
+                pinAction.addpin(pin.number)
+            if pinAction.hasvalues:
+                pins_to_switch_off.setdefault(pin.parent, []).append(pinAction)
+            logger.debug(f"Pins to switch off: '{str(pinAction.pinNumbers)}'")
         else:
             for pin in self.output_pins:
-                pins_to_switch_on.setdefault(pin.parent, []).append(pin.number)
+                pinAction.addpin(pin.number)
+            if pinAction.hasvalues:
+                pins_to_switch_on.setdefault(pin.parent, []).append(pinAction)
+            logger.debug(f"Pins to switch on: '{str(pinAction.pinNumbers)}'")
+
+
 
 
 class Arduino:
@@ -319,6 +346,9 @@ class Arduino:
 
         # convert array to hex string
         return util.convert_array_to_hex(pin_states)
+
+    def get_output_pin(self, pinNumber: int) -> OutputPin:
+        return self.output_pins[pinNumber]
 
     def set_output_pin_status(self, payload: str):
         status = util.convert_hex_to_array(payload, self.number_of_output_pins)

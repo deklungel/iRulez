@@ -5,8 +5,8 @@ import src.irulez.util as util
 import lib.paho.mqtt.client as mqtt
 import src.irulez.configuration as configuration
 import src.irulez.factory as factory
-import src.irulez.processor as timer_processor
-
+import src.timer.processor as timer_processor
+import src.communication.mqtt_sender as mqtt_sender
 
 logger = log.get_logger('absolute_update')
 
@@ -26,8 +26,8 @@ for arduino in factory.create_arduino_config().arduinos:
 
 # Create client
 client = mqtt.Client()
-
-TimeProcessor = timer_processor.TimerProcessor()
+sender = mqtt_sender.MqttSender(client, arduinos)
+TimeProcessor = timer_processor.TimerProcessor(sender, arduinos)
 
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""
@@ -36,7 +36,7 @@ def on_connect(client, userdata, flags, rc):
     # Subscribe to all arduino hexnumber actions
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
-    topic = str(constants.arduinoTopic) + "/+/" + str(constants.actionTopic) + "/" + str(constants.relative) + "/+"
+    topic = str(constants.arduinoTopic) + "/+/" + str(constants.actionTopic) + "/" + str(constants.relative) + "/" + str(constants.timer)
     logger.debug("Subscribing to " + str(topic))
     client.subscribe(str(topic))
 
@@ -50,7 +50,7 @@ def on_message(client, userdata, msg):
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
 
     # Find arduino name of topic
-    if (not util.is_arduino_timer_action_topic(msg.topic) or util.is_arduino_relative_action_topic(msg.topic)):
+    if not (util.is_arduino_timer_action_topic(msg.topic) or util.is_arduino_relative_action_topic(msg.topic)):
         logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
         # Unknown topic
         return
@@ -61,12 +61,13 @@ def on_message(client, userdata, msg):
     # Check if the topic is timer update.
     if util.is_arduino_timer_action_topic(msg.topic):
         logger.debug(f"Process the timer action")
-        TimeProcessor.ProcessTimerAction(str(name,msg.payload))
+        TimeProcessor.ProcessTimerAction(str(name), msg.payload.decode("utf-8"))
         return
 
     if util.is_arduino_relative_action_topic(msg.topic):
         logger.debug(f"Check if pin is used in timer")
-        TimeProcessor.CheckOutputPin(str(name, msg.payload))
+        TimeProcessor.CheckOutputPin(str(name), msg.payload.decode("utf-8"))
+
         return
 
 
