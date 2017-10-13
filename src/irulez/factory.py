@@ -215,9 +215,9 @@ class ArduinoConfigFactory:
                 logger.warning(f'The master pin {action.master_id} could not be found for action {action.id}')
             return domain.ToggleAction(trigger, action.delay, pins_of_action, None, master_pin, condition)
         if action.action_type == 2:
-            return domain.OnAction(trigger, action.delay, pins_of_action, None, condition)
+            return domain.OnAction(trigger, action.delay, action.timer, pins_of_action, None, condition)
         if action.action_type == 3:
-            return domain.OffAction(trigger, action.delay, pins_of_action, None, condition)
+            return domain.OffAction(trigger, action.delay, action.timer, pins_of_action, None, condition)
 
         # Other types not supported yet
         logger.error(f'Type {action.action_type} not supported yet')

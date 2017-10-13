@@ -77,12 +77,12 @@ class DummyDb(DbBase):
 
     def get_actions(self) -> List[db_domain.Action]:
         # Create 3 actions.
-        # Action 0 execute immediately, pins 0 and 10 ON, condition 4
+        # Action 0 execute immediately, pins 0 and 10 ON, condition 4 for 15sec
         # Action 1 execute immediately, pins 2 and 9 OFF
-        # Action 2 execute immediately, ping 8,9,10 TOGGLE, master 8
-        return [db_domain.Action(0, 2, 0, 0, [0, 10], 4, None),
-                db_domain.Action(1, 3, 0, 0, [2, 9], None, None),
-                db_domain.Action(2, 1, 0, 30, [8, 9, 10], None, 8)]
+        # Action 2 execute immediately, ping 8,9,10 TOGGLE, master 8, after 30 sec
+        return [db_domain.Action(0, 2, 0, 0, 15, [0, 10], 4, None),
+                db_domain.Action(1, 3, 0, 0, 0, [2, 9], None, None),
+                db_domain.Action(2, 1, 0, 30, 0, [8, 9, 10], None, 8)]
 
 
     def get_input_pins(self) -> List[db_domain.InputPin]:
@@ -183,16 +183,16 @@ class MariaDB(DbBase):
     def get_actions(self) -> List[db_domain.Action]:
         with closing(self.__create_connection()) as conn:
             with closing(conn.cursor(buffered=True)) as cursor:
-                cursor.execute("SELECT id, action_type, trigger_id, delay, condition_id, master_id FROM tbl_Action")
+                cursor.execute("SELECT id, action_type, trigger_id, delay, timer, condition_id, master_id FROM tbl_Action")
                 actions = []
-                for id, action_type, trigger_id, delay, condition_id, master_id in cursor:
+                for id, action_type, trigger_id, delay, timer, condition_id, master_id in cursor:
                     with closing(conn.cursor(buffered=True)) as action_cursor:
                         action_cursor.execute("SELECT OutputPin_ID FROM tbl_Action_OutputPin WHERE Action_ID=%s", (id,))
                         output_pin_ids = []
                         for OutputPin_ID in action_cursor:
                             output_pin_ids.append(OutputPin_ID[0])
                         actions.append(
-                            db_domain.Action(id, action_type, trigger_id, delay, output_pin_ids, condition_id,
+                            db_domain.Action(id, action_type, trigger_id, delay, timer, output_pin_ids, condition_id,
                                              master_id))
 
         return actions

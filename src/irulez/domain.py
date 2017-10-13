@@ -250,10 +250,13 @@ class OnAction(Action):
     def __init__(self,
                  trigger: ActionTrigger,
                  delay: int,
+                 off_timer: int,
                  output_pins: List[OutputPin],
                  notification: Optional[Notification],
                  condition: Optional[Condition]):
+        self.off_timer = off_timer
         super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, condition)
+
 
     def perform_action(self, pins_to_switch_on: Dict[str, List[int]], pins_to_switch_off: Dict[str, List[int]]):
         pinAction = IndividualAction(self.delay, [])
@@ -264,14 +267,23 @@ class OnAction(Action):
                 pins_to_switch_on.setdefault(pin.parent, []).append(pinAction)
         logger.debug(f"Pins to switch on: '{str(pinAction.pinNumbers)}'")
 
+        if self.off_timer > 0:
+            pinAction = IndividualAction(self.off_timer, [])
+            for pin in self.output_pins:
+                pinAction.addpin(pin.number)
+            if pinAction.hasvalues:
+                pins_to_switch_off.setdefault(pin.parent, []).append(pinAction)
+
 
 class OffAction(Action):
     def __init__(self,
                  trigger: ActionTrigger,
                  delay: int,
+                 on_timer: int,
                  output_pins: List[OutputPin],
                  notification: Optional[Notification],
                  condition: Optional[Condition]):
+        self.on_timer = on_timer
         super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, condition)
 
     def perform_action(self, pins_to_switch_on: Dict[str, List[int]], pins_to_switch_off: Dict[str, List[int]]):
@@ -280,6 +292,13 @@ class OffAction(Action):
             pinAction.addpin(pin.number)
         if pinAction.hasvalues:
             pins_to_switch_off.setdefault(pin.parent, []).append(pinAction)
+
+        if self.on_timer > 0:
+            pinAction = IndividualAction(self.on_timer, [])
+            for pin in self.output_pins:
+                pinAction.addpin(pin.number)
+            if pinAction.hasvalues:
+                pins_to_switch_on.setdefault(pin.parent, []).append(pinAction)
 
 
 class ToggleAction(Action):
