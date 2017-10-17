@@ -54,15 +54,17 @@ class DummyDb(DbBase):
     """Dummy implementation of a database class. Returns fixed data for all operations"""
 
     def get_templates(self) -> List[db_domain.Template]:
-        return [db_domain.Template(0, "16x16 Template", 16, 16)]
+        return [db_domain.Template(0, "16x16 Template", 16, 16), db_domain.Template(1, "50x50 Template", 50, 50)]
 
     def get_arduinos(self) -> List[db_domain.Arduino]:
-        return [db_domain.Arduino(0, "DEMO", 0)]
+        return [db_domain.Arduino(0, "DEMO", 0), db_domain.Arduino(1, "virtual_IO_Board", 1)]
 
     def get_output_pins(self) -> List[db_domain.OutputPin]:
         to_return = []
         for x in range(0, 16):
             to_return.append(db_domain.OutputPin(x, x, 0))
+        for x in range(16, 66):
+            to_return.append(db_domain.OutputPin(x, x - 16, 1))
         return to_return
 
     def get_triggers(self) -> List[db_domain.Trigger]:
@@ -76,7 +78,7 @@ class DummyDb(DbBase):
                 db_domain.Condition(4, 1, 1, [2, 3], None, None, None, None)]
 
     def get_actions(self) -> List[db_domain.Action]:
-        # Create 3 actions.
+        # Create 3 actions for arduino 'DEMO".
         # Action 0 execute immediately, pins 0 and 10 ON, condition 4 for 15sec
         # Action 1 execute immediately, pins 2 and 9 OFF
         # Action 2 execute immediately, ping 8,9,10 TOGGLE, master 8, after 30 sec
@@ -89,6 +91,8 @@ class DummyDb(DbBase):
         to_return = []
         for x in range(0, 16):
             to_return.append(db_domain.InputPin(x, x, [], 0))
+        for x in range(16, 66):
+            to_return.append(db_domain.InputPin(x, x - 16, [], 1))
 
         to_return[5].action_ids.extend([0, 1])
         to_return[10].action_ids.extend([2])
