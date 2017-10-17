@@ -7,7 +7,7 @@ import src.irulez.configuration as configuration
 import src.irulez.factory as factory
 import src.button.processors as button_processor
 import src.relative_convertor.processors as relative_processor
-import src.communication.mqtt_sender as mqtt_sender
+import src.relative_convertor.mqtt_sender as mqtt_sender
 
 
 logger = log.get_logger('absolute_update')
@@ -40,8 +40,8 @@ def on_connect(client, userdata, flags, rc):
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.statusTopic)
     client.subscribe(constants.arduinoTopic + "/+/" + constants.statusTopic)
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.actionTopic + "/" + constants.relative)
-    client.subscribe(constants.arduinoTopic + "/+/" + constants.actionTopic + "/" + constants.relative)
+    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.actionTopic + "/" + constants.relative)
+    client.subscribe(constants.arduinoTopic + "/" + constants.actionTopic + "/" + constants.relative)
 
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
@@ -58,18 +58,18 @@ def on_message(client, userdata, msg):
         # Unknown topic
         return
 
-    # Get the name of the arduino from the topic
-    name = util.get_arduino_name_from_topic(msg.topic)
-
     # Check if the topic is a relay or button update.
     if util.is_arduino_status_topic(msg.topic):
+        # Get the name of the arduino from the topic
+        name = util.get_arduino_name_from_topic(msg.topic)
+
         logger.debug(f"Update the relay status")
         update_processor.update_arduino_output_pins(name, msg.payload)
         return
 
     if util.is_arduino_relative_action_topic(msg.topic):
         logger.debug(f"Convert relative to absolute ")
-        relative_action_processor.process_relative_action_message(name, msg.payload.decode("utf-8"))
+        relative_action_processor.process_relative_action_message(msg.payload.decode("utf-8"))
         pass
 
 

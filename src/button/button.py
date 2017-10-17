@@ -4,7 +4,7 @@ import lib.paho.mqtt.client as mqtt
 import src.irulez.constants as constants
 import src.irulez.db
 import src.irulez.util as util
-import src.communication.mqtt_sender as mqtt_sender
+import src.button.mqtt_sender as mqtt_sender
 import src.button.processors as button_processor
 import src.irulez.configuration as configuration
 import src.irulez.factory as factory

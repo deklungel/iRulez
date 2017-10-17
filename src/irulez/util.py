@@ -52,7 +52,7 @@ def convert_array_to_hex(status: list) -> str:
     logger.debug("status " + str(status))
     for digit in status:
         binary += str(int(digit))
-    logger.debug("hex " + str(hex(int(binary, 2)))[2:])
+    logger.debug("hex: " + str(hex(int(binary, 2)))[2:])
     return str(hex(int(binary, 2)))[2:]
 
 

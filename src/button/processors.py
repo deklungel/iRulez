@@ -1,4 +1,4 @@
-import src.communication.mqtt_sender as mqtt_sender
+import src.button.mqtt_sender as mqtt_sender
 import src.irulez.log as log
 
 logger = log.get_logger('button_processor')
@@ -11,18 +11,16 @@ class ButtonActionProcessor:
 
     def process_button(self, arduino, pin, value: bool):
         actions = arduino.button_pins[pin].get_button_pin_actions()
-        pins_to_switch_on = {}
-        pins_to_switch_off = {}
+        pins_to_switch = {}
         for action in actions:
             if action.should_trigger(value) and action.check_condition():
                 logger.info(f"Process action with type '{action.action_type}'")
-                action.perform_action(pins_to_switch_on, pins_to_switch_off)
+                action.perform_action(pins_to_switch)
             elif not action.check_condition():
                 logger.info(f"Condition not met")
 
-        logger.debug(f"Pins to switch on: '{pins_to_switch_on}' & Pins to switch off: '{pins_to_switch_off}'")
-        self.sender.send_relative_update(pins_to_switch_on, pins_to_switch_off)
-
+        logger.debug(f"Pins to switch: '{pins_to_switch}'")
+        self.sender.publish_relative_action(pins_to_switch)
 
     def process_button_message(self, name:str, payload: str):
         arduino = self.arduinos.get(name, None)

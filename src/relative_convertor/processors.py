@@ -1,4 +1,4 @@
-import src.communication.mqtt_sender as mqtt_sender
+import src.relative_convertor.mqtt_sender as mqtt_sender
 import src.irulez.log as log
 import src.irulez.util as util
 import json
@@ -11,13 +11,13 @@ class RelativeActionProcessor:
         self.sender = sender
         self.arduinos = arduinos
 
-    def process_relative_action_message(self, name: str, payload: str):
-        jsonObject = json.loads(payload)
+    def process_relative_action_message(self, payload: str):
+        json_object = json.loads(payload)
 
-        arduino = self.arduinos.get(name, None)
+        arduino = self.arduinos.get(json_object["name"], None)
         if arduino is None:
             # Unknown arduino
-            logger.info(f"Could not find arduino with name '{name}'.")
+            logger.info(f"Could not find arduino with name '{json_object['name']}'.")
             return
 
-        self.sender.send_absolute_update(arduino, jsonObject["on"], jsonObject["off"])
+        self.sender.send_absolute_update(arduino, json_object)
