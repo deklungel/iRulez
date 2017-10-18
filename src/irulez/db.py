@@ -210,8 +210,8 @@ class MariaDB(DbBase):
                         for OutputPin_ID in action_cursor:
                             output_pin_ids.append(OutputPin_ID[0])
                         actions.append(
-                            db_domain.Action(id, action_type, trigger_id, delay, timer, output_pin_ids, condition_id,
-                                             master_id))
+                            db_domain.Action(id, action_type, trigger_id, None, delay, timer, output_pin_ids, condition_id, master_id))
+                            #TODO: ADD notification to the database
 
         return actions
 

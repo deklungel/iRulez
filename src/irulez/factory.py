@@ -61,8 +61,9 @@ class ArduinoConfigFactory:
 
         # Create notification
         created_notifications = dict()
-        for notification in notifications:
-            created_notifications[notification.id] = self.__create_notification(notification)
+        if notifications is not None:
+            for notification in notifications:
+                created_notifications[notification.id] = self.__create_notification(notification)
 
         # Create triggers
         created_triggers = dict()
