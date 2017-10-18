@@ -24,7 +24,8 @@ class ButtonActionProcessor:
         self.sender.publish_relative_action(pins_to_switch)
 
     def process_notification(self,action: domain.Action):
-        pass
+        if action.has_notifications():
+            action.process_notification()
 
     def process_button_message(self, name:str, payload: str):
         arduino = self.arduinos.get(name, None)

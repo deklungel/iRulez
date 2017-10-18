@@ -28,6 +28,9 @@ class ArduinoConfigFactory:
         triggers = self.db.get_triggers()
         logger.debug('Retrieving conditions from database')
         conditions = self.db.get_conditions()
+        logger.debug('Retrieving notifications from database')
+        notifications = self.db.get_notifications()
+
 
         logger.info("Got all data from database")
 
@@ -56,6 +59,11 @@ class ArduinoConfigFactory:
         # We have to do these all at once since they reference each other
         created_conditions = self.__create_conditions(conditions, created_output_pins)
 
+        # Create notification
+        created_notifications = dict()
+        for notification in notifications:
+            created_notifications[notification.id] = self.__create_notification(notification)
+
         # Create triggers
         created_triggers = dict()
         for trigger in triggers:
@@ -64,7 +72,7 @@ class ArduinoConfigFactory:
         # Create actions
         created_actions = dict()
         for action in actions:
-            created_action = self.__create_action(action, created_triggers, created_output_pins, created_conditions)
+            created_action = self.__create_action(action, created_triggers, created_output_pins, created_conditions, created_notifications)
             if created_action is not None:
                 created_actions[action.id] = created_action
 
@@ -92,6 +100,13 @@ class ArduinoConfigFactory:
             return domain.DoubleTapActionTrigger(trigger.time_between_tap)
         if trigger.trigger_type == 5:
             return domain.TripleTapActionTrigger(trigger.time_between_tap)
+
+    def __create_notification(self, notification: db_domain.Notification) -> domain.Notification:
+        if notification.notification_type == 0:
+           return domain.MailNotification(notification.message,notification.subject,
+                                          notification.emails,notification.enabled)
+        if notification.notification_type == 1:
+            return domain.TelegramNotification(notification.message,notification.tokens,notification.enabled)
 
     def __create_arduino(self, arduino: db_domain.Arduino, templates: Dict[int, db_domain.Template]) -> domain.Arduino:
         template = templates.get(arduino.template_id, None)
@@ -184,7 +199,7 @@ class ArduinoConfigFactory:
 
     def __create_action(self, action: db_domain.Action, triggers: Dict[int, domain.ActionTrigger],
                         output_pins: Dict[int, domain.OutputPin],
-                        conditions: Dict[int, domain.Condition]) -> Optional[domain.Action]:
+                        conditions: Dict[int, domain.Condition], notifications: Dict[int, domain.Notification]) -> Optional[domain.Action]:
         # Try to retrieve the action trigger
         trigger = triggers.get(action.trigger_id, None)
         if trigger is None:
@@ -208,16 +223,24 @@ class ArduinoConfigFactory:
                 logger.warning(f'The condition {action.condition_id} could not be found for action {action.id}')
                 return None
 
+        # Try to retrieve the notification, which is optional
+        notification_of_action = []
+        if action.notification_ids is not None:
+            for notification in action.notification_ids:
+                notification_of_action.append(notifications.get(notification))
+
+
+
         if action.action_type == 1:
             # Get master pin
             master_pin = output_pins.get(action.master_id, None)
             if master_pin is None:
                 logger.warning(f'The master pin {action.master_id} could not be found for action {action.id}')
-            return domain.ToggleAction(trigger, action.delay, pins_of_action, None, master_pin, condition)
+            return domain.ToggleAction(trigger, action.delay, pins_of_action, notification_of_action, master_pin, condition)
         if action.action_type == 2:
-            return domain.OnAction(trigger, action.delay, action.timer, pins_of_action, None, condition)
+            return domain.OnAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action, condition)
         if action.action_type == 3:
-            return domain.OffAction(trigger, action.delay, action.timer, pins_of_action, None, condition)
+            return domain.OffAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action, condition)
 
         # Other types not supported yet
         logger.error(f'Type {action.action_type} not supported yet')

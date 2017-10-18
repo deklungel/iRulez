@@ -33,11 +33,12 @@ class InputPin:
 
 
 class Action:
-    def __init__(self, id: int, action_type: int, trigger_id: int, delay: int,timer: int, output_pin_ids: List[int],
+    def __init__(self, id: int, action_type: int, trigger_id: int, notification_ids: List[Optional[int]], delay: int,timer: int, output_pin_ids: List[int],
                  condition_id: Optional[int], master_id: Optional[int]):
         self.master_id = master_id
         self.id = id
         self.condition_id = condition_id
+        self.notification_ids = notification_ids
         self.output_pin_ids = output_pin_ids
         self.delay = delay
         self.timer = timer
@@ -65,3 +66,15 @@ class Condition:
         self.output_pin_id = output_pin_id
         self.condition_ids = condition_ids
         self.operator = operator
+
+
+class Notification:
+    def __init__(self, id: int, message: str, notification_type: int, enabled: bool, subject: Optional[str],
+                 emails: Optional[List[str]], tokens: Optional[List[str]]):
+        self.id = id
+        self.notification_type = notification_type
+        self.message = message
+        self.enabled = enabled
+        self.subject = subject
+        self.emails = emails
+        self.tokens = tokens

@@ -72,8 +72,15 @@ class Condition(ABC):
 
 
 class Notification(ABC):
-    def __init__(self, enabled: False):
+    def __init__(self,message: str, enabled: False):
+        self.message = message
         self.enabled = enabled
+
+
+    @abstractmethod
+    def execute_notification(self):
+        if self.enabled:
+            pass
 
 
 class ImmediatelyActionTrigger(ActionTrigger):
@@ -147,13 +154,13 @@ class Action(ABC):
                  action_type: ActionType,
                  delay: int,
                  output_pins: List[OutputPin],
-                 notification: Optional[Notification],
+                 notifications: Optional[List[Notification]],
                  condition: Optional[Condition]):
         self.trigger = trigger
         self.action_type = action_type
         self.delay = delay
         self.output_pins = output_pins
-        self.notification = notification
+        self.notifications = notifications
         self.condition = condition
 
     def should_trigger(self, value: bool):
@@ -162,6 +169,15 @@ class Action(ABC):
     @abstractmethod
     def perform_action(self, pins_to_switch_on: Dict[str, List[int]], pins_to_switch_off: Dict[str, List[int]]):
         pass
+
+    def has_notifications(self):
+        if len(self.notifications) > 0:
+            return True
+        return False
+
+    def process_notification(self):
+        for notification in self.notifications:
+            notification.execute_notification()
 
     def check_condition(self):
         if self.condition is None:
@@ -184,15 +200,26 @@ class ButtonPin(Pin):
 
 
 class MailNotification(Notification):
-    def __init__(self, email: str, enabled=False):
-        super(MailNotification, self).__init__(enabled)
-        self.email = email
+    def __init__(self,message: str, header: str, emails: List[str], enabled=False):
+        super(MailNotification, self).__init__(message, enabled)
+        self.emails = emails
+        self.header = header
+
+    def execute_notification(self):
+        if self.enabled:
+            # execute notification
+            logger.debug(f"Execute EmailNotification")
 
 
 class TelegramNotification(Notification):
-    def __init__(self, token: str, enabled=False):
-        super(TelegramNotification, self).__init__(enabled)
-        self.token = token
+    def __init__(self,message:str, tokens: List[str], enabled=False):
+        super(TelegramNotification, self).__init__(message, enabled)
+        self.tokens = tokens
+
+    def execute_notification(self):
+        if self.enabled:
+            # execute notification
+            logger.debug(f"Execute TelegramNotification")
 
 
 class ConditionList(Condition):

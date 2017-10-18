@@ -49,6 +49,11 @@ class DbBase(ABC):
         """Retrieves the conditions as they are known in the database"""
         pass
 
+    @abstractmethod
+    def get_notifications(self) -> List[db_domain.Notification]:
+        """Retrieves the notification as they are known in the database"""
+        pass
+
 
 class DummyDb(DbBase):
     """Dummy implementation of a database class. Returns fixed data for all operations"""
@@ -77,14 +82,19 @@ class DummyDb(DbBase):
                 db_domain.Condition(3, 2, None, None, 15, True, None, None),
                 db_domain.Condition(4, 1, 1, [2, 3], None, None, None, None)]
 
+    def get_notifications(self) -> List[db_domain.Notification]:
+        return [db_domain.Notification(0, "Our First Mail Notification", 0, True, "Subject", ["laurentmichel@me.com"], None),
+                db_domain.Notification(1, "Our First Telegram Notification", 1, True, None, None, ["token1","token2"])]
+
+
     def get_actions(self) -> List[db_domain.Action]:
         # Create 3 actions for arduino 'DEMO".
         # Action 0 execute immediately, pins 0 and 10 ON, condition 4 for 15sec
         # Action 1 execute immediately, pins 2 and 9 OFF
         # Action 2 execute immediately, ping 8,9,10 TOGGLE, master 8, after 30 sec
-        return [db_domain.Action(0, 2, 0, 0, 15, [0, 10], 4, None),
-                db_domain.Action(1, 3, 0, 0, 0, [2, 9], None, None),
-                db_domain.Action(2, 1, 0, 30, 0, [8, 9, 10], None, 8)]
+        return [db_domain.Action(0, 2, 0, [0, 1], 0, 15, [0, 10], 4, None),
+                db_domain.Action(1, 3, 0, None, 0, 0, [2, 9], None, None),
+                db_domain.Action(2, 1, 0, [0,1], 30, 0, [8, 9, 10], None, 8)]
 
 
     def get_input_pins(self) -> List[db_domain.InputPin]:
@@ -101,6 +111,7 @@ class DummyDb(DbBase):
 
 
 class MariaDB(DbBase):
+
     def __init__(self, ip: str, port: int, username: str, password: str, database: str):
         self.database = database
         self.password = password
@@ -151,6 +162,9 @@ class MariaDB(DbBase):
                             db_domain.Condition(id, type, operator, condition_condition, output_pin_id, status, from_time, to_time))
 
         return conditions
+
+    def get_notifications(self) -> List[db_domain.Notification]:
+        return None
 
     def get_triggers(self) -> List[db_domain.Trigger]:
         with closing(self.__create_connection()) as conn:
