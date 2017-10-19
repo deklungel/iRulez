@@ -16,9 +16,16 @@ virtual_IO_board_buttons = 20
 virtual_IO_board_outputs = 20
 
 # Name of an relative action topic
-relative = 'relative'
+relativeTopic = 'relative'
 
+# Name of  the notification topics
+notificationTopic = 'notification'
 
+# Name of  the notification topics for mail
+mailTopic = 'mail'
+
+# Name of  the notification topics for telegramTopic
+telegramTopic = 'telegram'
 
 # Name of action topic with timer
-timer = 'timer'
+timerTopic = 'timer'

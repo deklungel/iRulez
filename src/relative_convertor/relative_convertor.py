@@ -40,8 +40,8 @@ def on_connect(client, userdata, flags, rc):
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.statusTopic)
     client.subscribe(constants.arduinoTopic + "/+/" + constants.statusTopic)
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.actionTopic + "/" + constants.relative)
-    client.subscribe(constants.arduinoTopic + "/" + constants.actionTopic + "/" + constants.relative)
+    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.actionTopic + "/" + constants.relativeTopic)
+    client.subscribe(constants.arduinoTopic + "/" + constants.actionTopic + "/" + constants.relativeTopic)
 
 
 def on_subscribe(mqttc, obj, mid, granted_qos):

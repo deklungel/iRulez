@@ -83,8 +83,8 @@ class DummyDb(DbBase):
                 db_domain.Condition(4, 1, 1, [2, 3], None, None, None, None)]
 
     def get_notifications(self) -> List[db_domain.Notification]:
-        return [db_domain.Notification(0, "Our First Mail Notification", 0, True, "Subject", ["laurentmichel@me.com"], None),
-                db_domain.Notification(1, "Our First Telegram Notification", 1, True, None, None, ["token1","token2"])]
+        return [db_domain.Notification(0, "Our First Mail Notification", 1, True, "Subject", ["laurentmichel@me.com"], None),
+                db_domain.Notification(1, "Our First Telegram Notification", 2, True, None, None, ["token1","token2"])]
 
 
     def get_actions(self) -> List[db_domain.Action]:
@@ -126,7 +126,7 @@ class MariaDB(DbBase):
                 templates = []
                 for id, name, nb_input_pins, nb_output_pins in cursor:
                     templates.append(db_domain.Template(id, name, nb_input_pins, nb_output_pins))
-        return templates
+                return templates
 
     def get_arduinos(self) -> List[db_domain.Arduino]:
         with closing(self.__create_connection()) as conn:
@@ -135,7 +135,7 @@ class MariaDB(DbBase):
                 arduinos = []
                 for id, name, template_id in cursor:
                     arduinos.append(db_domain.Arduino(id, name, template_id))
-        return arduinos
+                return arduinos
 
     def get_conditions(self) -> List[db_domain.Condition]:
         with closing(self.__create_connection()) as conn:
@@ -161,10 +161,31 @@ class MariaDB(DbBase):
                         conditions.append(
                             db_domain.Condition(id, type, operator, condition_condition, output_pin_id, status, from_time, to_time))
 
-        return conditions
+                return conditions
 
     def get_notifications(self) -> List[db_domain.Notification]:
-        return None
+        with closing(self.__create_connection()) as conn:
+            with closing(conn.cursor(buffered=True)) as cursor:
+                cursor.execute("SELECT id, notification_type, message, enabled, subject FROM tbl_Notification")
+                notifications = []
+                for id, notification_type, message, enabled, subject in cursor:
+                    mails = []
+                    tokens = []
+                    with closing(conn.cursor(buffered=True)) as mail_cursor:
+                        mail_cursor.execute(
+                            "SELECT tbl_Mail.Mail FROM tbl_Notification_Mail INNER JOIN tbl_Mail on tbl_Notification_Mail.Mail_id = tbl_Mail.id WHERE Notification_id=%s",
+                            (id,))
+                        for mail in mail_cursor:
+                            mails.append(mail)
+                    with closing(conn.cursor(buffered=True)) as telegram_cursor:
+                        telegram_cursor.execute(
+                            "SELECT tbl_Telegram.token FROM tbl_Notification_Telegram INNER JOIN tbl_Telegram on tbl_Notification_Telegram.Telegram_id = tbl_Telegram.id WHERE Notification_id=%s",
+                            (id,))
+                        for token in telegram_cursor:
+                            tokens.append(token)
+                    notifications.append(db_domain.Notification(id,message,notification_type,enabled,subject,mails,tokens))
+                return  notifications
+
 
     def get_triggers(self) -> List[db_domain.Trigger]:
         with closing(self.__create_connection()) as conn:
@@ -187,7 +208,7 @@ class MariaDB(DbBase):
                         for Action_ID in input_pins_cursor:
                             input_pin_action.append(Action_ID[0])
                         input_pins.append(db_domain.InputPin(id, number, input_pin_action, parent_id))
-        return input_pins
+                return input_pins
 
     def get_output_pins(self) -> List[db_domain.OutputPin]:
         with closing(self.__create_connection()) as conn:
@@ -196,7 +217,7 @@ class MariaDB(DbBase):
                 output_pins = []
                 for id, number, parent_id in cursor:
                     output_pins.append(db_domain.OutputPin(id, number, parent_id))
-        return output_pins
+                return output_pins
 
     def get_actions(self) -> List[db_domain.Action]:
         with closing(self.__create_connection()) as conn:
@@ -207,13 +228,15 @@ class MariaDB(DbBase):
                     with closing(conn.cursor(buffered=True)) as action_cursor:
                         action_cursor.execute("SELECT OutputPin_ID FROM tbl_Action_OutputPin WHERE Action_ID=%s", (id,))
                         output_pin_ids = []
-                        for OutputPin_ID in action_cursor:
-                            output_pin_ids.append(OutputPin_ID[0])
-                        actions.append(
-                            db_domain.Action(id, action_type, trigger_id, None, delay, timer, output_pin_ids, condition_id, master_id))
-                            #TODO: ADD notification to the database
-
-        return actions
+                        for output_pin_id in action_cursor:
+                            output_pin_ids.append(output_pin_id[0])
+                    with closing(conn.cursor(buffered=True)) as notification_cursor:
+                        notification_ids = []
+                        notification_cursor.execute("SELECT Notification_id FROM tbl_Action_Notification WHERE Action_id=%s", (id,))
+                        for notification_id in notification_cursor:
+                            notification_ids.append(notification_id[0])
+                    actions.append(db_domain.Action(id, action_type, trigger_id, notification_ids, delay, timer, output_pin_ids, condition_id, master_id))
+                return actions
 
     def __create_connection(self):
         return mariadb.connect(host=self.ip, port=self.port, user=self.username, password=self.password,

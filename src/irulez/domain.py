@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 import src.irulez.log as log
 from datetime import datetime, time
 from typing import List, Dict, Optional
+import src.irulez.constants as constants
+import json
 
 logger = log.get_logger('domain')
 
@@ -76,11 +78,13 @@ class Notification(ABC):
         self.message = message
         self.enabled = enabled
 
+    @abstractmethod
+    def get_topic_name(self):
+        pass
 
     @abstractmethod
-    def execute_notification(self):
-        if self.enabled:
-            pass
+    def get_payload(self):
+        pass
 
 
 class ImmediatelyActionTrigger(ActionTrigger):
@@ -170,15 +174,6 @@ class Action(ABC):
     def perform_action(self, pins_to_switch_on: Dict[str, List[int]], pins_to_switch_off: Dict[str, List[int]]):
         pass
 
-    def has_notifications(self):
-        if len(self.notifications) > 0:
-            return True
-        return False
-
-    def process_notification(self):
-        for notification in self.notifications:
-            notification.execute_notification()
-
     def check_condition(self):
         if self.condition is None:
             return True
@@ -200,15 +195,21 @@ class ButtonPin(Pin):
 
 
 class MailNotification(Notification):
-    def __init__(self,message: str, header: str, emails: List[str], enabled=False):
+    def __init__(self,message: str, header: str, mails: List[str], enabled=False):
         super(MailNotification, self).__init__(message, enabled)
-        self.emails = emails
+        self.mails = mails
         self.header = header
 
-    def execute_notification(self):
-        if self.enabled:
-            # execute notification
-            logger.debug(f"Execute EmailNotification")
+    def get_topic_name(self):
+        return constants.arduinoTopic + "/" + constants.notificationTopic + "/" + constants.mailTopic
+
+    def get_payload(self):
+        return json.dumps(
+            {
+                "mails": self.mails,
+                "message": self.message,
+                "header": self.header
+            })
 
 
 class TelegramNotification(Notification):
@@ -216,11 +217,15 @@ class TelegramNotification(Notification):
         super(TelegramNotification, self).__init__(message, enabled)
         self.tokens = tokens
 
-    def execute_notification(self):
-        if self.enabled:
-            # execute notification
-            logger.debug(f"Execute TelegramNotification")
+    def get_topic_name(self):
+        return constants.arduinoTopic + "/" + constants.notificationTopic + "/" + constants.telegramTopic
 
+    def get_payload(self):
+        return json.dumps(
+                    {
+                        "tokens": self.tokens,
+                        "message": self.message
+                    })
 
 class ConditionList(Condition):
     def __init__(self, operator: Operator, conditions: List[Condition]):
@@ -292,10 +297,10 @@ class OnAction(Action):
                  delay: int,
                  off_timer: int,
                  output_pins: List[OutputPin],
-                 notification: Optional[Notification],
+                 notifications: Optional[Notification],
                  condition: Optional[Condition]):
         self.off_timer = off_timer
-        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notification, condition)
+        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notifications, condition)
 
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
         pin_action = IndividualAction(None, None, self.delay, [], [])
@@ -320,10 +325,10 @@ class OffAction(Action):
                  delay: int,
                  on_timer: int,
                  output_pins: List[OutputPin],
-                 notification: Optional[Notification],
+                 notifications: Optional[Notification],
                  condition: Optional[Condition]):
         self.on_timer = on_timer
-        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notification, condition)
+        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notifications, condition)
 
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
         pin_action = IndividualAction(None, None, self.delay, [], [])
@@ -345,10 +350,10 @@ class ToggleAction(Action):
                  trigger: ActionTrigger,
                  delay: int,
                  output_pins: List[OutputPin],
-                 notification: Optional[Notification],
+                 notifications: Optional[Notification],
                  master: OutputPin,
                  condition: Optional[Condition]):
-        super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notification, condition)
+        super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notifications, condition)
         self.master = master
 
     def perform_action(self, pins_to_switch: Dict[str, IndividualAction]):

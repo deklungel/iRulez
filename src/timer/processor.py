@@ -44,10 +44,10 @@ class TimerProcessor:
             return
 
         self.sender.publish_relative_action(domain.IndividualAction(action_timer.name, constants.arduinoTopic + '/' +
-                                                                 constants.actionTopic + '/' +
-                                                                 constants.relative, 0,
-                                                                 action_timer.output_pins_on,
-                                                                 action_timer.output_pins_off))
+                                                                    constants.actionTopic + '/' +
+                                                                    constants.relativeTopic, 0,
+                                                                    action_timer.output_pins_on,
+                                                                    action_timer.output_pins_off))
 
         # After the timer is executed we remove the timers from ActionTimers and PythonTimers
         logger.debug(f"Delete executed timers")

@@ -16,10 +16,10 @@ class MqttSender:
         for name in json_list:
             for i in range(len(json_list[name])):
                 topic_name = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic
-                publish_topic = constants.arduinoTopic + '/' + constants.actionTopic + '/' + constants.relative
+                publish_topic = constants.arduinoTopic + '/' + constants.actionTopic + '/' + constants.relativeTopic
                 if json_list[name][i].delay != 0:
-                    topic_name = topic_name + '/' + constants.relative
-                    publish_topic = publish_topic + '/' + constants.timer
+                    topic_name = topic_name + '/' + constants.relativeTopic
+                    publish_topic = publish_topic + '/' + constants.timerTopic
 
                 payload = json.dumps(
                     {
@@ -31,6 +31,6 @@ class MqttSender:
                 logger.debug(f"Publishing: {publish_topic}{payload}")
                 self.client.publish(publish_topic, payload, 0, False)
 
-
-
-
+    def publish_notification(self, topic: str, payload: Dict[str, object]):
+        logger.debug(f"Publishing: {topic}{payload}")
+        self.client.publish(topic, payload, 0, False)

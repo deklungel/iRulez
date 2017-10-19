@@ -103,10 +103,10 @@ class ArduinoConfigFactory:
             return domain.TripleTapActionTrigger(trigger.time_between_tap)
 
     def __create_notification(self, notification: db_domain.Notification) -> domain.Notification:
-        if notification.notification_type == 0:
+        if notification.notification_type == 1:
            return domain.MailNotification(notification.message,notification.subject,
                                           notification.emails,notification.enabled)
-        if notification.notification_type == 1:
+        if notification.notification_type == 2:
             return domain.TelegramNotification(notification.message,notification.tokens,notification.enabled)
 
     def __create_arduino(self, arduino: db_domain.Arduino, templates: Dict[int, db_domain.Template]) -> domain.Arduino:

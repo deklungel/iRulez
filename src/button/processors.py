@@ -24,8 +24,13 @@ class ButtonActionProcessor:
         self.sender.publish_relative_action(pins_to_switch)
 
     def process_notification(self,action: domain.Action):
-        if action.has_notifications():
-            action.process_notification()
+        if action.notifications is None:
+            return
+        for notification in action.notifications:
+            topic = notification.get_topic_name()
+            payload = notification.get_payload()
+            self.sender.publish_notification(topic, payload)
+
 
     def process_button_message(self, name:str, payload: str):
         arduino = self.arduinos.get(name, None)

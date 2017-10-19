@@ -20,12 +20,12 @@ def is_arduino_action_topic(topic: str) -> bool:
 def is_arduino_relative_action_topic(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""
     # Format arduino_number/action/something
-    return is_arduino_topic(topic) and '/' + constants.actionTopic + '/' + constants.relative in topic
+    return is_arduino_topic(topic) and '/' + constants.actionTopic + '/' + constants.relativeTopic in topic
 
 def is_arduino_timer_action_topic(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""
     # Format arduino_number/action/something
-    return is_arduino_topic(topic) and '/' + constants.actionTopic + '/' + constants.relative + '/' + constants.timer in topic
+    return is_arduino_topic(topic) and '/' + constants.actionTopic + '/' + constants.relativeTopic + '/' + constants.timerTopic in topic
 
 
 def is_arduino_button_topic(topic: str) -> bool:
