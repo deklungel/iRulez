@@ -176,13 +176,13 @@ class MariaDB(DbBase):
                             "SELECT tbl_Mail.Mail FROM tbl_Notification_Mail INNER JOIN tbl_Mail on tbl_Notification_Mail.Mail_id = tbl_Mail.id WHERE Notification_id=%s",
                             (id,))
                         for mail in mail_cursor:
-                            mails.append(mail)
+                            mails.append(mail[0])
                     with closing(conn.cursor(buffered=True)) as telegram_cursor:
                         telegram_cursor.execute(
                             "SELECT tbl_Telegram.token FROM tbl_Notification_Telegram INNER JOIN tbl_Telegram on tbl_Notification_Telegram.Telegram_id = tbl_Telegram.id WHERE Notification_id=%s",
                             (id,))
                         for token in telegram_cursor:
-                            tokens.append(token)
+                            tokens.append(token[0])
                     notifications.append(db_domain.Notification(id,message,notification_type,enabled,subject,mails,tokens))
                 return  notifications
 

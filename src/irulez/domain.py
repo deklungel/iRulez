@@ -195,10 +195,10 @@ class ButtonPin(Pin):
 
 
 class MailNotification(Notification):
-    def __init__(self,message: str, header: str, mails: List[str], enabled=False):
+    def __init__(self,message: str, subject: str, mails: List[str], enabled=False):
         super(MailNotification, self).__init__(message, enabled)
         self.mails = mails
-        self.header = header
+        self.subject = subject
 
     def get_topic_name(self):
         return constants.arduinoTopic + "/" + constants.notificationTopic + "/" + constants.mailTopic
@@ -208,7 +208,7 @@ class MailNotification(Notification):
             {
                 "mails": self.mails,
                 "message": self.message,
-                "header": self.header
+                "subject": self.subject
             })
 
 
