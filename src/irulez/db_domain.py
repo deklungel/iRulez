@@ -70,11 +70,11 @@ class Condition:
 
 class Notification:
     def __init__(self, id: int, message: str, notification_type: int, enabled: bool, subject: Optional[str],
-                 emails: Optional[List[str]], tokens: Optional[List[str]]):
+                 mail_adress: List[str], tokens: List[str]):
         self.id = id
         self.notification_type = notification_type
         self.message = message
         self.enabled = enabled
         self.subject = subject
-        self.emails = emails
+        self.emails = mail_adress
         self.tokens = tokens

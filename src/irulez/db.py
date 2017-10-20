@@ -83,8 +83,8 @@ class DummyDb(DbBase):
                 db_domain.Condition(4, 1, 1, [2, 3], None, None, None, None)]
 
     def get_notifications(self) -> List[db_domain.Notification]:
-        return [db_domain.Notification(0, "Our First Mail Notification", 1, True, "Subject", ["laurentmichel@me.com"], None),
-                db_domain.Notification(1, "Our First Telegram Notification", 2, True, None, None, ["token1","token2"])]
+        return [db_domain.Notification(0, "Our First Mail Notification", 1, True, "Subject", ["laurentmichel@me.com"], []),
+                db_domain.Notification(1, "Our First Telegram Notification", 2, True, None, [], ["token1","token2"])]
 
 
     def get_actions(self) -> List[db_domain.Action]:

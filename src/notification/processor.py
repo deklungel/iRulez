@@ -32,7 +32,7 @@ class gmailProcessor:
         message = """From: %s\nTo: %s\nSubject: %s\n\n%s
         """ % (self.FROM, ", ".join(TO), SUBJECT, TEXT)
         try:
-            server = smtplib.SMTP("smtp.gmail.com", json_object['port'])
+            server = smtplib.SMTP("smtp.gmail.com", self.port)
             server.ehlo()
             server.starttls()
             server.login(self.gmail_user, self.gmail_pwd)
