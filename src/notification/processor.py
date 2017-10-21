@@ -13,11 +13,12 @@ class mailProcessor(ABC):
         pass
 
 class gmailProcessor:
-    def __init__(self, user: str, pwd: str, port: int):
+    def __init__(self, user: str, pwd: str, port: int, url: str):
         self.gmail_user = user
         self.gmail_pwd = pwd
         self.FROM = user
         self.port = port
+        self.url = url
 
     def send_mail(self, payload):
 
@@ -32,7 +33,7 @@ class gmailProcessor:
         message = """From: %s\nTo: %s\nSubject: %s\n\n%s
         """ % (self.FROM, ", ".join(TO), SUBJECT, TEXT)
         try:
-            server = smtplib.SMTP("smtp.gmail.com", self.port)
+            server = smtplib.SMTP(self.url, self.port)
             server.ehlo()
             server.starttls()
             server.login(self.gmail_user, self.gmail_pwd)

@@ -10,10 +10,10 @@ logger = log.get_logger('mail')
 client = mqtt.Client()
 
 config = configuration.Configuration()
-gmail_config = config.get_gmail_config()
+mailConfig = config.authenticate_SMTP_config()
 
 #create gmailProcessor
-gmail_processor = processor.gmailProcessor(gmail_config['username'], gmail_config['password'], int(gmail_config['port']))
+gmail_processor = processor.gmailProcessor(mailConfig['username'], mailConfig['password'], int(mailConfig['port']), mailConfig['url'])
 
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""

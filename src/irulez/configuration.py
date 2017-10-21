@@ -17,8 +17,8 @@ class Configuration:
     def get_database_config(self) -> {}:
         return self.get_config('Database')
 
-    def get_gmail_config(self) -> {}:
-        return self.get_config('Gmail')
+    def authenticate_SMTP_config(self) -> {}:
+        return self.get_config('authenticate_SMTP')
 
     def get_service_config(self) -> {}:
         return self.get_config('output_status')
