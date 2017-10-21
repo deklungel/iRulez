@@ -12,7 +12,7 @@ class mailProcessor(ABC):
     def send_mail(self, json_object):
         pass
 
-class authenticateSMTP_Processor:
+class authenticateSMTP_Processor(mailProcessor):
     def __init__(self, user: str, pwd: str, port: int, url: str):
         self.gmail_user = user
         self.gmail_pwd = pwd
