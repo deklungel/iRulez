@@ -1,0 +1,39 @@
+Huidige implementatie:
+    Omschrijving:
+    Een dimmer actie kan zijn:
+    -   een dimmer licht aandoen naar een bepaalde waarde met ofwel een TOGGLE of ON.
+        Het licht zal langzaam aangaan naar de aangegeven waarde
+    -   de schakelaar ingeduwd houden (second action), het licht zal zachtjes aan naar het maximum gaan,
+        of zachtjes uitgaan volgens volgende voorwaarden:
+        -   Het licht was uit -> lichtintensiteit zal toenemen
+        -   Het licht stond reeds op een bepaalde intensiteit
+                Was de voorgaande actie dat de lichtintensiteit sterker werd -> lichtintensiteit zal afnemen
+                Was de voorgaande actie dat de lichtintensiteit zwakker werd -> lichtintensiteit zal toenemen
+                -> De richting die de lichtintensiteit bepaalde zit op de schakelaar
+        -   Licht was via ON of TOGGLE aangedaan (dus op volledige intensiteit) -> lichtintensiteit zal afnemen
+
+    Use cases:
+    1)  Schakelaar met dimmer functionaleit als second action en als standaard functionaliteit (immediate action)
+        TOGGLE of ON OFF functie
+        -> Ik kan het licht AAN/UIT doen met een simpele druk
+            -> hou ik de knop langer ingeduwd dan zal afhankelijk van de laatste status de lichtintensiteit toe-/afnemen
+
+    2)  Schakelaar met dimmer functionaleit als second action en als standaard functionaliteit (immediate action)
+        DIMMER TOGGLE of DIMMER ON OFF functie
+        -> Als ik het licht AAN/UIT doe zal het geleidelijk naar de laatst ingestelde dimwaarde gaan of naar een
+        vooraf geconfigueerde waarde. Uitgaan zal ook geleidelijk aan gebeuren.
+
+    3)  Schakelaar bedient twee dimmerlichten die via andere schakelaars eerst bedient zijn.
+        Eén van de outputs geldt als MASTER, enkel indien deze AAN/UIT is. Als deze een dimmerwaarde heeft dan zal
+        de richting van de knop bepalen of de intensiteit toe - of afneemt.
+
+    Voorwaarden:
+    De webinterface moet de ingestelde waarde in real time mee volgen.
+
+    Benodigde atributen:
+    -   Een schakelaar (button) heeft een richting
+
+    -   Een dimmer (output)
+        -   Een intensiteit (waarde tussen 0 of 100)
+        -   Is gebruikt geweest als DIMMER of als AAN/UIT
+        -   Heeft een MASTER
