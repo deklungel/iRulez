@@ -19,3 +19,6 @@ class Configuration:
 
     def get_gmail_config(self) -> {}:
         return self.get_config('Gmail')
+
+    def get_service_config(self) -> {}:
+        return self.get_config('output_status')

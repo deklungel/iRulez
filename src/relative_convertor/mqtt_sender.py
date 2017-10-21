@@ -4,14 +4,15 @@ import src.irulez.log as log
 from typing import List, Dict, Optional
 import json
 import src.irulez.domain as domain
+import xmlrpc.client
 
 logger = log.get_logger('relative_convertor_mqtt_sender')
 
 
 class MqttSender:
-    def __init__(self, client, arduinos: {}):
+    def __init__(self, client, serviceConfig: Dict[str,str]):
         self.client = client
-        self.arduinos = arduinos
+        self.serviceConfig = serviceConfig
 
     def publish_absolute_action(self, json_object: Dict[str, object], absolute: List[bool]):
         payload = util.convert_array_to_hex(absolute)
@@ -19,35 +20,29 @@ class MqttSender:
         logger.debug(f"Publishing: {topic}/{payload}")
         self.client.publish(topic, payload, 0, False)
 
-    def send_absolute_update(self, arduino: domain.Arduino, json_object: Dict[str, object]):
+    def send_absolute_update(self, json_object: Dict[str, object]):
 
         # Accepts relative pins as input, converts them to absolute updates
-        # TODO: improve 'send_update' mechanism to only send updates to arduinos with updates.
         #  Current implementation sends updates to all arduinos or none.
-        send_update = False
 
-        absolute = [False] * arduino.number_of_output_pins
-        for pin in arduino.output_pins.values():
-            if pin.state:
-                absolute[pin.number] = True
-            if pin.number in json_object['on'] and not pin.state:
-                send_update = True
-                absolute[pin.number] = True
+        with xmlrpc.client.ServerProxy(f"http://{self.serviceConfig['url']}:{self.serviceConfig['port']}/") as proxy:
+            begin_status = proxy.arduino_status(json_object['name'])
+            end_status = begin_status[:]
 
-        for pin in arduino.output_pins.values():
-            if pin.state:
-                absolute[pin.number] = True
-            if pin.number in json_object['off'] and pin.state:
-                absolute[pin.number] = False
-                send_update = True
+        for pin in json_object['on']:
+            end_status[pin] = True
+        for pin in json_object['off']:
+            end_status[pin] = False
 
-        logger.debug(f"absolute action: '{absolute}' should_update='{send_update}'")
+        logger.debug(f"absolute action: '{end_status}' should_update='{not self.compaire_list(begin_status, end_status)}'")
 
-        if send_update:
-            self.publish_absolute_action(json_object, absolute)
+        if not self.compaire_list(begin_status, end_status):
+            self.publish_absolute_action(json_object, end_status)
         else:
             logger.info("No change to publish")
 
+    def compaire_list(seslf, begin_status: List[bool], end_status: List[bool]):
+        return begin_status == end_status
 
 
 

@@ -13,10 +13,10 @@ class ButtonActionProcessor:
         actions = arduino.button_pins[pin].get_button_pin_actions()
         pins_to_switch = {}
         for action in actions:
-            if action.should_trigger(value) and action.check_condition():
-                logger.info(f"Process action with type '{action.action_type}'")
-                action.perform_action(pins_to_switch)
-                self.process_notification(action)
+            if action.should_trigger(value) and self.check_condition(action):
+                    logger.info(f"Process action with type '{action.action_type}'")
+                    action.perform_action(pins_to_switch)
+                    self.process_notification(action)
             elif not action.check_condition():
                 logger.info(f"Condition not met")
 
@@ -31,6 +31,8 @@ class ButtonActionProcessor:
             payload = notification.get_payload()
             self.sender.publish_notification(topic, payload)
 
+    def check_condition(self, action: domain.Action):
+        return action.check_condition()
 
     def process_button_message(self, name:str, payload: str):
         arduino = self.arduinos.get(name, None)
