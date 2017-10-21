@@ -13,7 +13,7 @@ config = configuration.Configuration()
 mailConfig = config.authenticate_SMTP_config()
 
 #create gmailProcessor
-gmail_processor = processor.gmailProcessor(mailConfig['username'], mailConfig['password'], int(mailConfig['port']), mailConfig['url'])
+mail = processor.authenticateSMTP_Processor(mailConfig['username'], mailConfig['password'], int(mailConfig['port']), mailConfig['url'])
 
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""
@@ -33,7 +33,7 @@ def on_subscribe(mqttc, obj, mid, granted_qos):
 def on_message(client, userdata, msg):
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
-    gmail_processor.send_mail(msg.payload.decode("utf-8"))
+    mail.send_mail(msg.payload.decode("utf-8"))
 
 
 
