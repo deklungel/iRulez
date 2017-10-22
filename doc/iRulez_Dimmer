@@ -36,4 +36,5 @@ Huidige implementatie:
     -   Een dimmer (output)
         -   Een intensiteit (waarde tussen 0 of 100)
         -   Is gebruikt geweest als DIMMER of als AAN/UIT
+            -> indien gebruikt als AAN/UIT welk is de momentele waarde (AAN of UIT)
         -   Heeft een MASTER
