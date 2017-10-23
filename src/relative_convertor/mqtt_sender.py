@@ -1,13 +1,13 @@
 import src.irulez.util as util
 import src.irulez.log as log
-import src.output_status.StatusServiceClient as ServiceClient
+import src.output_status.ServiceClient as ServiceClient
 from typing import List, Dict
 
 logger = log.get_logger('relative_convertor_mqtt_sender')
 
 
 class MqttSender:
-    def __init__(self, client, status_service: ServiceClient):
+    def __init__(self, client, status_service: ServiceClient.StatusServiceClient):
         self.client = client
         self.status_service = status_service
 

@@ -5,7 +5,7 @@ import lib.paho.mqtt.client as mqtt
 import src.irulez.configuration as configuration
 import src.relative_convertor.processors as relative_processor
 import src.relative_convertor.mqtt_sender as mqtt_sender
-import src.output_status.StatusServiceClient as StatusServiceClient
+import src.output_status.ServiceClient as ServiceClient
 
 
 logger = log.get_logger('absolute_update')
@@ -17,7 +17,7 @@ serviceConfig = config.get_service_client_config()
 
 # Create client
 client = mqtt.Client()
-StatusService = StatusServiceClient.ServiceClient(serviceConfig['url'],serviceConfig['port'])
+StatusService = ServiceClient.StatusServiceClient(serviceConfig['url'],serviceConfig['port'])
 sender = mqtt_sender.MqttSender(client, StatusService)
 relative_action_processor =  relative_processor.RelativeActionProcessor(sender)
 

@@ -7,7 +7,7 @@ from xmlrpc.server import SimpleXMLRPCServer
 logger = log.get_logger('StatusServiceServer')
 
 
-class ServiceServer(service.Service):
+class OutputServiceServer(service.Service):
     def __init__(self, arduinos: object, url: object, port: object) -> object:
         self.arduinos = arduinos
         self.url = url

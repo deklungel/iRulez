@@ -6,7 +6,7 @@ import src.irulez.util as util
 import src.button.processors as button_processor
 import src.irulez.configuration as configuration
 import src.irulez.factory as factory
-import src.output_status.StatusServiceServer as StatusServiceServer
+import src.output_status.ServiceServer as ServiceServer
 
 logger = log.get_logger('Service')
 
@@ -72,7 +72,7 @@ serviceConfig = config.get_service_server_config()
 client.username_pw_set(mqttConfig['username'], mqttConfig['password'])
 client.connect(mqttConfig['ip'], int(mqttConfig['port']), 60)
 
-StatusServiceServer = StatusServiceServer.ServiceServer(arduinos, serviceConfig['url'], int(serviceConfig['port']))
+StatusServiceServer = ServiceServer.OutputServiceServer(arduinos, serviceConfig['url'], int(serviceConfig['port']))
 StatusServiceServer.connect()
 
 logger.info("Starting loop forever")

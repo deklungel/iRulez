@@ -5,7 +5,7 @@ import src.irulez.log as log
 
 logger = log.get_logger('StatusServiceServer')
 
-class ServiceClient(service.Service):
+class StatusServiceClient(service.Service):
     def __init__(self, url: str, port: int):
         self.url = url
         self.port = port
