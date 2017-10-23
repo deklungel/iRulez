@@ -10,7 +10,11 @@ logger = log.get_logger('StatusServiceServer')
 class ServiceServer(service.Service):
     def __init__(self, arduinos: object, url: object, port: object) -> object:
         self.arduinos = arduinos
-        server = SimpleXMLRPCServer((url, port))
+        self.url = url
+        self.port = port
+
+    def connect(self):
+        server = SimpleXMLRPCServer((self.url, self.port))
         logger.info(f"Listening on port {port}...")
         server.register_function(self.status, "status")
         server.register_function(self.get_arduino_status, "arduino_status")

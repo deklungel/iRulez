@@ -1,5 +1,3 @@
-from xmlrpc.server import SimpleXMLRPCServer
-import threading
 import src.irulez.log as log
 import lib.paho.mqtt.client as mqtt
 import src.irulez.constants as constants
@@ -75,6 +73,7 @@ client.username_pw_set(mqttConfig['username'], mqttConfig['password'])
 client.connect(mqttConfig['ip'], int(mqttConfig['port']), 60)
 
 StatusServiceServer = StatusServiceServer.ServiceServer(arduinos, serviceConfig['url'], int(serviceConfig['port']))
+StatusServiceServer.connect()
 
 logger.info("Starting loop forever")
 # Blocking class that loops forever
