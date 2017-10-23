@@ -1,4 +1,4 @@
-import src.output_status.service as service
+import src.output_status.service_domain as service
 import xmlrpc.client
 from typing import List
 
@@ -13,3 +13,6 @@ class ServiceClient(service.Service):
         with xmlrpc.client.ServerProxy(f"http://{self.url}:{self.port}/") as proxy:
             status = proxy.arduino_status(name)
         return status
+
+    def status(self, name: str, pin: int) -> bool:
+        pass
