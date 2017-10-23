@@ -1,12 +1,11 @@
 import src.irulez.log as log
-import src.irulez.db
 import src.irulez.constants as constants
 import src.irulez.util as util
 import lib.paho.mqtt.client as mqtt
 import src.irulez.configuration as configuration
-import src.irulez.factory as factory
 import src.relative_convertor.processors as relative_processor
 import src.relative_convertor.mqtt_sender as mqtt_sender
+import src.output_status.StatusServiceClient as StatusServiceClient
 
 
 logger = log.get_logger('absolute_update')
@@ -18,8 +17,8 @@ serviceConfig = config.get_service_config()
 
 # Create client
 client = mqtt.Client()
-
-sender = mqtt_sender.MqttSender(client, serviceConfig)
+StatusService = StatusServiceClient.ServiceClient(serviceConfig['url'],serviceConfig['port'])
+sender = mqtt_sender.MqttSender(client, StatusService)
 relative_action_processor =  relative_processor.RelativeActionProcessor(sender)
 
 def on_connect(client, userdata, flags, rc):

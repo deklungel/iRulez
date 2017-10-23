@@ -83,7 +83,7 @@ def status(name: str, pin:int):
     status = arduino.output_pins[pin].state
     return status
 
-def arduino_status(name: str):
+def get_arduino_status(name: str):
     arduino = arduinos.get(name, None)
     if arduino is None:
         # Unknown arduino
@@ -98,7 +98,7 @@ def arduino_status(name: str):
 server = SimpleXMLRPCServer((serviceConfig['url'], int(serviceConfig['port'])))
 logger.info(f"Listening on port {serviceConfig['port']}...")
 server.register_function(status, "status")
-server.register_function(arduino_status, "arduino_status")
+server.register_function(get_arduino_status, "arduino_status")
 server.register_multicall_functions()
 th = threading.Thread(target=server.serve_forever)
 th.deamon = True

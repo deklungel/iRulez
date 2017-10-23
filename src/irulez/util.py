@@ -1,6 +1,7 @@
 import src.irulez.constants as constants
 import src.irulez.log as log
 from typing import Optional
+from typing import List
 
 logger = log.get_logger('util')
 
@@ -62,3 +63,6 @@ def convert_hex_to_array(payload: str, number_of_pins: int) -> list:
         payload = "0"
     logger.debug("convert_hex_to_array " + bin(int(payload, 16))[2:].zfill(number_of_pins))
     return bin(int(payload, 16))[2:].zfill(number_of_pins)
+
+def compare_lists(begin_status: List[bool], end_status: List[bool]) -> bool:
+    return begin_status == end_status
