@@ -10,7 +10,7 @@ import src.irulez.configuration as configuration
 import src.irulez.factory as factory
 import src.output_status.StatusServiceServer as StatusServiceServer
 
-logger = log.get_logger('button')
+logger = log.get_logger('Service')
 
 # Get database, dummy for now
 logger.debug('Getting database')
@@ -69,7 +69,7 @@ client.on_subscribe = on_subscribe
 # Connect
 config = configuration.Configuration()
 mqttConfig = config.get_mqtt_config()
-serviceConfig = config.get_service_config()
+serviceConfig = config.get_service_server_config()
 
 client.username_pw_set(mqttConfig['username'], mqttConfig['password'])
 client.connect(mqttConfig['ip'], int(mqttConfig['port']), 60)

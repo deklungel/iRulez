@@ -13,7 +13,7 @@ logger = log.get_logger('absolute_update')
 # Get config
 config = configuration.Configuration()
 mqttConfig = config.get_mqtt_config()
-serviceConfig = config.get_service_config()
+serviceConfig = config.get_service_client_config()
 
 # Create client
 client = mqtt.Client()

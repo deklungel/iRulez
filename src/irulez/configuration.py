@@ -20,5 +20,8 @@ class Configuration:
     def authenticate_SMTP_config(self) -> {}:
         return self.get_config('authenticate_SMTP')
 
-    def get_service_config(self) -> {}:
-        return self.get_config('output_status')
+    def get_service_client_config(self) -> {}:
+        return self.get_config('output_status_client')
+
+    def get_service_server_config(self) -> {}:
+        return self.get_config('output_status_server')
