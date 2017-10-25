@@ -183,9 +183,10 @@ class Action(ABC):
 class ButtonPin(Pin):
     """Represents a single input pin on an arduino"""
 
-    def __init__(self, number: int, actions: List[Action], state=False):
+    def __init__(self, number: int, actions: List[Action],down_timer, state=False):
         super(ButtonPin, self).__init__(number, ArduinoPinType.BUTTON, state)
         self.actions = actions
+        self.down_timer = down_timer
 
     def set_button_pin_actions(self, actions: List[Action]):
         self.actions = actions

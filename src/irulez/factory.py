@@ -264,7 +264,7 @@ class ArduinoConfigFactory:
                 return None
             actions_of_button.append(act)
 
-        to_return = domain.ButtonPin(input_pin.number, actions_of_button)
+        to_return = domain.ButtonPin(input_pin.number, actions_of_button, input_pin.down_timer)
         arduino.set_button_pin(to_return)
         return to_return
 

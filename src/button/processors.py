@@ -9,8 +9,11 @@ class ButtonActionProcessor:
         self.sender = sender
         self.arduinos = arduinos
 
+
+
     def process_button(self, arduino, pin, value: bool):
         actions = arduino.button_pins[pin].get_button_pin_actions()
+        down_timer = arduino.button_pins[pin].down_timer
         pins_to_switch = {}
         for action in actions:
             if action.should_trigger(value) and self.check_condition(action):

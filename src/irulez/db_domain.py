@@ -25,11 +25,12 @@ class OutputPin:
 
 
 class InputPin:
-    def __init__(self, id: int, number: int, action_ids: List[int], parent_id: int):
+    def __init__(self, id: int, number: int, action_ids: List[int], parent_id: int, down_timer: int):
         self.parent_id = parent_id
         self.action_ids = action_ids
         self.number = number
         self.id = id
+        self.down_timer = down_timer
 
 
 class Action:
