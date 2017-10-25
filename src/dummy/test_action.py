@@ -80,7 +80,7 @@ if button_type == 'M':
     clicks = input("How many clicks do you want to trigger? [3] ")
     if clicks == '':
         clicks = 3
-    for x in range(0, clicks):
+    for x in range(0, int(clicks)):
         log.info(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload)
         publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic, payload,
                        auth={'username': mqttConfig['username'], 'password': mqttConfig['password']},
