@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 import src.irulez.log as log
 from abc import ABC
 
@@ -50,12 +50,12 @@ class RelativeActionTimer(Timer):
         self.output_pins_on = output_pins_on
         self.output_pins_off = output_pins_off
 
-    def check_pins(self, json_object: []):
+    def check_pins(self, json_object: Dict):
         self.check_remove_pin(json_object["on"])
         self.check_remove_pin(json_object["off"])
 
-    def check_remove_pin(self, jsonobject: []):
-        for pin in jsonobject:
+    def check_remove_pin(self, json_object: List[int]):
+        for pin in json_object:
             if pin in self.output_pins_on:
                 self.output_pins_on.remove(pin)
                 logger.debug(f"on pin {pin} has been deleted from timer")
@@ -63,5 +63,5 @@ class RelativeActionTimer(Timer):
                 self.output_pins_off.remove(pin)
                 logger.debug(f"off pin {pin} has been deleted from timer")
 
-    def check_empty_timer(self):
+    def check_empty_timer(self) -> bool:
         return len(self.output_pins_on) == 0 and len(self.output_pins_on) == 0

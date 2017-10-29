@@ -59,10 +59,6 @@ class ActionTrigger(ABC):
     def get_action_trigger_type(self):
         return self.trigger_type
 
-    @abstractmethod
-    def should_trigger(self, value: bool):
-        pass
-
 
 class Condition(ABC):
     def __init__(self, condition_type: ConditionType):
@@ -88,46 +84,32 @@ class Notification(ABC):
 
 
 class ImmediatelyActionTrigger(ActionTrigger):
-    def should_trigger(self, value: bool):
-        return value
-
     def __init__(self):
         super(ImmediatelyActionTrigger, self).__init__(ActionTriggerType.IMMEDIATELY)
 
 
 class AfterReleaseActionTrigger(ActionTrigger):
-    def should_trigger(self, value: bool):
-        return not value
-
     def __init__(self):
         super(AfterReleaseActionTrigger, self).__init__(ActionTriggerType.AFTER_RELEASE)
 
 
 class LongDownActionTrigger(ActionTrigger):
-    def should_trigger(self, value: bool):
-        NotImplementedError
-        pass
-
     def __init__(self, seconds_down: int):
         super(LongDownActionTrigger, self).__init__(ActionTriggerType.LONG_DOWN)
-        self.seconds_down = seconds_down
+        self._seconds_down = seconds_down
+
+    @property
+    def seconds_down(self):
+        return self._seconds_down
 
 
 class DoubleTapActionTrigger(ActionTrigger):
-    def should_trigger(self, value: bool):
-        NotImplementedError
-        pass
-
     def __init__(self, time_between_tap: int):
         super(DoubleTapActionTrigger, self).__init__(ActionTriggerType.DOUBLE_TAP)
         self.time_between_tap = time_between_tap
 
 
 class TripleTapActionTrigger(ActionTrigger):
-    def should_trigger(self, value: bool):
-        NotImplementedError
-        pass
-
     def __init__(self, time_between_tap: int):
         super(TripleTapActionTrigger, self).__init__(ActionTriggerType.TRIPLE_TAP)
         self.time_between_tap = time_between_tap
@@ -167,9 +149,6 @@ class Action(ABC):
         self.notifications = notifications
         self.condition = condition
 
-    def should_trigger(self, value: bool):
-        return self.trigger.should_trigger(value)
-
     @abstractmethod
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
         pass
@@ -182,17 +161,22 @@ class Action(ABC):
 
 class ButtonPin(Pin):
     """Represents a single input pin on an arduino"""
-
-    def __init__(self, number: int, actions: List[Action], down_timer: int, state=False):
+    def __init__(self, number: int, actions: List[Action], state=False):
         super(ButtonPin, self).__init__(number, ArduinoPinType.BUTTON, state)
-        self.actions = actions
-        self.down_timer = down_timer
+        self.__actions = actions
 
     def set_button_pin_actions(self, actions: List[Action]):
-        self.actions = actions
+        self.__actions = actions
 
     def get_button_pin_actions(self) -> List[Action]:
-        return self.actions
+        return self.__actions
+
+    def get_button_immediate_actions(self) -> List[Action]:
+        results = []
+        for action in self.__actions:
+            if action.trigger.trigger_type == ActionTriggerType.IMMEDIATELY:
+                results.append(action)
+        return results
 
 
 class MailNotification(Notification):
@@ -385,7 +369,11 @@ class Arduino:
         self.number_of_output_pins = number_of_outputs_pins
         self.number_of_button_pins = number_of_button_pins
         self.output_pins = dict()
-        self.button_pins = dict()
+        self._button_pins = dict()
+
+    @property
+    def button_pins(self) -> Dict[int, ButtonPin]:
+        return self._button_pins
 
     def set_output_pin(self, output_pin: OutputPin):
         self.output_pins[output_pin.number] = output_pin
@@ -395,11 +383,11 @@ class Arduino:
             self.output_pins[pin.number] = pin
 
     def set_button_pin(self, button_pin: ButtonPin):
-        self.button_pins[button_pin.number] = button_pin
+        self._button_pins[button_pin.number] = button_pin
 
     def set_button_pins(self, button_pins: List[ButtonPin]):
         for pin in button_pins:
-            self.button_pins[pin.number] = pin
+            self._button_pins[pin.number] = pin
 
     def get_output_pin_status(self) -> str:
         """Gets the status array of the output_pins of this arduino"""
@@ -426,7 +414,7 @@ class Arduino:
     def get_changed_pins(self, payload: str) -> Dict[int, bool]:
         status = util.convert_hex_to_array(payload, self.number_of_output_pins)
         changed_pins = dict()
-        for pin in self.button_pins.values():
+        for pin in self._button_pins.values():
             if bool(int(status[pin.number])) != pin.state:
                 changed_pins[pin.number] = bool(int(status[pin.number]))
                 pin.state = bool(int(status[pin.number]))

@@ -59,6 +59,7 @@ def on_message(client, userdata, msg):
     logger.debug(f"Update the relay status")
     update_processor.update_arduino_output_pins(name, msg.payload)
 
+
 # Set callback functions
 client.on_connect = on_connect
 client.on_message = on_message

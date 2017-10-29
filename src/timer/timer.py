@@ -40,7 +40,6 @@ def on_message(client, userdata, msg):
         # Unknown topic
         return
 
-
     # Check if the topic is timer update.
     if util.is_arduino_timer_action_topic(msg.topic):
         logger.debug(f"Process the timer action")

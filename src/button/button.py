@@ -42,6 +42,8 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(constants.arduinoTopic + "/+/" + constants.buttonTopic)
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.statusTopic)
     client.subscribe(constants.arduinoTopic + "/+/" + constants.statusTopic)
+    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.buttonTimerFiredTopic)
+    client.subscribe(constants.arduinoTopic + "/+/" + constants.buttonTimerFiredTopic)
 
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
@@ -51,12 +53,6 @@ def on_subscribe(mqttc, obj, mid, granted_qos):
 def on_message(client, userdata, msg):
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
-
-    # Find arduino name of topic
-    if not (util.is_arduino_status_topic(msg.topic) or util.is_arduino_button_topic(msg.topic)):
-        logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
-        # Unknown topic
-        return
 
     # Get the name of the arduino from the topic
     name = util.get_arduino_name_from_topic(msg.topic)
@@ -70,8 +66,14 @@ def on_message(client, userdata, msg):
     elif util.is_arduino_button_topic(msg.topic):
         logger.debug(f"Button change received.")
         action_processor.process_button_message(name, msg.payload)
+        return
+
+    elif util.is_arduino_button_fired_topic(msg.topic):
+        logger.debug("Button fired received.")
 
         return
+
+    logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
 
 
 # Set callback functions

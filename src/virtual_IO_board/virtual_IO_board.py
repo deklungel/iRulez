@@ -7,9 +7,10 @@ from src.irulez import configuration
 
 logger = log.get_logger('virtual_IO_board')
 
-#TODO: update code to get_virtual_IO not dummy DB
+# TODO: update code to get_virtual_IO not dummy DB
 # Get database, dummy for now
 db = src.irulez.db.get_dummy_db()
+
 
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""
@@ -19,7 +20,7 @@ def on_connect(client, userdata, flags, rc):
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.virtual_IO_board_name + "/" + constants.actionTopic)
-    client.subscribe(constants.arduinoTopic  + "/" + constants.virtual_IO_board_name + "/" + constants.actionTopic)
+    client.subscribe(constants.arduinoTopic + "/" + constants.virtual_IO_board_name + "/" + constants.actionTopic)
     # TODO: Subscribe to dimmer values
 
 
@@ -30,7 +31,6 @@ def on_subscribe(mqttc, obj, mid, granted_qos):
 def on_message(client, userdata, msg):
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
-    global arduinos
 
     # Find arduino name of topic
     if not (util.is_arduino_action_topic(msg.topic)):
@@ -38,11 +38,9 @@ def on_message(client, userdata, msg):
         # Unknown topic
         return
 
-
     logger.debug(f"Publishing new status of arduino '{constants.virtual_IO_board_name}: {msg.payload}'")
-    client.publish(constants.arduinoTopic + '/' + constants.virtual_IO_board_name + '/status', str(msg.payload.decode('ascii')),0,True)
-
-
+    client.publish(constants.arduinoTopic + '/' + constants.virtual_IO_board_name + '/status',
+                   str(msg.payload.decode('ascii')), 0, True)
 
 
 # Create client

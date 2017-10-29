@@ -10,6 +10,6 @@ class RelativeActionProcessor:
         self.sender = sender
 
     def process_relative_action_message(self, payload: str):
-
+        logger.info("Processing " + payload)
         json_object = json.loads(payload)
         self.sender.send_absolute_update(json_object)

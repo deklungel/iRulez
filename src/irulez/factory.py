@@ -31,7 +31,6 @@ class ArduinoConfigFactory:
         logger.debug('Retrieving notifications from database')
         notifications = self.db.get_notifications()
 
-
         logger.info("Got all data from database")
 
         # Map templates
@@ -73,7 +72,8 @@ class ArduinoConfigFactory:
         # Create actions
         created_actions = dict()
         for action in actions:
-            created_action = self.__create_action(action, created_triggers, created_output_pins, created_conditions, created_notifications)
+            created_action = self.__create_action(action, created_triggers, created_output_pins, created_conditions,
+                                                  created_notifications)
             if created_action is not None:
                 created_actions[action.id] = created_action
 
@@ -104,10 +104,10 @@ class ArduinoConfigFactory:
 
     def __create_notification(self, notification: db_domain.Notification) -> domain.Notification:
         if notification.notification_type == 1:
-           return domain.MailNotification(notification.message,notification.subject,
-                                          notification.emails,notification.enabled)
+            return domain.MailNotification(notification.message, notification.subject,
+                                           notification.emails, notification.enabled)
         if notification.notification_type == 2:
-            return domain.TelegramNotification(notification.message,notification.tokens,notification.enabled)
+            return domain.TelegramNotification(notification.message, notification.tokens, notification.enabled)
 
     def __create_arduino(self, arduino: db_domain.Arduino, templates: Dict[int, db_domain.Template]) -> domain.Arduino:
         template = templates.get(arduino.template_id, None)
@@ -172,7 +172,7 @@ class ArduinoConfigFactory:
                         unprocessed.append(condition)
 
             to_process = unprocessed
-            #logger.debug("end __create_conditions")
+            # logger.debug("end __create_conditions")
         return to_return
 
     def __create_output_pin_condition(self, condition: db_domain.Condition,
@@ -231,18 +231,19 @@ class ArduinoConfigFactory:
             for notification in action.notification_ids:
                 notification_of_action.append(notifications.get(notification))
 
-
-
         if action.action_type == 1:
             # Get master pin
             master_pin = output_pins.get(action.master_id, None)
             if master_pin is None:
                 logger.warning(f'The master pin {action.master_id} could not be found for action {action.id}')
-            return domain.ToggleAction(trigger, action.delay, pins_of_action, notification_of_action, master_pin, condition)
+            return domain.ToggleAction(trigger, action.delay, pins_of_action, notification_of_action, master_pin,
+                                       condition)
         if action.action_type == 2:
-            return domain.OnAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action, condition)
+            return domain.OnAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action,
+                                   condition)
         if action.action_type == 3:
-            return domain.OffAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action, condition)
+            return domain.OffAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action,
+                                    condition)
 
         # Other types not supported yet
         logger.error(f'Type {action.action_type} not supported yet')
@@ -265,7 +266,7 @@ class ArduinoConfigFactory:
                 return None
             actions_of_button.append(act)
 
-        to_return = domain.ButtonPin(input_pin.number, actions_of_button, input_pin.down_timer)
+        to_return = domain.ButtonPin(input_pin.number, actions_of_button)
         arduino.set_button_pin(to_return)
         return to_return
 

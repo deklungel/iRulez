@@ -25,19 +25,17 @@ class MqttSender:
         begin_status = self.status_service.get_arduino_status(str(json_object['name']))
         end_status = begin_status[:]
 
+        # noinspection PyTypeChecker
         for pin in list(json_object['on']):
             end_status[pin] = True
+        # noinspection PyTypeChecker
         for pin in list(json_object['off']):
             end_status[pin] = False
 
-        logger.debug(f"absolute action: '{end_status}' should_update='{not util.compare_lists(begin_status, end_status)}'")
+        logger.debug(
+            f"absolute action: '{end_status}' should_update='{not util.compare_lists(begin_status, end_status)}'")
 
         if not util.compare_lists(begin_status, end_status):
             self.publish_absolute_action(json_object, end_status)
         else:
             logger.info("No change to publish")
-
-
-
-
-

@@ -3,22 +3,20 @@ import src.irulez.log as log
 from abc import ABC, abstractmethod
 import json
 
-
 logger = log.get_logger('mail_processor')
 
 
-class mailProcessor(ABC):
-
+class MailProcessor(ABC):
     @abstractmethod
     def send_mail(self, json_object):
         pass
 
 
-class authenticateSMTP_Processor(mailProcessor):
+class AuthenticateSMTP_Processor(MailProcessor):
     def __init__(self, user: str, pwd: str, port: int, url: str):
         self.gmail_user = user
         self.gmail_pwd = pwd
-        self.FROM = user
+        self._from = user
         self.port = port
         self.url = url
 
@@ -27,19 +25,19 @@ class authenticateSMTP_Processor(mailProcessor):
         json_object = json.loads(payload)
         recipient = json_object['mails']
 
-        TO = recipient if type(recipient) is list else [recipient]
-        SUBJECT = json_object['subject']
-        TEXT = json_object['message']
+        to = recipient if type(recipient) is list else [recipient]
+        subject = json_object['subject']
+        body = json_object['message']
 
         # Prepare actual message
         message = """From: %s\nTo: %s\nSubject: %s\n\n%s
-        """ % (self.FROM, ", ".join(TO), SUBJECT, TEXT)
+        """ % (self._from, ", ".join(to), subject, body)
         try:
             server = smtplib.SMTP(self.url, self.port)
             server.ehlo()
             server.starttls()
             server.login(self.gmail_user, self.gmail_pwd)
-            server.sendmail(self.FROM, TO, message)
+            server.sendmail(self._from, to, message)
             server.close()
             logger.info(f"successfully sent the mail")
         except:

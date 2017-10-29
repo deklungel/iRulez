@@ -12,8 +12,6 @@ config = configuration.Configuration()
 mqttConfig = config.get_mqtt_config()
 databaseConfig = config.get_database_config()
 
-
-
 arduino = input("Arduino name? <[DEMO]|virtual_IO_Board> ")
 number_of_pin = input("Number of pins? <[16]|20> ")
 pin = input("Pin [10]")
@@ -37,8 +35,6 @@ pin_states[int(pin)] = 1
 
 payload = util.convert_array_to_hex(pin_states)
 payload_release = util.convert_array_to_hex(pin_states_Release)
-
-
 
 if button_type == 'C':
     log.info(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload)

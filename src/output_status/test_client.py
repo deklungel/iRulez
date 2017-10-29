@@ -13,13 +13,12 @@ logger.debug("After 1")
 
 logger.debug("Before 2")
 proxy = xmlrpc.client.ServerProxy("http://127.0.0.1:8000/")
-multicall = xmlrpc.client.MultiCall(proxy)
+multi_call = xmlrpc.client.MultiCall(proxy)
 for x in range(0, 16):
-    multicall.pin_status("DEMO", 0)
-result = multicall()
+    multi_call.pin_status("DEMO", 0)
+result = multi_call()
 logger.debug("After 2")
 logger.info(str(tuple(result)))
-
 
 
 logger.debug("Before 3")

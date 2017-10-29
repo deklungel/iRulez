@@ -31,6 +31,18 @@ class MqttSender:
                 logger.debug(f"Publishing: {publish_topic}{payload}")
                 self.client.publish(publish_topic, payload, 0, False)
 
+    def publish_message_to_button_processor(self, arduino_name: str, button_pin: int, seconds_down: int):
+        publish_topic = constants.arduinoTopic + '/' + arduino_name + '/' + constants.buttonTimerFiredTopic
+        payload = json.dumps(
+            {
+                "button_pin": button_pin,
+                "seconds_down": seconds_down
+            }
+        )
+
+        logger.debug(f"Publishing: {publish_topic}{payload}")
+        self.client.publish(publish_topic, payload, 0, False)
+
     def publish_notification(self, topic: str, payload: Dict[str, object]):
         logger.debug(f"Publishing: {topic}{payload}")
         self.client.publish(topic, payload, 0, False)

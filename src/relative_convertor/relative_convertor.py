@@ -17,9 +17,10 @@ serviceConfig = config.get_service_client_config()
 
 # Create client
 client = mqtt.Client()
-StatusService = ServiceClient.StatusServiceClient(serviceConfig['url'],serviceConfig['port'])
+StatusService = ServiceClient.StatusServiceClient(serviceConfig['url'], serviceConfig['port'])
 sender = mqtt_sender.MqttSender(client, StatusService)
-relative_action_processor =  relative_processor.RelativeActionProcessor(sender)
+relative_action_processor = relative_processor.RelativeActionProcessor(sender)
+
 
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""
@@ -28,7 +29,8 @@ def on_connect(client, userdata, flags, rc):
     # Subscribe to all arduino hexnumber actions
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.actionTopic + "/" + constants.relativeTopic)
+    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.actionTopic + "/" +
+                 constants.relativeTopic)
     client.subscribe(constants.arduinoTopic + "/" + constants.actionTopic + "/" + constants.relativeTopic)
 
 
@@ -50,12 +52,10 @@ def on_message(client, userdata, msg):
     relative_action_processor.process_relative_action_message(msg.payload.decode("utf-8"))
 
 
-
 # Set callback functions
 client.on_connect = on_connect
 client.on_message = on_message
 client.on_subscribe = on_subscribe
-
 
 client.username_pw_set(mqttConfig['username'], mqttConfig['password'])
 client.connect(mqttConfig['ip'], int(mqttConfig['port']), 60)

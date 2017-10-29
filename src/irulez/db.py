@@ -99,9 +99,9 @@ class DummyDb(DbBase):
     def get_input_pins(self) -> List[db_domain.InputPin]:
         to_return = []
         for x in range(0, 16):
-            to_return.append(db_domain.InputPin(x, x, [], 0, 2))
+            to_return.append(db_domain.InputPin(x, x, [], 0))
         for x in range(16, 66):
-            to_return.append(db_domain.InputPin(x, x - 16, [], 1, 0))
+            to_return.append(db_domain.InputPin(x, x - 16, [], 1))
 
         to_return[5].action_ids.extend([0, 1])
         to_return[10].action_ids.extend([2])
@@ -202,16 +202,16 @@ class MariaDB(DbBase):
     def get_input_pins(self) -> List[db_domain.InputPin]:
         with closing(self.__create_connection()) as conn:
             with closing(conn.cursor(buffered=True)) as cursor:
-                cursor.execute("SELECT id, number, parent_id, down_timer FROM tbl_InputPin")
+                cursor.execute("SELECT id, number, parent_id FROM tbl_InputPin")
                 input_pins = []
-                for id, number, parent_id, down_timer in cursor:
+                for id, number, parent_id in cursor:
                     with closing(conn.cursor(buffered=True)) as input_pins_cursor:
                         input_pins_cursor.execute("SELECT Action_ID FROM tbl_InputPin_Action WHERE InputPin_ID=%s",
                                                   (id,))
                         input_pin_action = []
                         for Action_ID in input_pins_cursor:
                             input_pin_action.append(Action_ID[0])
-                        input_pins.append(db_domain.InputPin(id, number, input_pin_action, parent_id, down_timer))
+                        input_pins.append(db_domain.InputPin(id, number, input_pin_action, parent_id))
                 return input_pins
 
     def get_output_pins(self) -> List[db_domain.OutputPin]:

@@ -14,7 +14,7 @@ class OutputServiceServer(service.Service):
         self.url = url
         self.port = port
 
-    def connect(self):
+    def connect(self) -> None:
         server = SimpleXMLRPCServer((self.url, self.port))
         logger.info(f"Listening on port {self.port}...")
         server.register_function(self.status, "status")
