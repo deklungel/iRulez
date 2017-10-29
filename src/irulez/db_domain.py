@@ -34,8 +34,16 @@ class InputPin:
 
 
 class Action:
-    def __init__(self, id: int, action_type: int, trigger_id: int, notification_ids: List[Optional[int]], delay: int,timer: int, output_pin_ids: List[int],
-                 condition_id: Optional[int], master_id: Optional[int]):
+    def __init__(self,
+                 id: int,
+                 action_type: int,
+                 trigger_id: int,
+                 notification_ids: List[int],
+                 delay: int,
+                 timer: int,
+                 output_pin_ids: List[int],
+                 condition_id: Optional[int],
+                 master_id: Optional[int]):
         self.master_id = master_id
         self.id = id
         self.condition_id = condition_id

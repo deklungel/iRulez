@@ -9,8 +9,6 @@ class ButtonActionProcessor:
         self.sender = sender
         self.arduinos = arduinos
 
-
-
     def process_button(self, arduino, pin, value: bool):
         actions = arduino.button_pins[pin].get_button_pin_actions()
         down_timer = arduino.button_pins[pin].down_timer
@@ -26,7 +24,7 @@ class ButtonActionProcessor:
         logger.debug(f"Pins to switch: '{pins_to_switch}'")
         self.sender.publish_relative_action(pins_to_switch)
 
-    def process_notification(self,action: domain.Action):
+    def process_notification(self, action: domain.Action):
         if action.notifications is None:
             return
         for notification in action.notifications:
@@ -37,7 +35,7 @@ class ButtonActionProcessor:
     def check_condition(self, action: domain.Action):
         return action.check_condition()
 
-    def process_button_message(self, name:str, payload: str):
+    def process_button_message(self, name: str, payload: str):
         arduino = self.arduinos.get(name, None)
         if arduino is None:
             # Unknown arduino

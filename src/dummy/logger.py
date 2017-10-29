@@ -2,6 +2,7 @@ import lib.paho.mqtt.client as mqtt
 import src.irulez.db
 import logging
 
+from src.irulez import configuration
 
 logger = logging.getLogger('logger')
 logger.info('Logger starting')
@@ -16,9 +17,6 @@ logger.addHandler(handler)
 # Get database, dummy for now
 db = src.irulez.db.get_dummy_db()
 
-# Connect
-mqttConfig = db.get_mqtt_config()
-
 
 def on_connect(client, userdata, flags, rc):
     """Callback function for when the mqtt client is connected."""
@@ -30,6 +28,7 @@ def on_connect(client, userdata, flags, rc):
     logger.debug("Subscribing to Everything")
     client.subscribe('#')
 
+
 def on_subscribe(mqttc, obj, mid, granted_qos):
     logger.debug("Subscribed: " + str(mid) + " " + str(granted_qos))
 
@@ -37,6 +36,7 @@ def on_subscribe(mqttc, obj, mid, granted_qos):
 def on_message(client, userdata, msg):
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
+
 
 # Create client
 client = mqtt.Client()
@@ -47,10 +47,11 @@ client.on_message = on_message
 client.on_subscribe = on_subscribe
 
 # Connect
-mqttConfig = db.get_mqtt_config()
+config = configuration.Configuration()
+mqttConfig = config.get_mqtt_config()
 
-client.username_pw_set(mqttConfig.username, mqttConfig.password)
-client.connect(mqttConfig.address, mqttConfig.port, 60)
+client.username_pw_set(mqttConfig['username'], mqttConfig['password'])
+client.connect(mqttConfig['ip'], int(mqttConfig['port']), 60)
 
 logger.info("Starting loop forever")
 # Blocking class that loops forever

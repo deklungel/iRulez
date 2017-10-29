@@ -1,7 +1,5 @@
-import src.irulez.util as util
 import src.irulez.constants as constants
 import src.irulez.log as log
-from typing import List, Dict, Optional
 import json
 
 logger = log.get_logger('timer_mqtt_sender')

@@ -18,10 +18,12 @@ def is_arduino_action_topic(topic: str) -> bool:
     # Format arduino_number/action/something
     return is_arduino_topic(topic) and '/' + constants.actionTopic in topic
 
+
 def is_arduino_relative_action_topic(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""
     # Format arduino_number/action/something
     return is_arduino_topic(topic) and '/' + constants.actionTopic + '/' + constants.relativeTopic in topic
+
 
 def is_arduino_timer_action_topic(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""
@@ -62,7 +64,8 @@ def convert_hex_to_array(payload: str, number_of_pins: int) -> list:
         logger.debug("empty payload")
         payload = "0"
     logger.debug("convert_hex_to_array " + bin(int(payload, 16))[2:].zfill(number_of_pins))
-    return bin(int(payload, 16))[2:].zfill(number_of_pins)
+    return list(bin(int(payload, 16))[2:].zfill(number_of_pins))
+
 
 def compare_lists(begin_status: List[bool], end_status: List[bool]) -> bool:
     return begin_status == end_status

@@ -3,6 +3,7 @@ import src.irulez.db
 import src.irulez.constants as constants
 import src.irulez.util as util
 import lib.paho.mqtt.client as mqtt
+from src.irulez import configuration
 
 logger = log.get_logger('virtual_IO_board')
 
@@ -53,10 +54,11 @@ client.on_message = on_message
 client.on_subscribe = on_subscribe
 
 # Connect
-mqttConfig = db.get_mqtt_config()
+config = configuration.Configuration()
+mqttConfig = config.get_mqtt_config()
 
-client.username_pw_set(mqttConfig.username, mqttConfig.password)
-client.connect(mqttConfig.address, mqttConfig.port, 60)
+client.username_pw_set(mqttConfig['username'], mqttConfig['password'])
+client.connect(mqttConfig['ip'], int(mqttConfig['port']), 60)
 
 
 logger.info("Starting loop forever")

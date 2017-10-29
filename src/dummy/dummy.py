@@ -4,16 +4,20 @@ import src.irulez.constants as constants
 import src.irulez.util as util
 import lib.paho.mqtt.client as mqtt
 import src.irulez.configuration as configuration
+import src.irulez.factory as factory
 
 logger = log.get_logger('dummy')
 
 # Get database, dummy for now
-db = src.irulez.db.get_dummy_db()
+logger.debug('Getting database')
+db = src.irulez.db.get_maria_db()
+factory = factory.ArduinoConfigFactory(db)
 
 # Get arduinos from database and store them in a dictionary
 # Key is the name of the arduino
+logger.debug('Creating arduinos')
 arduinos = {}
-for arduino in db.get_arduino_config().arduinos:
+for arduino in factory.create_arduino_config().arduinos:
     arduinos[arduino.name] = arduino
 
 

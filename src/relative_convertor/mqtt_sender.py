@@ -22,12 +22,12 @@ class MqttSender:
         # Accepts relative pins as input, converts them to absolute updates
         #  Current implementation sends updates to all arduinos or none.
 
-        begin_status = self.status_service.get_arduino_status(json_object['name'])
+        begin_status = self.status_service.get_arduino_status(str(json_object['name']))
         end_status = begin_status[:]
 
-        for pin in json_object['on']:
+        for pin in list(json_object['on']):
             end_status[pin] = True
-        for pin in json_object['off']:
+        for pin in list(json_object['off']):
             end_status[pin] = False
 
         logger.debug(f"absolute action: '{end_status}' should_update='{not util.compare_lists(begin_status, end_status)}'")

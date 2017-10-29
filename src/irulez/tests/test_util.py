@@ -20,10 +20,6 @@ class TestIsArduinoTopic(unittest.TestCase):
         result = util.is_arduino_topic('blabla ' + constants.arduinoTopic)
         self.assertFalse(result)
 
-    def test_none(self):
-        result = util.is_arduino_topic(None)
-        self.assertFalse(result)
-
 
 class TestIsArduinoActionTopic(unittest.TestCase):
     def test_empty_string(self):

@@ -74,7 +74,7 @@ class Condition(ABC):
 
 
 class Notification(ABC):
-    def __init__(self,message: str, enabled: False):
+    def __init__(self, message: str, enabled: False):
         self.message = message
         self.enabled = enabled
 
@@ -158,7 +158,7 @@ class Action(ABC):
                  action_type: ActionType,
                  delay: int,
                  output_pins: List[OutputPin],
-                 notifications: Optional[List[Notification]],
+                 notifications: List[Notification],
                  condition: Optional[Condition]):
         self.trigger = trigger
         self.action_type = action_type
@@ -171,7 +171,7 @@ class Action(ABC):
         return self.trigger.should_trigger(value)
 
     @abstractmethod
-    def perform_action(self, pins_to_switch_on: Dict[str, List[int]], pins_to_switch_off: Dict[str, List[int]]):
+    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
         pass
 
     def check_condition(self):
@@ -183,7 +183,7 @@ class Action(ABC):
 class ButtonPin(Pin):
     """Represents a single input pin on an arduino"""
 
-    def __init__(self, number: int, actions: List[Action],down_timer, state=False):
+    def __init__(self, number: int, actions: List[Action], down_timer: int, state=False):
         super(ButtonPin, self).__init__(number, ArduinoPinType.BUTTON, state)
         self.actions = actions
         self.down_timer = down_timer
@@ -196,7 +196,7 @@ class ButtonPin(Pin):
 
 
 class MailNotification(Notification):
-    def __init__(self,message: str, subject: str, mails: List[str], enabled=False):
+    def __init__(self, message: str, subject: str, mails: List[str], enabled=False):
         super(MailNotification, self).__init__(message, enabled)
         self.mails = mails
         self.subject = subject
@@ -214,7 +214,7 @@ class MailNotification(Notification):
 
 
 class TelegramNotification(Notification):
-    def __init__(self,message:str, tokens: List[str], enabled=False):
+    def __init__(self, message: str, tokens: List[str], enabled=False):
         super(TelegramNotification, self).__init__(message, enabled)
         self.tokens = tokens
 
@@ -227,6 +227,7 @@ class TelegramNotification(Notification):
                         "tokens": self.tokens,
                         "message": self.message
                     })
+
 
 class ConditionList(Condition):
     def __init__(self, operator: Operator, conditions: List[Condition]):
@@ -268,9 +269,11 @@ class TimeCondition(Condition):
 
 
 class IndividualAction:
-    def __init__(self, name: str, topic: str, delay: int, pin_numbers_on: List[int], pin_numbers_off: List[int]):
-        self.name = name
-        self.topic = topic
+    """Represents the actions on pins that have to happen on a single arduino"""
+    def __init__(self,
+                 delay: int,
+                 pin_numbers_on: List[int],
+                 pin_numbers_off: List[int]):
         self.delay = delay
         self.pin_numbers_on = pin_numbers_on
         self.pin_numbers_off = pin_numbers_off
@@ -298,26 +301,26 @@ class OnAction(Action):
                  delay: int,
                  off_timer: int,
                  output_pins: List[OutputPin],
-                 notifications: Optional[Notification],
+                 notifications: List[Notification],
                  condition: Optional[Condition]):
         self.off_timer = off_timer
         super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notifications, condition)
 
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
-        pin_action = IndividualAction(None, None, self.delay, [], [])
+        pin_action = IndividualAction(self.delay, [], [])
         for pin in self.output_pins:
             logger.debug(f"pin number: '{pin.number}' with parent: '{pin.parent}'")
             pin_action.add_pin_on(pin.number)
-        if pin_action.has_values_on():
-            pins_to_switch.setdefault(pin.parent, []).append(pin_action)
-        logger.debug(f"Pins to switch on: '{str(pinAction.pin_numbers_on)}'")
+            if pin_action.has_values_on():
+                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+        logger.debug(f"Pins to switch on: '{str(pin_action.pin_numbers_on)}'")
 
         if self.off_timer > 0:
-            pin_action = IndividualAction(None, None, self.delay, [], [])
+            pin_action = IndividualAction(self.delay, [], [])
             for pin in self.output_pins:
                 pin_action.add_pin_off(pin.number)
-            if pin_action.has_values_off():
-                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+                if pin_action.has_values_off():
+                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
 
 
 class OffAction(Action):
@@ -326,24 +329,24 @@ class OffAction(Action):
                  delay: int,
                  on_timer: int,
                  output_pins: List[OutputPin],
-                 notifications: Optional[Notification],
+                 notifications: List[Notification],
                  condition: Optional[Condition]):
         self.on_timer = on_timer
         super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notifications, condition)
 
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
-        pin_action = IndividualAction(None, None, self.delay, [], [])
+        pin_action = IndividualAction(self.delay, [], [])
         for pin in self.output_pins:
             pin_action.add_pin_off(pin.number)
-        if pin_action.has_values_off():
-            pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+            if pin_action.has_values_off():
+                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
 
         if self.on_timer > 0:
             pin_action = IndividualAction(self.on_timer, [], [])
             for pin in self.output_pins:
                 pin_action.add_pin_on(pin.number)
-            if pin_action.has_values_on():
-                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+                if pin_action.has_values_on():
+                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
 
 
 class ToggleAction(Action):
@@ -351,27 +354,27 @@ class ToggleAction(Action):
                  trigger: ActionTrigger,
                  delay: int,
                  output_pins: List[OutputPin],
-                 notifications: Optional[Notification],
+                 notifications: List[Notification],
                  master: OutputPin,
                  condition: Optional[Condition]):
         super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notifications, condition)
         self.master = master
 
-    def perform_action(self, pins_to_switch: Dict[str, IndividualAction]):
+    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
         # if master is on put all the lights of and visa versa
-        pinAction = IndividualAction(None, None, self.delay, [], [])
+        pin_action = IndividualAction(self.delay, [], [])
         if self.master.state:
             for pin in self.output_pins:
-                pinAction.add_pin_off(pin.number)
-            if pinAction.has_values_off():
-                pins_to_switch.setdefault(pin.parent, []).append(pinAction)
-            logger.debug(f"Pins to switch off: '{str(pinAction.pin_numbers_off)}'")
+                pin_action.add_pin_off(pin.number)
+                if pin_action.has_values_off():
+                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+            logger.debug(f"Pins to switch off: '{str(pin_action.pin_numbers_off)}'")
         else:
             for pin in self.output_pins:
-                pinAction.add_pin_on(pin.number)
-            if pinAction.has_values_on():
-                pins_to_switch.setdefault(pin.parent, []).append(pinAction)
-            logger.debug(f"Pins to switch on: '{str(pinAction.pin_numbers_on)}'")
+                pin_action.add_pin_on(pin.number)
+                if pin_action.has_values_on():
+                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+            logger.debug(f"Pins to switch on: '{str(pin_action.pin_numbers_on)}'")
 
 
 class Arduino:
@@ -409,8 +412,8 @@ class Arduino:
         # convert array to hex string
         return util.convert_array_to_hex(pin_states)
 
-    def get_output_pin(self, pinNumber: int) -> OutputPin:
-        return self.output_pins[pinNumber]
+    def get_output_pin(self, pin_number: int) -> OutputPin:
+        return self.output_pins[pin_number]
 
     def set_output_pin_status(self, payload: str):
         status = util.convert_hex_to_array(payload, self.number_of_output_pins)

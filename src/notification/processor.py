@@ -6,11 +6,13 @@ import json
 
 logger = log.get_logger('mail_processor')
 
+
 class mailProcessor(ABC):
 
     @abstractmethod
     def send_mail(self, json_object):
         pass
+
 
 class authenticateSMTP_Processor(mailProcessor):
     def __init__(self, user: str, pwd: str, port: int, url: str):

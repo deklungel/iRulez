@@ -1,8 +1,8 @@
 import src.irulez.constants as constants
 import src.irulez.log as log
 import json
-from typing import List, Dict, Optional
-import src.irulez.domain as domain
+from typing import Dict, List
+import src.irulez.domain as irulez_domain
 
 logger = log.get_logger('button_mqtt_sender')
 
@@ -12,7 +12,7 @@ class MqttSender:
         self.client = client
         self.arduinos = arduinos
 
-    def publish_relative_action(self, json_list: Dict[str, domain.IndividualAction]):
+    def publish_relative_action(self, json_list: Dict[str, List[irulez_domain.IndividualAction]]):
         for name in json_list:
             for i in range(len(json_list[name])):
                 topic_name = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic

@@ -88,7 +88,7 @@ class ArduinoConfigFactory:
         for arduino in created_arduinos.values():
             self.__validate_input_pins(arduino)
 
-        return domain.ArduinoConfig(created_arduinos.values())
+        return domain.ArduinoConfig(list(created_arduinos.values()))
 
     def __create_trigger(self, trigger: db_domain.Trigger) -> domain.ActionTrigger:
         if trigger.trigger_type == 1:
@@ -200,7 +200,8 @@ class ArduinoConfigFactory:
 
     def __create_action(self, action: db_domain.Action, triggers: Dict[int, domain.ActionTrigger],
                         output_pins: Dict[int, domain.OutputPin],
-                        conditions: Dict[int, domain.Condition], notifications: Dict[int, domain.Notification]) -> Optional[domain.Action]:
+                        conditions: Dict[int, domain.Condition], notifications: Dict[int, domain.Notification]) \
+            -> Optional[domain.Action]:
         # Try to retrieve the action trigger
         trigger = triggers.get(action.trigger_id, None)
         if trigger is None:

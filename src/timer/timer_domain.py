@@ -1,17 +1,47 @@
-from src.irulez.domain import OutputPin
-from typing import List, Dict, Optional
+from typing import List
 import src.irulez.log as log
-from abc import ABC, abstractmethod
+from abc import ABC
 
 logger = log.get_logger('timer_domain')
 
-# todo: create abstracte timer
+# todo: create abstract timer
 
 
 class Timer(ABC):
     def __init__(self, name: str, topic: str):
         self.name = name
         self.topic = topic
+
+
+class IndividualAction:
+    """Represents the actions on pins that have to happen on a single arduino"""
+    def __init__(self,
+                 arduino_name: str,
+                 mqtt_topic: str,
+                 delay: int,
+                 pin_numbers_on: List[int],
+                 pin_numbers_off: List[int]):
+        self.name = arduino_name
+        self.topic = mqtt_topic
+        self.delay = delay
+        self.pin_numbers_on = pin_numbers_on
+        self.pin_numbers_off = pin_numbers_off
+
+    def add_pin_on(self, pin_number: int):
+        self.pin_numbers_on.append(pin_number)
+
+    def add_pin_off(self, pin_number: int):
+        self.pin_numbers_off.append(pin_number)
+
+    def has_values_on(self) -> bool:
+        if len(self.pin_numbers_on) > 0:
+            return True
+        return False
+
+    def has_values_off(self) -> bool:
+        if len(self.pin_numbers_off) > 0:
+            return True
+        return False
 
 
 class RelativeActionTimer(Timer):
@@ -35,6 +65,3 @@ class RelativeActionTimer(Timer):
 
     def check_empty_timer(self):
         return len(self.output_pins_on) == 0 and len(self.output_pins_on) == 0
-
-
-
