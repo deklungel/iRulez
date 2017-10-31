@@ -17,5 +17,8 @@ class StatusServiceClient(service.Service):
         logger.debug(f"status: {str(status)}")
         return status
 
-    def status(self, name: str, pin: int) -> bool:
-        pass
+    def get_arduino_pin_status(self, name: str, pin: int) -> bool:
+        with xmlrpc.client.ServerProxy(f"http://{self.url}:{self.port}/") as proxy:
+            status = proxy.arduino_pin_status(name, pin)
+        logger.debug(f"status: {str(status)}")
+        return status

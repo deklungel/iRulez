@@ -13,7 +13,7 @@ class MailProcessor(ABC):
 
 
 class AuthenticateSMTP_Processor(MailProcessor):
-    def __init__(self, user: str, pwd: str, port: int, url: str):
+    def __init__(self, user: object, pwd: object, port: object, url: object) -> object:
         self.gmail_user = user
         self.gmail_pwd = pwd
         self._from = user

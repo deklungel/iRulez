@@ -72,15 +72,21 @@ class DummyDb(DbBase):
             to_return.append(db_domain.OutputPin(x, x - 16, 1))
         return to_return
 
+    # Trigger 0, immediately
+    # Trigger 1, after release
+    # Trigger 2, long down for 5 sec
     def get_triggers(self) -> List[db_domain.Trigger]:
-        return [db_domain.Trigger(0, 1, None, None)]
+        return [db_domain.Trigger(0, 1, None, None),
+                db_domain.Trigger(1, 2, None, None),
+                db_domain.Trigger(2, 3, 5, None)]
 
     def get_conditions(self) -> List[db_domain.Condition]:
         return [db_domain.Condition(0, 3, None, None, None, None, time(9, 0), time(12, 00)),
                 db_domain.Condition(1, 3, None, None, None, None, time(18, 0), time(23, 59)),
                 db_domain.Condition(2, 1, 2, [0, 1], None, None, None, None),
                 db_domain.Condition(3, 2, None, None, 15, True, None, None),
-                db_domain.Condition(4, 1, 1, [2, 3], None, None, None, None)]
+                db_domain.Condition(4, 1, 1, [2, 3], None, None, None, None),
+                db_domain.Condition(5, 3, None, None, None, None, time(11, 0), time(15, 00))]
 
     def get_notifications(self) -> List[db_domain.Notification]:
         return [db_domain.Notification(0, "Our First Mail Notification", 1, True, "Subject", ["laurentmichel@me.com"],
@@ -91,10 +97,14 @@ class DummyDb(DbBase):
         # Create 3 actions for arduino 'DEMO".
         # Action 0 execute immediately, pins 0 and 10 ON, condition 4 for 15sec
         # Action 1 execute immediately, pins 2 and 9 OFF
-        # Action 2 execute immediately, ping 8,9,10 TOGGLE, master 8, after 30 sec
+        # Action 2 execute immediately, pins 8,9,10 TOGGLE, master 8, after 30 sec
+        # Action 3 execute long down 5 sec, pins 8,9,10 TOGGLE, master 8, with mail notification
+        # Action 4 execute after release, pins 11, 12, 13 TOGGLE, master 8, with mail notification
         return [db_domain.Action(0, 2, 0, [0, 1], 0, 15, [0, 10], 4, None),
                 db_domain.Action(1, 3, 0, [], 0, 0, [2, 9], None, None),
-                db_domain.Action(2, 1, 0, [0, 1], 30, 0, [8, 9, 10], None, 8)]
+                db_domain.Action(2, 1, 0, [0, 1], 30, 0, [8, 9, 10], None, 8),
+                db_domain.Action(3, 1, 2, [0], 0, 0, [8, 9, 10], None, 8),
+                db_domain.Action(4, 1, 1, [0], 0, 0, [11, 12, 13], 5, 11)]
 
     def get_input_pins(self) -> List[db_domain.InputPin]:
         to_return = []
@@ -105,7 +115,7 @@ class DummyDb(DbBase):
 
         to_return[5].action_ids.extend([0, 1])
         to_return[10].action_ids.extend([2])
-
+        to_return[11].action_ids.extend([3, 4])
         return to_return
 
 

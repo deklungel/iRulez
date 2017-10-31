@@ -57,9 +57,11 @@ class Action:
 class Trigger:
     def __init__(self, id: int, trigger_type: int, seconds_down: Optional[int], time_between_tap: Optional[int]):
         self.id = id
-        self.time_between_tap = time_between_tap
-        self.seconds_down = seconds_down
         self.trigger_type = trigger_type
+        self.seconds_down = seconds_down
+        self.time_between_tap = time_between_tap
+
+
 
 
 class Condition:

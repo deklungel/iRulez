@@ -8,5 +8,5 @@ class Service(ABC):
         pass
 
     @abstractmethod
-    def status(self, name: str, pin: int) -> Optional[bool]:
+    def get_arduino_pin_status(self, name: str, pin: int) -> Optional[bool]:
         pass

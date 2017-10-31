@@ -181,7 +181,7 @@ class ArduinoConfigFactory:
         if output_pin is None:
             logger.warning(f'Output pin {condition.output_pin_id} was not found for condition {condition.id}')
             return None
-        return domain.OutputPinCondition(output_pin, condition.status)
+        return domain.OutputPinCondition(output_pin, bool(condition.status))
 
     def __create_condition_list(self, condition: db_domain.Condition,
                                 conditions: Dict[int, domain.Condition]) -> Optional[domain.Condition]:

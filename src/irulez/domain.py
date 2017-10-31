@@ -6,6 +6,7 @@ from datetime import datetime, time
 from typing import List, Dict, Optional
 import src.irulez.constants as constants
 import json
+from threading import Timer
 
 logger = log.get_logger('domain')
 
@@ -132,6 +133,33 @@ class OutputPin(Pin):
         self.parent = parent
 
 
+class IndividualAction:
+    """Represents the actions on pins that have to happen on a single arduino"""
+    def __init__(self,
+                 delay: int,
+                 pin_numbers_on: List[int],
+                 pin_numbers_off: List[int]):
+        self.delay = delay
+        self.pin_numbers_on = pin_numbers_on
+        self.pin_numbers_off = pin_numbers_off
+
+    def add_pin_on(self, pin_number: int):
+        self.pin_numbers_on.append(pin_number)
+
+    def add_pin_off(self, pin_number: int):
+        self.pin_numbers_off.append(pin_number)
+
+    def has_values_on(self) -> bool:
+        if len(self.pin_numbers_on) > 0:
+            return True
+        return False
+
+    def has_values_off(self) -> bool:
+        if len(self.pin_numbers_off) > 0:
+            return True
+        return False
+
+
 class Action(ABC):
     """Represents a single action"""
 
@@ -153,6 +181,9 @@ class Action(ABC):
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
         pass
 
+    def get_condition(self) -> Condition:
+        return self.condition
+
     def check_condition(self):
         if self.condition is None:
             return True
@@ -164,6 +195,8 @@ class ButtonPin(Pin):
     def __init__(self, number: int, actions: List[Action], state=False):
         super(ButtonPin, self).__init__(number, ArduinoPinType.BUTTON, state)
         self.__actions = actions
+        self.__long_down_timer = None
+        self.__longdown_executed = False
 
     def set_button_pin_actions(self, actions: List[Action]):
         self.__actions = actions
@@ -177,6 +210,53 @@ class ButtonPin(Pin):
             if action.trigger.trigger_type == ActionTriggerType.IMMEDIATELY:
                 results.append(action)
         return results
+
+    def get_button_after_release_actions(self) -> List[Action]:
+        results = []
+        for action in self.__actions:
+            if action.trigger.trigger_type == ActionTriggerType.AFTER_RELEASE:
+                results.append(action)
+        return results
+
+    def get_smallest_longdown_time(self, minimum_time: int) -> Optional[int]:
+        longdown_time = None
+        for action in self.__actions:
+            if action.trigger.trigger_type == ActionTriggerType.LONG_DOWN:
+                if longdown_time is None or (longdown_time > action.trigger.seconds_down > minimum_time):
+                    longdown_time = action.trigger.seconds_down
+        return longdown_time
+
+    def get_button_long_down_actions(self, seconds_down: int) -> List[Action]:
+        results = []
+        for action in self.__actions:
+            if action.trigger.trigger_type == ActionTriggerType.LONG_DOWN and \
+                            action.trigger.seconds_down == seconds_down:
+                results.append(action)
+        return results
+
+    def start_long_down_timer(self, time:int, function, args: List[object]):
+        self.__long_down_timer = Timer(time, function, args=(args,))
+        self.__long_down_timer.start()
+
+    def stop_long_down_timer(self):
+        self.__long_down_timer.cancel()
+        self.__long_down_timer = None
+
+    @property
+    def long_down_timer(self) -> Timer:
+        return self.__long_down_timer
+
+    @long_down_timer.setter
+    def long_down_timer(self, long_down_timer: Timer):
+        self.__long_down_timer = long_down_timer
+
+    @property
+    def longdown_executed(self) -> bool:
+        return self.__longdown_executed
+
+    @longdown_executed.setter
+    def longdown_executed(self, longdown_executed: bool):
+        self.__longdown_executed = longdown_executed
 
 
 class MailNotification(Notification):
@@ -252,32 +332,6 @@ class TimeCondition(Condition):
         return self.from_time <= datetime.now().time() <= self.to_time
 
 
-class IndividualAction:
-    """Represents the actions on pins that have to happen on a single arduino"""
-    def __init__(self,
-                 delay: int,
-                 pin_numbers_on: List[int],
-                 pin_numbers_off: List[int]):
-        self.delay = delay
-        self.pin_numbers_on = pin_numbers_on
-        self.pin_numbers_off = pin_numbers_off
-
-    def add_pin_on(self, pin_number: int):
-        self.pin_numbers_on.append(pin_number)
-
-    def add_pin_off(self, pin_number: int):
-        self.pin_numbers_off.append(pin_number)
-
-    def has_values_on(self) -> bool:
-        if len(self.pin_numbers_on) > 0:
-            return True
-        return False
-
-    def has_values_off(self) -> bool:
-        if len(self.pin_numbers_off) > 0:
-            return True
-        return False
-
 
 class OnAction(Action):
     def __init__(self,
@@ -295,16 +349,16 @@ class OnAction(Action):
         for pin in self.output_pins:
             logger.debug(f"pin number: '{pin.number}' with parent: '{pin.parent}'")
             pin_action.add_pin_on(pin.number)
-            if pin_action.has_values_on():
-                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+        if pin_action.has_values_on():
+            pins_to_switch.setdefault(pin.parent, []).append(pin_action)
         logger.debug(f"Pins to switch on: '{str(pin_action.pin_numbers_on)}'")
 
         if self.off_timer > 0:
             pin_action = IndividualAction(self.delay, [], [])
             for pin in self.output_pins:
                 pin_action.add_pin_off(pin.number)
-                if pin_action.has_values_off():
-                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+            if pin_action.has_values_off():
+                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
 
 
 class OffAction(Action):
@@ -322,15 +376,15 @@ class OffAction(Action):
         pin_action = IndividualAction(self.delay, [], [])
         for pin in self.output_pins:
             pin_action.add_pin_off(pin.number)
-            if pin_action.has_values_off():
-                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+        if pin_action.has_values_off():
+            pins_to_switch.setdefault(pin.parent, []).append(pin_action)
 
         if self.on_timer > 0:
             pin_action = IndividualAction(self.on_timer, [], [])
             for pin in self.output_pins:
                 pin_action.add_pin_on(pin.number)
-                if pin_action.has_values_on():
-                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+            if pin_action.has_values_on():
+                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
 
 
 class ToggleAction(Action):
@@ -350,14 +404,14 @@ class ToggleAction(Action):
         if self.master.state:
             for pin in self.output_pins:
                 pin_action.add_pin_off(pin.number)
-                if pin_action.has_values_off():
-                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+            if pin_action.has_values_off():
+                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
             logger.debug(f"Pins to switch off: '{str(pin_action.pin_numbers_off)}'")
         else:
             for pin in self.output_pins:
                 pin_action.add_pin_on(pin.number)
-                if pin_action.has_values_on():
-                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+            if pin_action.has_values_on():
+                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
             logger.debug(f"Pins to switch on: '{str(pin_action.pin_numbers_on)}'")
 
 

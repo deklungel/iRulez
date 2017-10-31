@@ -17,14 +17,14 @@ class OutputServiceServer(service.Service):
     def connect(self) -> None:
         server = SimpleXMLRPCServer((self.url, self.port))
         logger.info(f"Listening on port {self.port}...")
-        server.register_function(self.status, "status")
+        server.register_function(self.get_arduino_pin_status, "arduino_pin_status")
         server.register_function(self.get_arduino_status, "arduino_status")
         server.register_multicall_functions()
         th = threading.Thread(target=server.serve_forever)
         th.daemon = True
         th.start()
 
-    def status(self, name: str, pin: int) -> Optional[bool]:
+    def get_arduino_pin_status(self, name: str, pin: int) -> Optional[bool]:
         arduino = self.arduinos.get(name, None)
         if arduino is None:
             # Unknown arduino
