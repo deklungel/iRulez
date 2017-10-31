@@ -34,7 +34,6 @@ client = mqtt.Client()
 sender = mqtt_sender.MqttSender(client, arduinos)
 StatusService = ServiceClient.StatusServiceClient(serviceConfig['url'], serviceConfig['port'])
 action_processor = button_processor.ButtonActionProcessor(sender, arduinos, StatusService)
-update_processor = button_processor.RelayStatusProcessor(arduinos)
 
 
 
@@ -48,8 +47,6 @@ def on_connect(client, userdata, flags, rc):
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.buttonTopic)
     client.subscribe(constants.arduinoTopic + "/+/" + constants.buttonTopic)
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.statusTopic)
-    client.subscribe(constants.arduinoTopic + "/+/" + constants.statusTopic)
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.buttonTimerFiredTopic)
     client.subscribe(constants.arduinoTopic + "/" + constants.buttonTimerFiredTopic)
 
@@ -66,12 +63,7 @@ def on_message(client, userdata, msg):
     name = util.get_arduino_name_from_topic(msg.topic)
 
     # Check if the topic is a relay or button update.
-    if util.is_arduino_status_topic(msg.topic):
-        logger.debug(f"Update the relay status")
-        update_processor.update_arduino_output_pins(name, msg.payload)
-        return
-
-    elif util.is_arduino_button_fired_topic(msg.topic):
+    if util.is_arduino_button_fired_topic(msg.topic):
         logger.debug("Button fired received.")
         action_processor.button_timer_fired(msg.payload)
         return
@@ -80,8 +72,6 @@ def on_message(client, userdata, msg):
         logger.debug(f"Button change received.")
         action_processor.process_button_message(name, msg.payload)
         return
-
-
 
     logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
 

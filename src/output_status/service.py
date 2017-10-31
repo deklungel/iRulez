@@ -3,7 +3,7 @@ import lib.paho.mqtt.client as mqtt
 import src.irulez.constants as constants
 import src.irulez.db
 import src.irulez.util as util
-import src.button.processors as button_processor
+import src.output_status.processors as service_processor
 import src.irulez.configuration as configuration
 import src.irulez.factory as factory
 import src.output_status.ServiceServer as ServiceServer
@@ -24,7 +24,7 @@ for arduino in factory.create_arduino_config().arduinos:
 
 # Create client
 client = mqtt.Client()
-update_processor = button_processor.RelayStatusProcessor(arduinos)
+update_processor = service_processor.service_processor(arduinos)
 
 
 def on_connect(client, userdata, flags, rc):

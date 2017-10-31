@@ -45,10 +45,7 @@ class ButtonActionProcessor:
         self.status_service = status_service
 
     def execute_action(self, action: object, pins_to_switch: object) -> object:
-        conditions = action.get_condition()
-        test = self.check_condition(action.get_condition())
-        test2 = action.check_condition()
-        if action.check_condition():
+        if self.check_condition(action.get_condition()):
             logger.info(f"Process action with type '{action.action_type}'")
             action.perform_action(pins_to_switch)
             self.process_notification(action)
@@ -74,7 +71,6 @@ class ButtonActionProcessor:
         if condition.condition_type == domain.ConditionType.TIME:
             return condition.verify()
         elif condition.condition_type == domain.ConditionType.OUTPUT_PIN:
-            status = self.status_service.get_arduino_pin_status(condition.output_pin.parent, condition.output_pin.number)
             return condition.status == self.status_service.get_arduino_pin_status(condition.output_pin.parent, condition.output_pin.number)
         elif condition.condition_type == domain.ConditionType.LIST:
             for condition in condition.conditions:
@@ -175,16 +171,3 @@ class ButtonActionProcessor:
             self.process_button(arduino, pin, value)
 
 
-class RelayStatusProcessor:
-    def __init__(self, arduinos: {}):
-        self.arduinos = arduinos
-
-    def update_arduino_output_pins(self, name: str, payload: str):
-        arduino = self.arduinos.get(name, None)
-        if arduino is None:
-            # Unknown arduino
-            logger.info(f"Could not find arduino with name '{name}'.")
-            return
-        logger.debug(f"Board with name '{name}' found")
-        arduino.set_output_pin_status(payload)
-        logger.debug(f"relay status HEX: '{arduino.get_output_pin_status()}'.")
