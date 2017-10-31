@@ -3,9 +3,8 @@ import src.button.mqtt_sender as mqtt_sender
 import src.irulez.log as log
 import src.irulez.domain as domain
 from typing import Dict, List
-from threading import Timer
 import src.output_status.ServiceClient as ServiceClient
-
+from datetime import datetime
 
 logger = log.get_logger('button_processor')
 
@@ -69,7 +68,7 @@ class ButtonActionProcessor:
 
     def check_condition(self, condition: domain.Condition):
         if condition.condition_type == domain.ConditionType.TIME:
-            return condition.verify()
+            return condition.from_time <= datetime.now().time() <= condition.to_time
         elif condition.condition_type == domain.ConditionType.OUTPUT_PIN:
             return condition.status == self.status_service.get_arduino_pin_status(condition.output_pin.parent, condition.output_pin.number)
         elif condition.condition_type == domain.ConditionType.LIST:

@@ -65,10 +65,6 @@ class Condition(ABC):
     def __init__(self, condition_type: ConditionType):
         self.condition_type = condition_type
 
-    @abstractmethod
-    def verify(self) -> bool:
-        pass
-
 
 class Notification(ABC):
     def __init__(self, message: str, enabled: False):
@@ -184,11 +180,6 @@ class Action(ABC):
     def get_condition(self) -> Condition:
         return self.condition
 
-    def check_condition(self):
-        if self.condition is None:
-            return True
-        return self.condition.verify()
-
 
 class ButtonPin(Pin):
     """Represents a single input pin on an arduino"""
@@ -299,18 +290,6 @@ class ConditionList(Condition):
         self.operator = operator
         self.conditions = conditions
 
-    def verify(self) -> bool:
-        if self.operator == Operator.AND:
-            for condition in self.conditions:
-                if not condition.verify():
-                    return False
-            return True
-        # Otherwise it's OR
-        for condition in self.conditions:
-            if condition.verify():
-                return True
-            return False
-
 
 class OutputPinCondition(Condition):
     def __init__(self, output_pin: OutputPin, status: bool):
@@ -318,19 +297,12 @@ class OutputPinCondition(Condition):
         self.output_pin = output_pin
         self.status = status
 
-    def verify(self) -> bool:
-        return self.output_pin.state == self.status
-
 
 class TimeCondition(Condition):
     def __init__(self, from_time: time, to_time: time):
         super(TimeCondition, self).__init__(ConditionType.TIME)
         self.from_time = from_time
         self.to_time = to_time
-
-    def verify(self) -> bool:
-        return self.from_time <= datetime.now().time() <= self.to_time
-
 
 
 class OnAction(Action):
