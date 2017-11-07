@@ -1,8 +1,9 @@
-import src.irulez.constants as constants
-import src.irulez.log as log
 import json
 from typing import Dict, List
-import src.irulez.domain as irulez_domain
+
+import src.button.domain as irulez_domain
+import src.irulez.constants as constants
+import src.irulez.log as log
 
 logger = log.get_logger('button_mqtt_sender')
 
@@ -35,13 +36,33 @@ class MqttSender:
         arduino_name = timer[0]
         button_pin = timer[1]
         seconds_down = timer[2]
+        clicks = timer[3]
 
         publish_topic = constants.arduinoTopic + '/' + constants.buttonTimerFiredTopic
         payload = json.dumps(
             {
                 "name": arduino_name,
                 "button_pin": button_pin,
-                "seconds_down": seconds_down
+                "seconds_down": seconds_down,
+                "clicks": clicks
+            }
+        )
+
+
+        logger.debug(f"Publishing: {publish_topic}{payload}")
+        self.client.publish(publish_topic, payload, 0, False)
+
+    def publish_multiclick_message_to_button_processor(self, multiclick: List[object]):
+        arduino_name = multiclick[0]
+        button_pin = multiclick[1]
+        clicks = multiclick[2]
+
+        publish_topic = constants.arduinoTopic + '/' + constants.buttonMulticlickFiredTopic
+        payload = json.dumps(
+            {
+                "name": arduino_name,
+                "button_pin": button_pin,
+                "clicks": clicks
             }
         )
 

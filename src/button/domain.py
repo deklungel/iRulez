@@ -38,8 +38,6 @@ class ActionTriggerType(IntEnum):
     IMMEDIATELY = 1
     AFTER_RELEASE = 2
     LONG_DOWN = 3
-    DOUBLE_TAP = 4
-    TRIPLE_TAP = 5
 
 
 class Operator(IntEnum):
@@ -100,17 +98,6 @@ class LongDownActionTrigger(ActionTrigger):
         return self._seconds_down
 
 
-class DoubleTapActionTrigger(ActionTrigger):
-    def __init__(self, time_between_tap: int):
-        super(DoubleTapActionTrigger, self).__init__(ActionTriggerType.DOUBLE_TAP)
-        self.time_between_tap = time_between_tap
-
-
-class TripleTapActionTrigger(ActionTrigger):
-    def __init__(self, time_between_tap: int):
-        super(TripleTapActionTrigger, self).__init__(ActionTriggerType.TRIPLE_TAP)
-        self.time_between_tap = time_between_tap
-
 
 class Pin(ABC):
     """Represents a pin on an arduino"""
@@ -165,13 +152,15 @@ class Action(ABC):
                  delay: int,
                  output_pins: List[OutputPin],
                  notifications: List[Notification],
-                 condition: Optional[Condition]):
+                 condition: Optional[Condition],
+                 click_number: int):
         self.trigger = trigger
         self.action_type = action_type
         self.delay = delay
         self.output_pins = output_pins
         self.notifications = notifications
         self.condition = condition
+        self.click_number = click_number
 
     @abstractmethod
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
@@ -183,11 +172,14 @@ class Action(ABC):
 
 class ButtonPin(Pin):
     """Represents a single input pin on an arduino"""
-    def __init__(self, number: int, actions: List[Action], state=False):
+    def __init__(self, number: int, actions: List[Action], time_between_clicks, state=False):
         super(ButtonPin, self).__init__(number, ArduinoPinType.BUTTON, state)
         self.__actions = actions
         self.__long_down_timer = None
+        self.__multi_click_timer = None
         self.__longdown_executed = False
+        self.__time_between_clicks = time_between_clicks
+        self.__clicks = 0
 
     def set_button_pin_actions(self, actions: List[Action]):
         self.__actions = actions
@@ -209,11 +201,22 @@ class ButtonPin(Pin):
                 results.append(action)
         return results
 
-    def get_smallest_longdown_time(self, minimum_time: int) -> Optional[int]:
+    def get_button_after_release_immediate_actions(self, clicks) -> List[Action]:
+        results = []
+        for action in self.__actions:
+            if action.click_number == clicks:
+                if action.trigger.trigger_type == ActionTriggerType.AFTER_RELEASE \
+                        or action.trigger.trigger_type == ActionTriggerType.IMMEDIATELY:
+                    results.append(action)
+        return results
+
+    def get_smallest_longdown_time(self, minimum_time: int, clicks: int) -> Optional[int]:
         longdown_time = None
         for action in self.__actions:
-            if action.trigger.trigger_type == ActionTriggerType.LONG_DOWN:
-                if longdown_time is None or (longdown_time > action.trigger.seconds_down > minimum_time):
+            if action.click_number == clicks and action.trigger.trigger_type == ActionTriggerType.LONG_DOWN:
+                if longdown_time is None and action.trigger.seconds_down > minimum_time:
+                    longdown_time = action.trigger.seconds_down
+                elif (action.trigger.seconds_down > minimum_time):
                     longdown_time = action.trigger.seconds_down
         return longdown_time
 
@@ -225,13 +228,39 @@ class ButtonPin(Pin):
                 results.append(action)
         return results
 
-    def start_long_down_timer(self, time:int, function, args: List[object]):
+    def has_multi_click_actions(self, minimum_click: int) -> bool:
+        for action in self.__actions:
+            if minimum_click <= action.click_number > 1:
+                return True
+        return False
+
+    def start_long_down_timer(self, time: int, function, args: List[object]):
+        logger.debug(f"Start long down timer")
         self.__long_down_timer = Timer(time, function, args=(args,))
         self.__long_down_timer.start()
 
     def stop_long_down_timer(self):
+        logger.debug(f"Stop long down timer")
         self.__long_down_timer.cancel()
         self.__long_down_timer = None
+
+    def start_multi_click_timer(self, time: int, function, args: List[object]):
+        logger.debug(f"Start multi click timer")
+        self.__multi_click_timer = Timer(time, function, args=(args,))
+        self.__multi_click_timer.start()
+
+    def stop_multi_click_timer(self):
+        logger.debug(f"Stop multi click timer")
+        self.__multi_click_timer.cancel()
+        self.__multi_click_timer = None
+
+    @property
+    def multi_click_timer(self) -> Timer:
+        return self.__multi_click_timer
+
+    @property
+    def time_between_clicks(self) -> float:
+        return self.__time_between_clicks
 
     @property
     def long_down_timer(self) -> Timer:
@@ -240,6 +269,14 @@ class ButtonPin(Pin):
     @long_down_timer.setter
     def long_down_timer(self, long_down_timer: Timer):
         self.__long_down_timer = long_down_timer
+
+    @property
+    def clicks(self) -> int:
+        return self.__clicks
+
+    @clicks.setter
+    def clicks(self, clicks: int):
+        self.__clicks = clicks
 
     @property
     def longdown_executed(self) -> bool:
@@ -312,9 +349,10 @@ class OnAction(Action):
                  off_timer: int,
                  output_pins: List[OutputPin],
                  notifications: List[Notification],
-                 condition: Optional[Condition]):
+                 condition: Optional[Condition],
+                 click_number: int):
         self.off_timer = off_timer
-        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notifications, condition)
+        super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notifications, condition, click_number)
 
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
         pin_action = IndividualAction(self.delay, [], [])
@@ -340,9 +378,10 @@ class OffAction(Action):
                  on_timer: int,
                  output_pins: List[OutputPin],
                  notifications: List[Notification],
-                 condition: Optional[Condition]):
+                 condition: Optional[Condition],
+                 click_number: int):
         self.on_timer = on_timer
-        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notifications, condition)
+        super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notifications, condition, click_number)
 
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
         pin_action = IndividualAction(self.delay, [], [])
@@ -366,8 +405,9 @@ class ToggleAction(Action):
                  output_pins: List[OutputPin],
                  notifications: List[Notification],
                  master: OutputPin,
-                 condition: Optional[Condition]):
-        super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notifications, condition)
+                 condition: Optional[Condition],
+                 click_number: int):
+        super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notifications, condition, click_number)
         self.master = master
 
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):

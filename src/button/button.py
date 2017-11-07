@@ -1,5 +1,4 @@
 import src.irulez.log as log
-
 import lib.paho.mqtt.client as mqtt
 import src.irulez.constants as constants
 import src.irulez.db
@@ -47,8 +46,10 @@ def on_connect(client, userdata, flags, rc):
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.buttonTopic)
     client.subscribe(constants.arduinoTopic + "/+/" + constants.buttonTopic)
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.buttonTimerFiredTopic)
+    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.buttonTimerFiredTopic)
     client.subscribe(constants.arduinoTopic + "/" + constants.buttonTimerFiredTopic)
+    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.buttonMulticlickFiredTopic)
+    client.subscribe(constants.arduinoTopic + "/" + constants.buttonMulticlickFiredTopic)
 
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
@@ -66,6 +67,11 @@ def on_message(client, userdata, msg):
     if util.is_arduino_button_fired_topic(msg.topic):
         logger.debug("Button fired received.")
         action_processor.button_timer_fired(msg.payload)
+        return
+
+    elif util.is_arduino_multiclick_fired_topic(msg.topic):
+        logger.debug("Button Multiclick received.")
+        action_processor.button_multiclick_fired(msg.payload)
         return
 
     elif util.is_arduino_button_topic(msg.topic):

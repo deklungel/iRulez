@@ -42,6 +42,9 @@ def is_arduino_button_fired_topic(topic: str) -> bool:
     """Checks if the given topic is a button fired topic for an arduino"""
     return is_arduino_topic(topic) and '/' + constants.buttonTimerFiredTopic in topic
 
+def is_arduino_multiclick_fired_topic(topic: str) -> bool:
+    """Checks if the given topic is a button fired topic for an arduino"""
+    return is_arduino_topic(topic) and '/' + constants.buttonMulticlickFiredTopic in topic
 
 def is_arduino_status_topic(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""

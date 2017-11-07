@@ -13,6 +13,9 @@ buttonTopic = 'button'
 # Topic that gets fired when a longdown timer has fired
 buttonTimerFiredTopic = 'buttonTimerFired'
 
+# Topic that gets fired when a multiclick button has been pressed
+buttonMulticlickFiredTopic = 'buttonMulticlickFired'
+
 # Name of the virtual_IO_board
 virtual_IO_board_name = 'virtual_IO_Board'
 virtual_IO_board_buttons = 20

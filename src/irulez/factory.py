@@ -1,9 +1,8 @@
+from typing import Dict, List, Optional
+import src.button.domain as domain
 import src.irulez.db as db
 import src.irulez.db_domain as db_domain
-import src.irulez.domain as domain
 import src.irulez.log as log
-
-from typing import Dict, List, Optional
 
 logger = log.get_logger('factory')
 
@@ -237,13 +236,13 @@ class ArduinoConfigFactory:
             if master_pin is None:
                 logger.warning(f'The master pin {action.master_id} could not be found for action {action.id}')
             return domain.ToggleAction(trigger, action.delay, pins_of_action, notification_of_action, master_pin,
-                                       condition)
+                                       condition, action.click_number)
         if action.action_type == 2:
             return domain.OnAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action,
-                                   condition)
+                                   condition, action.click_number)
         if action.action_type == 3:
             return domain.OffAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action,
-                                    condition)
+                                    condition, action.click_number)
 
         # Other types not supported yet
         logger.error(f'Type {action.action_type} not supported yet')
@@ -266,7 +265,7 @@ class ArduinoConfigFactory:
                 return None
             actions_of_button.append(act)
 
-        to_return = domain.ButtonPin(input_pin.number, actions_of_button)
+        to_return = domain.ButtonPin(input_pin.number, actions_of_button, input_pin.time_between_clicks)
         arduino.set_button_pin(to_return)
         return to_return
 

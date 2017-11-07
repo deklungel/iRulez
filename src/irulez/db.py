@@ -100,22 +100,22 @@ class DummyDb(DbBase):
         # Action 2 execute immediately, pins 8,9,10 TOGGLE, master 8, after 30 sec
         # Action 3 execute long down 5 sec, pins 8,9,10 TOGGLE, master 8, with mail notification
         # Action 4 execute after release, pins 11, 12, 13 TOGGLE, master 8, with mail notification
-        return [db_domain.Action(0, 2, 0, [0, 1], 0, 15, [0, 10], 4, None),
-                db_domain.Action(1, 3, 0, [], 0, 0, [2, 9], None, None),
-                db_domain.Action(2, 1, 0, [0, 1], 30, 0, [8, 9, 10], None, 8),
-                db_domain.Action(3, 1, 2, [0], 0, 0, [8, 9, 10], None, 8),
-                db_domain.Action(4, 1, 1, [0], 0, 0, [11, 12, 13], 5, 11)]
+        return [db_domain.Action(0, 2, 0, [0, 1], 0, 15, [0, 10], 4, None, 1),
+                db_domain.Action(1, 3, 0, [], 0, 0, [2, 9], None, None, 1),
+                db_domain.Action(2, 1, 0, [0, 1], 30, 0, [8, 9, 10], None, 8, 1),
+                db_domain.Action(3, 1, 2, [0], 0, 0, [8, 9, 10], None, 8, 1),
+                db_domain.Action(4, 1, 1, [0], 0, 0, [11, 12, 13], 5, 11, 1)]
 
     def get_input_pins(self) -> List[db_domain.InputPin]:
         to_return = []
         for x in range(0, 16):
-            to_return.append(db_domain.InputPin(x, x, [], 0))
+            to_return.append(db_domain.InputPin(x, x, [], 0, 0.35))
         for x in range(16, 66):
-            to_return.append(db_domain.InputPin(x, x - 16, [], 1))
+            to_return.append(db_domain.InputPin(x, x - 16, [], 1, 0.35))
 
-        to_return[5].action_ids.extend([0, 1])
-        to_return[10].action_ids.extend([2])
-        to_return[11].action_ids.extend([3, 4])
+        to_return[0].action_ids.extend([0, 1])
+        to_return[1].action_ids.extend([2])
+        to_return[2].action_ids.extend([3, 4])
         return to_return
 
 
@@ -203,25 +203,25 @@ class MariaDB(DbBase):
     def get_triggers(self) -> List[db_domain.Trigger]:
         with closing(self.__create_connection()) as conn:
             with closing(conn.cursor(buffered=True)) as cursor:
-                cursor.execute("SELECT id, trigger_type, seconds_down, time_between_tap FROM tbl_Trigger")
+                cursor.execute("SELECT id, trigger_type, seconds_down FROM tbl_Trigger")
                 triggers = []
-                for id, trigger_type, seconds_down, time_between_tap in cursor:
-                    triggers.append(db_domain.Trigger(id, trigger_type, seconds_down, time_between_tap))
+                for id, trigger_type, seconds_down in cursor:
+                    triggers.append(db_domain.Trigger(id, trigger_type, seconds_down))
         return triggers
 
     def get_input_pins(self) -> List[db_domain.InputPin]:
         with closing(self.__create_connection()) as conn:
             with closing(conn.cursor(buffered=True)) as cursor:
-                cursor.execute("SELECT id, number, parent_id FROM tbl_InputPin")
+                cursor.execute("SELECT id, number, parent_id, time_between_clicks FROM tbl_InputPin")
                 input_pins = []
-                for id, number, parent_id in cursor:
+                for id, number, parent_id, time_between_clicks in cursor:
                     with closing(conn.cursor(buffered=True)) as input_pins_cursor:
                         input_pins_cursor.execute("SELECT Action_ID FROM tbl_InputPin_Action WHERE InputPin_ID=%s",
                                                   (id,))
                         input_pin_action = []
                         for Action_ID in input_pins_cursor:
                             input_pin_action.append(Action_ID[0])
-                        input_pins.append(db_domain.InputPin(id, number, input_pin_action, parent_id))
+                        input_pins.append(db_domain.InputPin(id, number, input_pin_action, parent_id, time_between_clicks))
                 return input_pins
 
     def get_output_pins(self) -> List[db_domain.OutputPin]:
@@ -237,9 +237,9 @@ class MariaDB(DbBase):
         with closing(self.__create_connection()) as conn:
             with closing(conn.cursor(buffered=True)) as cursor:
                 cursor.execute(
-                    "SELECT id, action_type, trigger_id, delay, timer, condition_id, master_id FROM tbl_Action")
+                    "SELECT id, action_type, trigger_id, delay, timer, condition_id, master_id, click_number FROM tbl_Action")
                 actions = []
-                for id, action_type, trigger_id, delay, timer, condition_id, master_id in cursor:
+                for id, action_type, trigger_id, delay, timer, condition_id, master_id, click_number in cursor:
                     with closing(conn.cursor(buffered=True)) as action_cursor:
                         action_cursor.execute("SELECT OutputPin_ID FROM tbl_Action_OutputPin WHERE Action_ID=%s", (id,))
                         output_pin_ids = []
@@ -253,7 +253,7 @@ class MariaDB(DbBase):
                             notification_ids.append(notification_id[0])
                     actions.append(
                         db_domain.Action(id, action_type, trigger_id, notification_ids, delay, timer, output_pin_ids,
-                                         condition_id, master_id))
+                                         condition_id, master_id, click_number))
                 return actions
 
     def __create_connection(self):

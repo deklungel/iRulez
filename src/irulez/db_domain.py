@@ -25,10 +25,11 @@ class OutputPin:
 
 
 class InputPin:
-    def __init__(self, id: int, number: int, action_ids: List[int], parent_id: int):
+    def __init__(self, id: int, number: int, action_ids: List[int], parent_id: int, time_between_clicks: float):
         self.parent_id = parent_id
         self.action_ids = action_ids
         self.number = number
+        self.time_between_clicks = time_between_clicks
         self.id = id
 
 
@@ -42,7 +43,8 @@ class Action:
                  timer: int,
                  output_pin_ids: List[int],
                  condition_id: Optional[int],
-                 master_id: Optional[int]):
+                 master_id: Optional[int],
+                 click_number: int):
         self.master_id = master_id
         self.id = id
         self.condition_id = condition_id
@@ -52,14 +54,14 @@ class Action:
         self.timer = timer
         self.action_type = action_type
         self.trigger_id = trigger_id
+        self.click_number = click_number
 
 
 class Trigger:
-    def __init__(self, id: int, trigger_type: int, seconds_down: Optional[int], time_between_tap: Optional[int]):
+    def __init__(self, id: int, trigger_type: int, seconds_down: Optional[int]):
         self.id = id
         self.trigger_type = trigger_type
         self.seconds_down = seconds_down
-        self.time_between_tap = time_between_tap
 
 
 
