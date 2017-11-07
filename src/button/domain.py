@@ -410,10 +410,10 @@ class ToggleAction(Action):
         super(ToggleAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notifications, condition, click_number)
         self.master = master
 
-    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
+    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]], master):
         # if master is on put all the lights of and visa versa
         pin_action = IndividualAction(self.delay, [], [])
-        if self.master.state:
+        if master:
             for pin in self.output_pins:
                 pin_action.add_pin_off(pin.number)
             if pin_action.has_values_off():
@@ -455,27 +455,10 @@ class Arduino:
         for pin in button_pins:
             self._button_pins[pin.number] = pin
 
-    def get_output_pin_status(self) -> str:
-        """Gets the status array of the output_pins of this arduino"""
-        # Initialize empty state array
-        pin_states = [0] * self.number_of_output_pins
-        # Loop over all output_pins and set their state in the array
-        for pin in self.output_pins.values():
-            pin_states[pin.number] = 1 if pin.state else 0
-
-        # convert array to hex string
-        return util.convert_array_to_hex(pin_states)
 
     def get_output_pin(self, pin_number: int) -> OutputPin:
         return self.output_pins[pin_number]
 
-    def set_output_pin_status(self, payload: str):
-        status = util.convert_hex_to_array(payload, self.number_of_output_pins)
-        for pin in self.output_pins.values():
-            if int(status[pin.number]) == 1:
-                pin.state = True
-            else:
-                pin.state = False
 
     def get_changed_pins(self, payload: str) -> Dict[int, bool]:
         status = util.convert_hex_to_array(payload, self.number_of_output_pins)
@@ -492,13 +475,3 @@ class ArduinoConfig:
 
     def __init__(self, arduinos: List[Arduino]):
         self.arduinos = arduinos
-
-
-class MqttConfig:
-    """Represents the configuration of the mqtt service"""
-
-    def __init__(self, address: str, port: int, username: str, password: str):
-        self.address = address
-        self.port = port
-        self.username = username
-        self.password = password

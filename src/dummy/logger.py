@@ -1,7 +1,7 @@
-import lib.paho.mqtt.client as mqtt
-import src.irulez.db
 import logging
 
+import lib.paho.mqtt.client as mqtt
+import src.button.db
 from src.irulez import configuration
 
 logger = logging.getLogger('logger')
@@ -13,9 +13,6 @@ handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-
-# Get database, dummy for now
-db = src.irulez.db.get_dummy_db()
 
 
 def on_connect(client, userdata, flags, rc):

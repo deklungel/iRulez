@@ -1,7 +1,7 @@
 import threading
 from typing import List, Dict, Optional
 from xmlrpc.server import SimpleXMLRPCServer
-import src.button.domain as irulez_domain
+import src.output_status.domain as domain
 import src.irulez.log as log
 import src.output_status.service_domain as service
 
@@ -9,7 +9,7 @@ logger = log.get_logger('StatusServiceServer')
 
 
 class OutputServiceServer(service.Service):
-    def __init__(self, arduinos: Dict[str, irulez_domain.Arduino], url: object, port: object):
+    def __init__(self, arduinos: Dict[str, domain.Arduino], url: object, port: object):
         self.arduinos = arduinos
         self.url = url
         self.port = port

@@ -1,15 +1,15 @@
-import src.irulez.log as log
-import src.irulez.db
-import src.irulez.constants as constants
-import src.irulez.util as util
 import lib.paho.mqtt.client as mqtt
+import src.button.db
+import src.irulez.constants as constants
+import src.irulez.log as log
+import src.irulez.util as util
 from src.irulez import configuration
 
 logger = log.get_logger('virtual_IO_board')
 
 # TODO: update code to get_virtual_IO not dummy DB
 # Get database, dummy for now
-db = src.irulez.db.get_dummy_db()
+db = src.button.db.get_dummy_db()
 
 
 def on_connect(client, userdata, flags, rc):

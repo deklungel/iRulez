@@ -1,19 +1,19 @@
-import src.irulez.log as log
+import src.button.factory as factory
 import lib.paho.mqtt.client as mqtt
-import src.irulez.constants as constants
-import src.irulez.db
-import src.irulez.util as util
+import src.button.db
 import src.button.mqtt_sender as mqtt_sender
 import src.button.processors as button_processor
 import src.irulez.configuration as configuration
-import src.irulez.factory as factory
+import src.irulez.constants as constants
+import src.irulez.log as log
+import src.irulez.util as util
 import src.output_status.ServiceClient as ServiceClient
 
 logger = log.get_logger('button')
 
 # Get database, dummy for now
 logger.debug('Getting database')
-db = src.irulez.db.get_maria_db()
+db = src.button.db.get_maria_db()
 factory = factory.ArduinoConfigFactory(db)
 
 # Connect

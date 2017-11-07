@@ -48,7 +48,10 @@ class ButtonActionProcessor:
     def execute_action(self, action: object, pins_to_switch: object) -> object:
         if self.check_condition(action.get_condition()):
             logger.info(f"Process action with type '{action.action_type}'")
-            action.perform_action(pins_to_switch)
+            if action.action_type == domain.ActionType.TOGGLE:
+                action.perform_action(pins_to_switch, self.status_service.get_arduino_pin_status(action.master.parent, action.master.number))
+            else:
+                action.perform_action(pins_to_switch)
             self.process_notification(action)
         else:
             logger.info(f"Condition not met")
@@ -135,6 +138,7 @@ class ButtonActionProcessor:
             if not button.longdown_executed:
                 pins_to_switch = {}
                 for action in button.get_button_after_release_actions():
+                    logger.debug(f"Execute After release actions")
                     self.execute_action(action, pins_to_switch)
                 self.sender.publish_relative_action(pins_to_switch)
         button.longdown_executed = False

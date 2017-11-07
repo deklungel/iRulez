@@ -1,18 +1,18 @@
 import src.irulez.log as log
 import lib.paho.mqtt.client as mqtt
 import src.irulez.constants as constants
-import src.irulez.db
+import src.output_status.db as db
 import src.irulez.util as util
 import src.output_status.processors as service_processor
 import src.irulez.configuration as configuration
-import src.irulez.factory as factory
+import src.output_status.factory as factory
 import src.output_status.ServiceServer as ServiceServer
 
 logger = log.get_logger('Service')
 
 # Get database, dummy for now
 logger.debug('Getting database')
-db = src.irulez.db.get_maria_db()
+db = db.get_maria_db()
 factory = factory.ArduinoConfigFactory(db)
 
 # Get arduinos from database and store them in a dictionary

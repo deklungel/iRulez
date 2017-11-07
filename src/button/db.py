@@ -1,10 +1,11 @@
-import src.irulez.db_domain as db_domain
-import lib.mysql.connector as mariadb
 from abc import ABC, abstractmethod
+from contextlib import closing
 from datetime import time
 from typing import List
+
+import lib.mysql.connector as mariadb
+import src.button.db_domain as db_domain
 import src.irulez.configuration as configuration
-from contextlib import closing
 
 # Configuration
 config = configuration.Configuration()
@@ -221,7 +222,8 @@ class MariaDB(DbBase):
                         input_pin_action = []
                         for Action_ID in input_pins_cursor:
                             input_pin_action.append(Action_ID[0])
-                        input_pins.append(db_domain.InputPin(id, number, input_pin_action, parent_id, time_between_clicks))
+                        input_pins.append(
+                            db_domain.InputPin(id, number, input_pin_action, parent_id, time_between_clicks))
                 return input_pins
 
     def get_output_pins(self) -> List[db_domain.OutputPin]:
