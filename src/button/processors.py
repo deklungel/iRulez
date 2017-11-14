@@ -15,6 +15,7 @@ class ButtonActionProcessor:
 
     If a button has Immediate triggers and LongDown triggers, the Immediate trigger will fire always on button_down
     If a button has AfterRelease triggers and LongDown triggers, only one type will be triggered
+    If a button has Immediate triggers and multiclick triggers
     """
 
     # if button_pressed
@@ -127,14 +128,9 @@ class ButtonActionProcessor:
                 button.clicks = 0
             if button.long_down_timer is not None:
                 button.stop_long_down_timer()
-        elif button.long_down_timer is not None:
-            button.stop_long_down_timer()
-            if not button.longdown_executed:
-                pins_to_switch = {}
-                for action in button.get_button_after_release_actions():
-                    self.execute_action(action, pins_to_switch)
-                self.sender.publish_relative_action(pins_to_switch)
         else:
+            if button.long_down_timer is not None:
+                button.stop_long_down_timer()
             if not button.longdown_executed:
                 pins_to_switch = {}
                 for action in button.get_button_after_release_actions():
@@ -186,7 +182,6 @@ class ButtonActionProcessor:
             logger.info(f"Could not find arduino with name '{name}'.")
             return
         button = arduino.button_pins[json_object['button_pin']]
-        button.clicks = 0
         if button.long_down_timer is None:
             return
 
@@ -200,6 +195,8 @@ class ButtonActionProcessor:
         if seconds_down is not None:
             button.start_long_down_timer(seconds_down - fired_seconds_down, self.sender.publish_message_to_button_processor,
                                          [json_object['name'], button.number, seconds_down, button.clicks])
+        else:
+            button.clicks = 0
 
     def process_button(self, arduino: domain.Arduino, pin, value: bool):
         button = arduino.button_pins[pin]
