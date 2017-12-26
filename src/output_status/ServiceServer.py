@@ -18,7 +18,9 @@ class OutputServiceServer(service.Service):
         server = SimpleXMLRPCServer((self.url, self.port))
         logger.info(f"Listening on port {self.port}...")
         server.register_function(self.get_arduino_pin_status, "arduino_pin_status")
+        server.register_function(self.get_arduino_dim_pin_status, "arduino_pin_dim_status")
         server.register_function(self.get_arduino_status, "arduino_status")
+        server.register_function(self.test, "GET")
         server.register_multicall_functions()
         th = threading.Thread(target=server.serve_forever)
         th.daemon = True
@@ -30,8 +32,15 @@ class OutputServiceServer(service.Service):
             # Unknown arduino
             logger.info(f"Could not find arduino with name '{name}'.")
             return None
-        status = arduino.output_pins[pin].state
-        return status
+        return arduino.output_pins[pin].get_state()
+
+    def get_arduino_dim_pin_status(self, name: str, pin: int) -> Optional[int]:
+        arduino = self.arduinos.get(name, None)
+        if arduino is None:
+            # Unknown arduino
+            logger.info(f"Could not find arduino with name '{name}'.")
+            return None
+        return arduino.output_pins[pin].get_dim_state()
 
     def get_arduino_status(self, name: str) -> List[bool]:
         arduino = self.arduinos.get(name, None)
@@ -43,3 +52,6 @@ class OutputServiceServer(service.Service):
         for pin in arduino.output_pins.values():
             status.append(pin.state)
         return status
+
+    def test(self):
+        return "Hello World"

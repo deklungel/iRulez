@@ -35,3 +35,16 @@ telegramTopic = 'telegram'
 
 # Name of action topic with timer
 timerTopic = 'timer'
+
+#name of the action topic for a dimmer
+dimmerModuleTopic = 'dimmerModule'
+
+#name of the dimmer topic, userd by arduino
+dimmerStatusTopic = 'dimmerStatus'
+
+dimmerRealTimeModuleTopic = 'dimmerRealTimeModuleTopic'
+
+#the amount of message need to be send every second when dimming.
+dim_frequency_per_sec = 5
+
+dimmerTopic ="dimmerAction"

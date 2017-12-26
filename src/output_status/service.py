@@ -37,6 +37,7 @@ def on_connect(client, userdata, flags, rc):
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.statusTopic)
     client.subscribe(constants.arduinoTopic + "/+/" + constants.statusTopic)
+    client.subscribe(constants.arduinoTopic + "/+/+/" + constants.dimmerStatusTopic)
 
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
@@ -55,9 +56,14 @@ def on_message(client, userdata, msg):
 
     # Get the name of the arduino from the topic
     name = util.get_arduino_name_from_topic(msg.topic)
+    if  util.is_arduino_status_topic(msg.topic):
+        logger.debug(f"Update the relay status of a normal arduino")
+        update_processor.update_arduino_output_pins(name, msg.payload)
+    elif util.is_arduino_dimmer_status_topic(msg.topic):
+        dimmerpin =  util.get_arduino_dimmerpin_from_topic(msg.topic)
+        logger.debug(f"Update the relay status of a dimmer")
+        update_processor.update_arduino_dimmer_pins(name,dimmerpin, msg.payload)
 
-    logger.debug(f"Update the relay status")
-    update_processor.update_arduino_output_pins(name, msg.payload)
 
 
 # Set callback functions

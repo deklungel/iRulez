@@ -5,6 +5,7 @@ import src.irulez.constants as constants
 import uuid
 import src.timer.mqtt_sender as mqtt_sender
 import json
+import math
 
 logger = log.get_logger('timer_processor')
 
@@ -15,7 +16,43 @@ class TimerProcessor:
         self.PythonTimers = {}
         # key=guid (id from the timer), values=object contains data for execution of the timer object=timer_domain.Timer
         self.ActionTimers = {}
+        self.ActionDimTimers = {}
         self.sender = sender
+
+    def process_timer_dim_action(self, payload: str):
+        json_object = json.loads(payload)
+
+        initial_value = json_object['initial_value']
+        dim_value = json_object['dim_value']
+        speed = json_object['speed']
+        directionUP = json_object['directionUP']
+        pin = json_object['pin']
+        topic = json_object['topic']
+
+        last_value = initial_value
+        number_of_step = math.ceil(initial_value / dim_value)
+        new_speed = 0
+        for x in range(0, number_of_step):
+            new_speed = new_speed + speed
+            if directionUP:
+                new_value =  last_value - dim_value
+                if new_value < 0:
+                    new_value = 0
+            else:
+                new_value = last_value + dim_value
+                if new_value > 100:
+                    new_value = 100
+            if int(new_value) != int(last_value):
+                # create an id for new timer
+                timer_id = uuid.uuid4()
+                self.ActionDimTimers[timer_id] = timer_domain.RelativeActionDimTimer(topic, pin, new_value)
+                t = Timer(int(new_speed), self.execute_timer_dim_action, args=(timer_id,))
+                t.start()
+                self.PythonTimers[timer_id] = t
+                logger.info(f"Timer created with '{timer_id}'.")
+            else:
+                last_value = new_value
+
 
     def process_timer_action(self, payload: str):
 
@@ -37,6 +74,21 @@ class TimerProcessor:
         t.start()
         self.PythonTimers[timer_id] = t
         logger.info(f"Timer created with '{timer_id}'.")
+
+    def execute_timer_dim_action(self, timer_id):
+        logger.info(f"Timer with timer_id '{timer_id}' has finished. Start executing actions.")
+        action_dim_timer = self.ActionDimTimers.get(timer_id, None)
+        if action_dim_timer is None:
+            # Unknown Action
+            logger.info(f"Could not find Action Dim timer with timer_id '{timer_id}'.")
+            return
+
+        self.sender.publish_dim_action(action_dim_timer)
+
+        # After the timer is executed we remove the timers from ActionTimers and PythonTimers
+        logger.debug(f"Delete executed timers")
+        del (self.ActionDimTimers[timer_id])
+        del (self.PythonTimers[timer_id])
 
     def execute_timer_action(self, timer_id):
         logger.info(f"Timer with timer_id '{timer_id}' has finished. Start executing actions.")

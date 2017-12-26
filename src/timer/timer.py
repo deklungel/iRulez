@@ -25,6 +25,11 @@ def on_connect(client, userdata, flags, rc):
     logger.debug("Subscribing to " + str(topic))
     client.subscribe(str(topic))
 
+    topic = constants.arduinoTopic + '/' + constants.dimmerTopic + '/' + constants.timerTopic
+    logger.debug("Subscribing to " + str(topic))
+    client.subscribe(str(topic))
+
+
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
     logger.debug("Subscribed: " + str(mid) + " " + str(granted_qos))
@@ -33,12 +38,6 @@ def on_subscribe(mqttc, obj, mid, granted_qos):
 def on_message(client, userdata, msg):
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
-
-    # Find arduino name of topic
-    if not (util.is_arduino_timer_action_topic(msg.topic) or util.is_arduino_relative_action_topic(msg.topic)):
-        logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
-        # Unknown topic
-        return
 
     # Check if the topic is timer update.
     if util.is_arduino_timer_action_topic(msg.topic):
@@ -51,6 +50,17 @@ def on_message(client, userdata, msg):
         TimeProcessor.check_output_pin(msg.payload.decode("utf-8"))
 
         return
+
+    # Check if the topic is timer dimmer update.
+    if util.is_arduino_timer_dimmer_action_topic(msg.topic):
+        logger.debug(f"Process the timer dimmer action")
+        TimeProcessor.process_timer_dim_action(msg.payload.decode("utf-8"))
+        return
+
+
+    logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
+    # Unknown topic
+    return
 
 
 # Set callback functions

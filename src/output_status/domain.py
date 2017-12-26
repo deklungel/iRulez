@@ -21,17 +21,25 @@ class ArduinoPinType(IntEnum):
 class Pin(ABC):
     """Represents a pin on an arduino"""
 
-    def __init__(self, number: int, pin_type: ArduinoPinType, state=False):
+    def __init__(self, number: int, pin_type: ArduinoPinType):
         self.number = number
         self.pin_type = pin_type
-        self.state = state
+        self.state = 0
+
+    def get_state(self) -> bool:
+        if self.state > 0:
+            return True
+        return False
+
+    def get_dim_state(self) -> int:
+        return self.state
 
 
 class OutputPin(Pin):
     """Represents a single pin on an arduino"""
 
-    def __init__(self, number: int, parent: str, state=False):
-        super(OutputPin, self).__init__(number, ArduinoPinType.OUTPUT, state)
+    def __init__(self, number: int, parent: str):
+        super(OutputPin, self).__init__(number, ArduinoPinType.OUTPUT)
         self.parent = parent
 
 
@@ -68,9 +76,14 @@ class Arduino:
         status = util.convert_hex_to_array(payload, self.number_of_output_pins)
         for pin in self.output_pins.values():
             if int(status[pin.number]) == 1:
-                pin.state = True
+                pin.state = 100
             else:
-                pin.state = False
+                pin.state = 0
+
+
+    def set_dimmer_pin_status(self, payload: int, pin):
+        self.output_pins[pin].state = payload
+
 
 
 class ArduinoConfig:

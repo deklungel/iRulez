@@ -65,3 +65,9 @@ class RelativeActionTimer(Timer):
 
     def check_empty_timer(self) -> bool:
         return len(self.output_pins_on) == 0 and len(self.output_pins_on) == 0
+
+class RelativeActionDimTimer(Timer):
+    def __init__(self, name:str, topic: str, pin:int, value: int):
+        super(RelativeActionDimTimer, self).__init__(name, topic)
+        self.pin = pin
+        self.value = value

@@ -51,12 +51,35 @@ def is_arduino_status_topic(topic: str) -> bool:
     # Format arduino_number/action/something
     return is_arduino_topic(topic) and '/' + constants.statusTopic in topic
 
+def is_arduino_dimmer_status_topic(topic: str) -> bool:
+    """Checks if the given topic is an action topic for an arduino"""
+    # Format arduino_number/action/something
+    return is_arduino_topic(topic) and '/' + constants.dimmerStatusTopic in topic
+
+def is_arduino_real_time_dimmer__topic(topic: str) -> bool:
+    """Checks if the given topic is an action topic for an arduino"""
+    # Format arduino_number/action/something
+    return is_arduino_topic(topic) and '/' + constants.dimmerRealTimeModuleTopic in topic
+
+
+
+def is_arduino_timer_dimmer_action_topic(topic: str) -> bool:
+    """Checks if the given topic is an action topic for an arduino"""
+    # Format arduino_number/action/something
+    return is_arduino_topic(topic) and '/' + constants.dimmerTopic + '/' + constants.timerTopic
+
 
 def get_arduino_name_from_topic(topic: str) -> Optional[str]:
     """Retrieves the name of the arduino from an arduino topic, or None if it couldn't be found"""
     if not(is_arduino_topic(topic)):
         return None
     return topic[len(constants.arduinoTopic + '/'):topic.find('/', len(constants.arduinoTopic + '/'))]
+
+def get_arduino_dimmerpin_from_topic(topic: str, name: str) -> Optional[int]:
+    """Retrieves the name of the arduino from an arduino topic, or None if it couldn't be found"""
+    if not(is_arduino_topic(topic)):
+        return None
+    return int(topic[len(constants.arduinoTopic + '/' + name + '/'):topic.find('/', len(constants.arduinoTopic + '/' + name + '/'))])
 
 
 def convert_array_to_hex(status: list) -> str:

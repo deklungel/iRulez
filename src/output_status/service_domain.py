@@ -10,3 +10,7 @@ class Service(ABC):
     @abstractmethod
     def get_arduino_pin_status(self, name: str, pin: int) -> Optional[bool]:
         pass
+
+    @abstractmethod
+    def get_arduino_dim_pin_status(self, name: str, pin: int) -> Optional[int]:
+        pass

@@ -46,18 +46,18 @@ class ButtonActionProcessor:
         self.arduinos = arduinos
         self.status_service = status_service
 
-    def execute_action(self, action: object, pins_to_switch: object) -> object:
+    def execute_action(self, action: object, pins_to_switch: object, pin_to_dim: object, button: domain.ButtonPin, arduino_name: str) -> object:
         if self.check_condition(action.get_condition()):
             logger.info(f"Process action with type '{action.action_type}'")
             if action.action_type == domain.ActionType.TOGGLE:
-                action.perform_action(pins_to_switch, self.status_service.get_arduino_pin_status(action.master.parent, action.master.number))
+                action.perform_action(pins_to_switch, pin_to_dim, self.status_service.get_arduino_pin_status(action.master.parent, action.master.number), button, arduino_name)
             else:
-                action.perform_action(pins_to_switch)
+                action.perform_action(pins_to_switch, pin_to_dim, button, arduino_name)
             self.process_notification(action)
         else:
             logger.info(f"Condition not met")
 
-    def button_pressed(self, button: domain.ButtonPin, arduino_name: str):
+    def button_pressed(self, button: domain.ButtonPin, arduino: domain.Arduino):
         # 	if button_hasMulticlick_actions
         #		clicks ++
         #		if button has LongDown triggers
@@ -67,20 +67,29 @@ class ButtonActionProcessor:
         #       	fire Immediate actions
         #   	if button has LongDown triggers
         #       	start button.timer of smallest longdown trigger
+        logger.debug(f"Button {arduino.name}/button{button.number} pressed")
         pins_to_switch = {}
+        pins_to_dim = {}
+        pins_for_real_time_dimmer = {}
         if button.multi_click_timer is not None:
             button.stop_multi_click_timer()
         if button.has_multi_click_actions(0):
             button.clicks += 1
         else:
-            for action in button.get_button_immediate_actions():
-                self.execute_action(action, pins_to_switch)
-            self.sender.publish_relative_action(pins_to_switch)
+            button.clicks = 1
 
-        seconds_down = button.get_smallest_longdown_time(0, button.clicks)
+        logger.debug(f"Get immediate actions")
+        for action in button.get_button_immediate_actions():
+            self.execute_action(action, pins_to_switch, pins_to_dim, pins_for_real_time_dimmer, button, arduino)
+        logger.debug(f"Publish immediate actions")
+        self.sender.publish_relative_action(pins_to_switch)
+        self.sender.publish_dimmer_module_action(pins_to_dim)
+        self.sender.publish_real_time_dimmer_module_action(pins_for_real_time_dimmer)
+
+        seconds_down = button.get_smallest_longdown_time(0)
         if seconds_down is not None:
             button.start_long_down_timer(seconds_down, self.sender.publish_message_to_button_processor,
-                                         [arduino_name, button.number, seconds_down, button.clicks])
+                                         [arduino.name, button.number, seconds_down, button.clicks])
 
     def check_condition(self, condition: domain.Condition):
         if condition is None:
@@ -105,7 +114,7 @@ class ButtonActionProcessor:
             logger.warning("Condition not caught")
             return False
 
-    def button_unpressed(self, button: domain.ButtonPin, arduino_name: str):
+    def button_unpressed(self, button: domain.ButtonPin, arduino: domain.Arduino):
         #   if clicks > 1
         #       start MulticlickTimer (payload clicks)
         #		if button.timer is running
@@ -122,7 +131,7 @@ class ButtonActionProcessor:
         if button.clicks > 0:
             if not button.longdown_executed and button.has_multi_click_actions(button.clicks):
                 button.start_multi_click_timer(button.time_between_clicks, self.sender.publish_multiclick_message_to_button_processor,
-                                             [arduino_name, button.number, button.clicks])
+                                             [arduino, button.number, button.clicks])
             else:
                 logger.debug(f"reset the button clicks")
                 button.clicks = 0
@@ -133,10 +142,13 @@ class ButtonActionProcessor:
                 button.stop_long_down_timer()
             if not button.longdown_executed:
                 pins_to_switch = {}
+                pins_to_dim = {}
+                pins_for_real_time_dimmer = {}
                 for action in button.get_button_after_release_actions():
                     logger.debug(f"Execute After release actions")
-                    self.execute_action(action, pins_to_switch)
+                    self.execute_action(action, pins_to_switch, pins_to_dim, pins_for_real_time_dimmer, button, arduino)
                 self.sender.publish_relative_action(pins_to_switch)
+                self.sender.publish_dimmer_module_action(pins_to_dim)
         button.longdown_executed = False
 
     def button_multiclick_fired(self, payload: Dict[str, object]):
@@ -149,7 +161,8 @@ class ButtonActionProcessor:
         json_object = json.loads(payload)
         logger.debug(f"Process Multiclick action")
         clicks = int(json_object['clicks'])
-        arduino = self.arduinos.get(json_object['name'], None)
+        arduino_name = json_object['name']
+        arduino = self.arduinos.get(arduino_name, None)
         if arduino is None:
             # Unknown arduino
             logger.info(f"Could not find arduino with name '{name}'.")
@@ -158,9 +171,12 @@ class ButtonActionProcessor:
         logger.debug(f"Compair button click {button.clicks} with payload {clicks}")
         if button.clicks == clicks:
             pins_to_switch = {}
-            for action in button.get_button_after_release_immediate_actions(button.clicks):
-                self.execute_action(action, pins_to_switch)
+            pins_to_dim = {}
+            pins_for_real_time_dimmer = {}
+            for action in button.get_button_after_release_actions(button.clicks):
+                self.execute_action(action, pins_to_switch, pins_to_dim, pins_for_real_time_dimmer, button, arduino_name)
             self.sender.publish_relative_action(pins_to_switch)
+            self.sender.publish_dimmer_module_action(pins_to_dim)
             button.clicks = 0
             button.stop_multi_click_timer()
         else:
@@ -176,7 +192,8 @@ class ButtonActionProcessor:
         #       start new button.timer (remember time already passed)
         json_object = json.loads(payload)
         fired_seconds_down = int(json_object['seconds_down'])
-        arduino = self.arduinos.get(json_object['name'], None)
+        arduino_name = json_object['name']
+        arduino = self.arduinos.get(arduino_name, None)
         if arduino is None:
             # Unknown arduino
             logger.info(f"Could not find arduino with name '{name}'.")
@@ -186,9 +203,13 @@ class ButtonActionProcessor:
             return
 
         pins_to_switch = {}
+        pins_to_dim = {}
+        pins_for_real_time_dimmer = {}
         for action in button.get_button_long_down_actions(fired_seconds_down):
-            self.execute_action(action, pins_to_switch)
+            self.execute_action(action, pins_to_switch, pins_to_dim, pins_for_real_time_dimmer, button, arduino_name)
         self.sender.publish_relative_action(pins_to_switch)
+        self.sender.publish_dimmer_module_action(pins_to_dim)
+        self.sender.publish_real_time_dimmer_module_action(pins_for_real_time_dimmer)
         button.longdown_executed = True
 
         seconds_down = button.get_smallest_longdown_time(fired_seconds_down, button.clicks)
@@ -202,9 +223,9 @@ class ButtonActionProcessor:
         button = arduino.button_pins[pin]
         logger.debug(f"button pin: {button.number} with value: {value}")
         if value:
-            self.button_pressed(button, arduino.name)
+            self.button_pressed(button, arduino)
         else:
-            self.button_unpressed(button, arduino.name)
+            self.button_unpressed(button, arduino)
 
     def process_notification(self, action: domain.Action):
         if action.notifications is None:
