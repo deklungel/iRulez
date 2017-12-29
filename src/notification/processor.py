@@ -1,7 +1,7 @@
 import smtplib
 import src.irulez.log as log
+import src.irulez.util as util
 from abc import ABC, abstractmethod
-import json
 
 logger = log.get_logger('mail_processor')
 
@@ -20,9 +20,9 @@ class AuthenticateSMTPProcessor(MailProcessor):
         self.port = port
         self.url = url
 
-    def send_mail(self, payload) -> None:
+    def send_mail(self, payload: str) -> None:
 
-        json_object = json.loads(payload)
+        json_object = util.deserialize_json(payload)
         recipient = json_object['mails']
 
         to = recipient if type(recipient) is list else [recipient]

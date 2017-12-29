@@ -4,7 +4,6 @@ from threading import Timer
 import src.irulez.constants as constants
 import uuid
 import src.timer.mqtt_sender as mqtt_sender
-import json
 import src.irulez.util as util
 
 logger = log.get_logger('timer_processor')
@@ -56,7 +55,7 @@ class TimerProcessor:
 
     def process_timer_action_request(self, payload: str):
 
-        json_object = json.loads(payload)
+        json_object = util.deserialize_json(payload)
 
         # Before creating a new Timer we check if the pins exist in a other Timer.
         # If this is the case we remove the pins from the other timer.

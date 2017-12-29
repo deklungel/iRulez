@@ -1,6 +1,6 @@
 import src.irulez.constants as constants
 import src.irulez.log as log
-import json
+import src.irulez.util as util
 
 logger = log.get_logger('timer_mqtt_sender')
 
@@ -11,10 +11,11 @@ class MqttSender:
 
     def publish_relative_action(self, individual_action) -> None:
         payload = \
-            json.dumps({"name": individual_action.name,
-                        "topic": constants.arduinoTopic + '/' + individual_action.name + '/' + constants.actionTopic,
-                        "on": individual_action.pin_numbers_on, "off": individual_action.pin_numbers_off,
-                        "delay": individual_action.delay})
+            util.serialize_json({"name": individual_action.name,
+                                 "topic": constants.arduinoTopic + '/' + individual_action.name + '/' +
+                                constants.actionTopic,
+                                 "on": individual_action.pin_numbers_on, "off": individual_action.pin_numbers_off,
+                                 "delay": individual_action.delay})
 
         logger.debug(f"Publishing: {individual_action.topic}{payload}")
         self.client.publish(individual_action.topic, payload, 0, False)

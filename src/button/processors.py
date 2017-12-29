@@ -1,9 +1,8 @@
-import json
-from typing import Dict
 import src.button.domain as domain
 import src.button.action_executor as executor
 import src.irulez.log as log
 import src.button.mqtt_sender as mqtt_sender
+import src.irulez.util as util
 
 logger = log.get_logger('button_processor')
 
@@ -106,7 +105,7 @@ class ButtonActionProcessor:
                 self.__action_executor.execute_actions(button.get_button_after_release_actions(), button, arduino.name)
         button.longdown_executed = False
 
-    def button_multiclick_fired(self, payload: Dict[str, object]):
+    def button_multiclick_fired(self, payload: str):
         """
             if clicks == payload clicks
                 if button has Immediate triggers with actions_clicks == clicks
@@ -115,7 +114,7 @@ class ButtonActionProcessor:
                     fire AfterRelease actions
                 clicks = 1
         """
-        json_object = json.loads(payload)
+        json_object = util.deserialize_json(payload)
         logger.debug(f"Process Multiclick action")
         clicks = int(json_object['clicks'])
         arduino_name = json_object['name']
@@ -135,14 +134,14 @@ class ButtonActionProcessor:
             logger.debug(f"New click has been received")
             return
 
-    def button_timer_fired(self, payload: Dict[str, object]):
+    def button_timer_fired(self, payload: str):
         #   if button.timer is not running
         #       return
         #   execute LongDown with time passed (don't fire with smaller triggers)
         #   set flag longdown_executed
         #   if button has LongDown with larger triggers
         #       start new button.timer (remember time already passed)
-        json_object = json.loads(payload)
+        json_object = util.deserialize_json(payload)
         fired_seconds_down = int(json_object['seconds_down'])
         arduino_name = json_object['name']
         arduino = self.arduinos.get(arduino_name, None)
