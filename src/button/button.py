@@ -37,7 +37,7 @@ executor = action_executor.ActionExecutor(sender, StatusService)
 action_processor = button_processor.ButtonActionProcessor(executor, arduinos, sender)
 
 
-def on_connect(connected_client, _, __, rc):
+def on_connect(connected_client, _, __, rc) -> None:
     """Callback function for when the mqtt client is connected."""
     logger.info("Connected client with result code " + str(rc))
 
@@ -53,11 +53,11 @@ def on_connect(connected_client, _, __, rc):
     connected_client.subscribe(constants.arduinoTopic + "/" + constants.buttonMulticlickFiredTopic)
 
 
-def on_subscribe(_, __, mid, granted_qos):
+def on_subscribe(_, __, mid, granted_qos) -> None:
     logger.debug("Subscribed: " + str(mid) + " " + str(granted_qos))
 
 
-def on_message(_, __, msg):
+def on_message(_, __, msg) -> None:
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
 

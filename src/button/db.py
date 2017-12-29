@@ -266,7 +266,7 @@ class MariaDB(DbBase):
                                          condition_id, master_id, click_number, dimmer_speed, dimmer_light_value))
                 return actions
 
-    def __create_connection(self):
+    def __create_connection(self) -> None:
         return mariadb.connect(host=self.ip, port=self.port, user=self.username, password=self.password,
                                database=self.database)
 

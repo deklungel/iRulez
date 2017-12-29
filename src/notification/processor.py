@@ -8,7 +8,7 @@ logger = log.get_logger('mail_processor')
 
 class MailProcessor(ABC):
     @abstractmethod
-    def send_mail(self, json_object):
+    def send_mail(self, json_object) -> None:
         pass
 
 
@@ -20,7 +20,7 @@ class AuthenticateSMTPProcessor(MailProcessor):
         self.port = port
         self.url = url
 
-    def send_mail(self, payload):
+    def send_mail(self, payload) -> None:
 
         json_object = json.loads(payload)
         recipient = json_object['mails']

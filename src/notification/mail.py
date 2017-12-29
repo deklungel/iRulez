@@ -19,7 +19,7 @@ mail = processor.AuthenticateSMTPProcessor(mailConfig['username'],
                                            mailConfig['url'])
 
 
-def on_connect(connected_client, _, __, rc):
+def on_connect(connected_client, _, __, rc) -> None:
     """Callback function for when the mqtt client is connected."""
     logger.info("Connected client with result code " + str(rc))
     # Subscribe in on_connect callback to automatically re-subscribe if the connection was lost
@@ -31,11 +31,11 @@ def on_connect(connected_client, _, __, rc):
     connected_client.subscribe(str(topic))
 
 
-def on_subscribe(_, __, mid, granted_qos):
+def on_subscribe(_, __, mid, granted_qos) -> None:
     logger.debug("Subscribed: " + str(mid) + " " + str(granted_qos))
 
 
-def on_message(_, __, msg):
+def on_message(_, __, msg) -> None:
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
     mail.send_mail(msg.payload.decode("utf-8"))

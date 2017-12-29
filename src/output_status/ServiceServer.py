@@ -53,5 +53,5 @@ class OutputServiceServer(service.Service):
             status.append(pin.state)
         return status
 
-    def test(self):
+    def test(self) -> str:
         return "Hello World"

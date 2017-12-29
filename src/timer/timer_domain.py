@@ -73,5 +73,5 @@ class DefaultTimer(Timer):
         self.__payload = payload
 
     @property
-    def payload(self):
+    def payload(self) -> str:
         return self.__payload

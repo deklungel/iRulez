@@ -82,7 +82,7 @@ class MariaDB(DbBase):
                     output_pins.append(db_domain.OutputPin(id, number, parent_id))
                 return output_pins
 
-    def __create_connection(self):
+    def __create_connection(self) -> None:
         return mariadb.connect(host=self.ip, port=self.port, user=self.username, password=self.password,
                                database=self.database)
 

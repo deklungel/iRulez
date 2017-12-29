@@ -5,7 +5,6 @@ import src.irulez.log as log
 from datetime import time
 from typing import List, Dict, Optional
 import src.irulez.constants as constants
-import json
 from threading import Timer
 
 logger = log.get_logger('button_domain')
@@ -57,7 +56,7 @@ class ActionTrigger(ABC):
     def __init__(self, trigger_type: ActionTriggerType):
         self.trigger_type = trigger_type
 
-    def get_action_trigger_type(self):
+    def get_action_trigger_type(self) -> ActionTriggerType:
         return self.trigger_type
 
 
@@ -72,21 +71,21 @@ class Notification(ABC):
         self.enabled = enabled
 
     @abstractmethod
-    def get_topic_name(self):
+    def get_topic_name(self) -> str:
         pass
 
     @abstractmethod
-    def get_payload(self):
+    def get_payload(self) -> str:
         pass
 
 
 class ImmediatelyActionTrigger(ActionTrigger):
-    def __init__(self):
+    def __init__(self) -> None:
         super(ImmediatelyActionTrigger, self).__init__(ActionTriggerType.IMMEDIATELY)
 
 
 class AfterReleaseActionTrigger(ActionTrigger):
-    def __init__(self):
+    def __init__(self) -> None:
         super(AfterReleaseActionTrigger, self).__init__(ActionTriggerType.AFTER_RELEASE)
 
 
@@ -96,7 +95,7 @@ class LongDownActionTrigger(ActionTrigger):
         self._seconds_down = seconds_down
 
     @property
-    def seconds_down(self):
+    def seconds_down(self) -> int:
         return self._seconds_down
 
 
@@ -279,7 +278,7 @@ class ButtonPin(Pin):
         self.__long_down_timer = Timer(interval, function, args=(args,))
         self.__long_down_timer.start()
 
-    def stop_long_down_timer(self):
+    def stop_long_down_timer(self) -> None:
         logger.debug(f"Stop long down timer")
         self.__long_down_timer.cancel()
         self.__long_down_timer = None
@@ -289,12 +288,12 @@ class ButtonPin(Pin):
         self.__multi_click_timer = Timer(interval, function, args=(args,))
         self.__multi_click_timer.start()
 
-    def stop_multi_click_timer(self):
+    def stop_multi_click_timer(self) -> None:
         logger.debug(f"Stop multi click timer")
         self.__multi_click_timer.cancel()
         self.__multi_click_timer = None
 
-    def reverse_dimmer_direction(self):
+    def reverse_dimmer_direction(self) -> None:
         self.__dimmer_direction = not self.dimmer_direction
 
     @property
@@ -407,11 +406,11 @@ class MailNotification(Notification):
         self.mails = mails
         self.subject = subject
 
-    def get_topic_name(self):
+    def get_topic_name(self) -> str:
         return constants.arduinoTopic + "/" + constants.notificationTopic + "/" + constants.mailTopic
 
-    def get_payload(self):
-        return json.dumps(
+    def get_payload(self) -> str:
+        return util.serialize_json(
             {
                 "mails": self.mails,
                 "message": self.message,
@@ -424,11 +423,11 @@ class TelegramNotification(Notification):
         super(TelegramNotification, self).__init__(message, enabled)
         self.tokens = tokens
 
-    def get_topic_name(self):
+    def get_topic_name(self) -> str:
         return constants.arduinoTopic + "/" + constants.notificationTopic + "/" + constants.telegramTopic
 
-    def get_payload(self):
-        return json.dumps(
+    def get_payload(self) -> str:
+        return util.serialize_json(
             {
                 "tokens": self.tokens,
                 "message": self.message

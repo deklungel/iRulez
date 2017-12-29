@@ -5,7 +5,7 @@ log_initialized = False
 
 
 # Init main logger
-def init_logger():
+def init_logger() -> None:
     logger = logging.getLogger(log_prefix)
     logger.info('Dummy starting')
     logger.setLevel(logging.DEBUG)

@@ -34,7 +34,7 @@ class TimerProcessor:
         self.PythonTimers[timer_id] = t
         logger.info(f"Timer created with '{timer_id}'.")
 
-    def __execute_default_timer(self, timer_id):
+    def __execute_default_timer(self, timer_id) -> None:
         logger.info(f"Default timer with timer_id '{timer_id}' has finished. Start executing actions.")
         timer_to_execute = self.__default_timers.get(timer_id, None)
         if timer_to_execute is None:
@@ -75,7 +75,7 @@ class TimerProcessor:
         self.PythonTimers[timer_id] = t
         logger.info(f"Timer created with '{timer_id}'.")
 
-    def __execute_timer_action(self, timer_id):
+    def __execute_timer_action(self, timer_id) -> None:
         logger.info(f"Timer with timer_id '{timer_id}' has finished. Start executing actions.")
         action_timer = self.ActionTimers.get(timer_id, None)
         if action_timer is None:
@@ -101,7 +101,7 @@ class TimerProcessor:
                 self.ActionTimers[timer_id].check_pins(json_object)
         self.__check_empty_timer()
 
-    def __check_empty_timer(self):
+    def __check_empty_timer(self) -> None:
         to_be_delete = []
         for timer_id in self.ActionTimers:
             if self.ActionTimers[timer_id].check_empty_timer():
