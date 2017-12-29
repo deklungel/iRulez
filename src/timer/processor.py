@@ -5,7 +5,7 @@ import src.irulez.constants as constants
 import uuid
 import src.timer.mqtt_sender as mqtt_sender
 import json
-import math
+import src.irulez.util as util
 
 logger = log.get_logger('timer_processor')
 
@@ -16,45 +16,45 @@ class TimerProcessor:
         self.PythonTimers = {}
         # key=guid (id from the timer), values=object contains data for execution of the timer object=timer_domain.Timer
         self.ActionTimers = {}
-        self.ActionDimTimers = {}
+        self.__default_timers = {}
         self.sender = sender
 
-    def process_timer_dim_action(self, payload: str):
-        json_object = json.loads(payload)
+    def process_default_timer_request(self, payload: str):
+        json_object = util.deserialize_json(payload)
 
-        initial_value = json_object['initial_value']
-        dim_value = json_object['dim_value']
-        speed = json_object['speed']
-        directionUP = json_object['directionUP']
-        pin = json_object['pin']
-        topic = json_object['topic']
+        topic = util.get_str_from_json_object(json_object, 'topic')
+        delay = util.get_int_from_json_object(json_object, 'delay')
+        payload = json_object['payload']
 
-        last_value = initial_value
-        number_of_step = math.ceil(initial_value / dim_value)
-        new_speed = 0
-        for x in range(0, number_of_step):
-            new_speed = new_speed + speed
-            if directionUP:
-                new_value =  last_value - dim_value
-                if new_value < 0:
-                    new_value = 0
-            else:
-                new_value = last_value + dim_value
-                if new_value > 100:
-                    new_value = 100
-            if int(new_value) != int(last_value):
-                # create an id for new timer
-                timer_id = uuid.uuid4()
-                self.ActionDimTimers[timer_id] = timer_domain.RelativeActionDimTimer(topic, pin, new_value)
-                t = Timer(int(new_speed), self.execute_timer_dim_action, args=(timer_id,))
-                t.start()
-                self.PythonTimers[timer_id] = t
-                logger.info(f"Timer created with '{timer_id}'.")
-            else:
-                last_value = new_value
+        # create an id for new timer
+        timer_id = uuid.uuid4()
+        self.__default_timers[timer_id] = timer_domain.DefaultTimer(topic, payload)
+        t = Timer(int(delay), self.__execute_default_timer, args=(timer_id,))
+        t.start()
+        self.PythonTimers[timer_id] = t
+        logger.info(f"Timer created with '{timer_id}'.")
 
+    def __execute_default_timer(self, timer_id):
+        logger.info(f"Default timer with timer_id '{timer_id}' has finished. Start executing actions.")
+        timer_to_execute = self.__default_timers.get(timer_id, None)
+        if timer_to_execute is None:
+            # Unknown Action
+            logger.info(f"Could not find default timer with timer_id '{timer_id}'.")
+            return
 
-    def process_timer_action(self, payload: str):
+        # After the timer is executed we remove the timers from ActionTimers and PythonTimers
+        logger.debug(f"Delete executed timers")
+        del (self.__default_timers[timer_id])
+        del (self.PythonTimers[timer_id])
+
+        if not isinstance(timer_to_execute, timer_domain.DefaultTimer):
+            logger.error(f"Found timer in __default_timers with id '{timer_id}', "
+                         f"but it wasn't a DefaultTimer ({type(timer_to_execute)})")
+            return
+
+        self.sender.publish_default_action(timer_to_execute.topic, timer_to_execute.payload)
+
+    def process_timer_action_request(self, payload: str):
 
         json_object = json.loads(payload)
 
@@ -70,27 +70,12 @@ class TimerProcessor:
                                                                        json_object['topic'],
                                                                        json_object['on'],
                                                                        json_object['off'])
-        t = Timer(int(json_object['delay']), self.execute_timer_action, args=(timer_id,))
+        t = Timer(int(json_object['delay']), self.__execute_timer_action, args=(timer_id,))
         t.start()
         self.PythonTimers[timer_id] = t
         logger.info(f"Timer created with '{timer_id}'.")
 
-    def execute_timer_dim_action(self, timer_id):
-        logger.info(f"Timer with timer_id '{timer_id}' has finished. Start executing actions.")
-        action_dim_timer = self.ActionDimTimers.get(timer_id, None)
-        if action_dim_timer is None:
-            # Unknown Action
-            logger.info(f"Could not find Action Dim timer with timer_id '{timer_id}'.")
-            return
-
-        self.sender.publish_dim_action(action_dim_timer)
-
-        # After the timer is executed we remove the timers from ActionTimers and PythonTimers
-        logger.debug(f"Delete executed timers")
-        del (self.ActionDimTimers[timer_id])
-        del (self.PythonTimers[timer_id])
-
-    def execute_timer_action(self, timer_id):
+    def __execute_timer_action(self, timer_id):
         logger.info(f"Timer with timer_id '{timer_id}' has finished. Start executing actions.")
         action_timer = self.ActionTimers.get(timer_id, None)
         if action_timer is None:
@@ -114,9 +99,9 @@ class TimerProcessor:
         for timer_id in self.ActionTimers:
             if self.ActionTimers[timer_id].name == json_object['name']:
                 self.ActionTimers[timer_id].check_pins(json_object)
-        self.check_empty_timer()
+        self.__check_empty_timer()
 
-    def check_empty_timer(self):
+    def __check_empty_timer(self):
         to_be_delete = []
         for timer_id in self.ActionTimers:
             if self.ActionTimers[timer_id].check_empty_timer():

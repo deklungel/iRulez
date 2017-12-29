@@ -10,42 +10,42 @@ logger = log.get_logger('factory')
 
 
 class ArduinoConfigFactory:
-    def __init__(self, db: db.DbBase):
-        self.db = db
+    def __init__(self, database: db.DbBase):
+        self.__database = database
 
     def create_arduino_config(self) -> domain.ArduinoConfig:
         # Retrieve the whole universe from the database
         logger.debug('Retrieving arduinos from database')
-        arduinos = self.db.get_arduinos()
+        arduinos = self.__database.get_arduinos()
         logger.debug('Retrieving templates from database')
-        templates = self.db.get_templates()
+        templates = self.__database.get_templates()
         logger.debug('Retrieving input pins from database')
-        input_pins = self.db.get_input_pins()
+        input_pins = self.__database.get_input_pins()
         logger.debug('Retrieving output pins from database')
-        output_pins = self.db.get_output_pins()
+        output_pins = self.__database.get_output_pins()
         logger.debug('Retrieving actions from database')
-        actions = self.db.get_actions()
+        actions = self.__database.get_actions()
         logger.debug('Retrieving triggers from database')
-        triggers = self.db.get_triggers()
+        triggers = self.__database.get_triggers()
         logger.debug('Retrieving conditions from database')
-        conditions = self.db.get_conditions()
+        conditions = self.__database.get_conditions()
         logger.debug('Retrieving notifications from database')
-        notifications = self.db.get_notifications()
+        notifications = self.__database.get_notifications()
 
         logger.info("Got all data from database")
 
         # Map templates
-        mapped_templates = dict()
+        mapped_templates = {}
         for template in templates:
             mapped_templates[template.id] = template
 
         # Create arduinos
-        created_arduinos = dict()
+        created_arduinos = {}
         for arduino in arduinos:
             created_arduinos[arduino.id] = self.__create_arduino(arduino, mapped_templates)
 
         # Create output pins
-        created_output_pins = dict()
+        created_output_pins = {}
         for output_pin in output_pins:
             created_pin = self.__create_output_pin_and_add_to_arduino(output_pin, created_arduinos)
             if created_pin is not None:
@@ -60,18 +60,18 @@ class ArduinoConfigFactory:
         created_conditions = self.__create_conditions(conditions, created_output_pins)
 
         # Create notification
-        created_notifications = dict()
+        created_notifications = {}
         if notifications is not None:
             for notification in notifications:
                 created_notifications[notification.id] = self.__create_notification(notification)
 
         # Create triggers
-        created_triggers = dict()
+        created_triggers = {}
         for trigger in triggers:
             created_triggers[trigger.id] = self.__create_trigger(trigger)
 
         # Create actions
-        created_actions = dict()
+        created_actions = {}
         for action in actions:
             created_action = self.__create_action(action, created_triggers, created_output_pins, created_conditions,
                                                   created_notifications)
@@ -79,7 +79,7 @@ class ArduinoConfigFactory:
                 created_actions[action.id] = created_action
 
         # Create input pins
-        created_input_pins = dict()
+        created_input_pins = {}
         for input_pin in input_pins:
             created_input_pin = self.__create_input_pin_and_add_to_arduino(input_pin, created_arduinos, created_actions)
             if created_input_pin is not None:
@@ -98,10 +98,6 @@ class ArduinoConfigFactory:
             return domain.AfterReleaseActionTrigger()
         if trigger.trigger_type == 3:
             return domain.LongDownActionTrigger(trigger.seconds_down)
-        if trigger.trigger_type == 4:
-            return domain.DoubleTapActionTrigger(trigger.time_between_tap)
-        if trigger.trigger_type == 5:
-            return domain.TripleTapActionTrigger(trigger.time_between_tap)
 
     def __create_notification(self, notification: db_domain.Notification) -> domain.Notification:
         if notification.notification_type == 1:
@@ -245,6 +241,20 @@ class ArduinoConfigFactory:
         if action.action_type == 3:
             return domain.OffAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action,
                                     condition, action.click_number)
+        if action.action_type == 5:
+            return domain.OnDimmerAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action,
+                                         condition, action.click_number, action.dimmer_speed, action.dimmer_light_value)
+        if action.action_type == 6:
+            return domain.OffDimmerAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action,
+                                          condition, action.click_number, action.dimmer_speed)
+        if action.action_type == 7:
+            # Get master pin
+            master_pin = output_pins.get(action.master_id, None)
+            if master_pin is None:
+                logger.warning(f'The master pin {action.master_id} could not be found for action {action.id}')
+            return domain.ToggleDimmerAction(trigger, action.delay, pins_of_action, notification_of_action, master_pin,
+                                             condition, action.click_number, action.dimmer_speed,
+                                             action.dimmer_light_value)
 
         # Other types not supported yet
         logger.error(f'Type {action.action_type} not supported yet')

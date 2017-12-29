@@ -8,8 +8,7 @@ logger = log.get_logger('timer_domain')
 
 
 class Timer(ABC):
-    def __init__(self, name: str, topic: str):
-        self.name = name
+    def __init__(self, topic: str):
         self.topic = topic
 
 
@@ -46,7 +45,8 @@ class IndividualAction:
 
 class RelativeActionTimer(Timer):
     def __init__(self, name: str, topic: str, output_pins_on: List[int], output_pins_off: List[int]):
-        super(RelativeActionTimer, self).__init__(name, topic)
+        super(RelativeActionTimer, self).__init__(topic)
+        self.name = name
         self.output_pins_on = output_pins_on
         self.output_pins_off = output_pins_off
 
@@ -66,8 +66,12 @@ class RelativeActionTimer(Timer):
     def check_empty_timer(self) -> bool:
         return len(self.output_pins_on) == 0 and len(self.output_pins_on) == 0
 
-class RelativeActionDimTimer(Timer):
-    def __init__(self, name:str, topic: str, pin:int, value: int):
-        super(RelativeActionDimTimer, self).__init__(name, topic)
-        self.pin = pin
-        self.value = value
+
+class DefaultTimer(Timer):
+    def __init__(self, topic: str, payload: str):
+        super().__init__(topic)
+        self.__payload = payload
+
+    @property
+    def payload(self):
+        return self.__payload

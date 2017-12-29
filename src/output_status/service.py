@@ -24,10 +24,10 @@ for arduino in factory.create_arduino_config().arduinos:
 
 # Create client
 client = mqtt.Client()
-update_processor = service_processor.service_processor(arduinos)
+update_processor = service_processor.ServiceProcessor(arduinos)
 
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(connected_client, _, __, rc):
     """Callback function for when the mqtt client is connected."""
     logger.info("Connected client with result code " + str(rc))
 
@@ -36,15 +36,15 @@ def on_connect(client, userdata, flags, rc):
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.statusTopic)
-    client.subscribe(constants.arduinoTopic + "/+/" + constants.statusTopic)
-    client.subscribe(constants.arduinoTopic + "/+/+/" + constants.dimmerStatusTopic)
+    connected_client.subscribe(constants.arduinoTopic + "/+/" + constants.statusTopic)
+    connected_client.subscribe(constants.arduinoTopic + "/+/+/" + constants.dimmerStatusTopic)
 
 
-def on_subscribe(mqttc, obj, mid, granted_qos):
+def on_subscribe(_, __, mid, granted_qos):
     logger.debug("Subscribed: " + str(mid) + " " + str(granted_qos))
 
 
-def on_message(client, userdata, msg):
+def on_message(_, __, msg):
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
 
@@ -56,14 +56,13 @@ def on_message(client, userdata, msg):
 
     # Get the name of the arduino from the topic
     name = util.get_arduino_name_from_topic(msg.topic)
-    if  util.is_arduino_status_topic(msg.topic):
+    if util.is_arduino_status_topic(msg.topic):
         logger.debug(f"Update the relay status of a normal arduino")
         update_processor.update_arduino_output_pins(name, msg.payload)
     elif util.is_arduino_dimmer_status_topic(msg.topic):
-        dimmerpin =  util.get_arduino_dimmerpin_from_topic(msg.topic)
+        dimmer_pin = util.get_arduino_dimmerpin_from_topic(msg.topic, name)
         logger.debug(f"Update the relay status of a dimmer")
-        update_processor.update_arduino_dimmer_pins(name,dimmerpin, msg.payload)
-
+        update_processor.update_arduino_dimmer_pins(name, dimmer_pin, msg.payload)
 
 
 # Set callback functions

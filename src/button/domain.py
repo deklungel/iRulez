@@ -2,7 +2,7 @@ from enum import IntEnum
 import src.irulez.util as util
 from abc import ABC, abstractmethod
 import src.irulez.log as log
-from datetime import datetime, time
+from datetime import time
 from typing import List, Dict, Optional
 import src.irulez.constants as constants
 import json
@@ -29,8 +29,10 @@ class ActionType(IntEnum):
     ON = 2
     OFF = 3
     FOLLOW_BUTTON = 4
-    DIMMER = 5
-    TOGGLE_DIMMER = 6
+    ON_DIMMER = 5
+    OFF_DIMMER = 6
+    TOGGLE_DIMMER = 7
+    DIMMER = 8
 
 
 class ActionTriggerType(IntEnum):
@@ -117,6 +119,7 @@ class OutputPin(Pin):
 
 class IndividualAction:
     """Represents the actions on pins that have to happen on a single arduino"""
+
     def __init__(self,
                  delay: int,
                  pin_numbers_on: List[int],
@@ -142,36 +145,41 @@ class IndividualAction:
         return False
 
 
-class IndividualDimAction(IndividualAction):
+class IndividualDimAction:
     """Represents a dimmer action for a single arduino"""
+
     def __init__(self,
                  dim_speed: int,
                  dim_light_value: int,
-                 delay: int,
-                 pin_numbers_on: List[int],
-                 pin_numbers_off: List[int]
-                 ):
-        super(IndividualDimAction).__init__(delay, pin_numbers_on, pin_numbers_off)
-        self.speed = dim_speed
-        self.dim_light_value = dim_light_value
+                 delay: int):
+        self.__speed = dim_speed
+        self.__dim_light_value = dim_light_value
+        self.__delay = delay
+        self.__pin_numbers = []
 
+    def add_pin(self, pin_number: int):
+        self.__pin_numbers.append(pin_number)
 
-class IndividualRealTimeDimAction(IndividualAction):
-    """Represents a dimmer action for a single arduino"""
-    def __init__(self,
-                 dim_speed: int,
-                 dim_light_value: int,
-                 delay: int,
-                 pin_numbers_on: List[int],
-                 pin_numbers_off: List[int],
-                 arduino: Arduino,
-                 button: ButtonPin
-                 ):
-        super(IndividualDimAction).__init__(delay, pin_numbers_on, pin_numbers_off)
-        self.speed = dim_speed
-        self.dim_light_value = dim_light_value
-        self.arduino = arduino
-        self.button = button
+    def has_values(self) -> bool:
+        if len(self.__pin_numbers) > 0:
+            return True
+        return False
+
+    @property
+    def speed(self) -> int:
+        return self.__speed
+
+    @property
+    def dim_light_value(self) -> int:
+        return self.__dim_light_value
+
+    @property
+    def delay(self) -> int:
+        return self.__delay
+
+    @property
+    def pin_numbers(self) -> List[int]:
+        return self.__pin_numbers
 
 
 class Action(ABC):
@@ -193,16 +201,13 @@ class Action(ABC):
         self.condition = condition
         self.click_number = click_number
 
-    @abstractmethod
-    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
-        pass
-
     def get_condition(self) -> Condition:
         return self.condition
 
 
 class DimmerAction(Action):
     """Represents a single dimmer action"""
+
     def __init__(self,
                  trigger: ActionTrigger,
                  action_type: ActionType,
@@ -211,19 +216,15 @@ class DimmerAction(Action):
                  notifications: List[Notification],
                  condition: Optional[Condition],
                  click_number: int,
-                 dimmer_speed: int,
-                 dimmer_light_value: int):
-        super(DimmerAction, self).__init__(trigger, action_type, delay, output_pins, notifications, condition, click_number)
-        self.dimmer_speed = dimmer_speed
-        self.dimmer_light_value = dimmer_light_value
-
-    @abstractmethod
-    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
-        pass
+                 dimmer_speed: int):
+        super(DimmerAction, self).__init__(trigger, action_type, delay, output_pins, notifications, condition,
+                                           click_number)
+        self._dimmer_speed = dimmer_speed
 
 
 class ButtonPin(Pin):
     """Represents a single input pin on an arduino"""
+
     def __init__(self, number: int, actions: List[Action], time_between_clicks, state=False):
         self.__actions = actions
         self.__long_down_timer = None
@@ -251,10 +252,11 @@ class ButtonPin(Pin):
     def get_smallest_longdown_time(self, minimum_time: int) -> Optional[int]:
         longdown_time = None
         for action in self.actions:
-            if action.click_number == self.clicks and action.trigger.trigger_type == ActionTriggerType.LONG_DOWN:
+            if action.click_number == self.clicks and action.trigger.trigger_type == ActionTriggerType.LONG_DOWN and \
+                    isinstance(action.trigger, LongDownActionTrigger):
                 if longdown_time is None and action.trigger.seconds_down > minimum_time:
                     longdown_time = action.trigger.seconds_down
-                elif (action.trigger.seconds_down > minimum_time):
+                elif action.trigger.seconds_down > minimum_time:
                     longdown_time = action.trigger.seconds_down
         return longdown_time
 
@@ -262,7 +264,7 @@ class ButtonPin(Pin):
         results = []
         for action in self.actions:
             if action.trigger.trigger_type == ActionTriggerType.LONG_DOWN and \
-                            action.trigger.seconds_down == seconds_down:
+                    action.trigger.seconds_down == seconds_down and isinstance(action.trigger, LongDownActionTrigger):
                 results.append(action)
         return results
 
@@ -272,9 +274,9 @@ class ButtonPin(Pin):
                 return True
         return False
 
-    def start_long_down_timer(self, time: int, function, args: List[object]):
+    def start_long_down_timer(self, interval: int, function, args: List[object]):
         logger.debug(f"Start long down timer")
-        self.__long_down_timer = Timer(time, function, args=(args,))
+        self.__long_down_timer = Timer(interval, function, args=(args,))
         self.__long_down_timer.start()
 
     def stop_long_down_timer(self):
@@ -282,9 +284,9 @@ class ButtonPin(Pin):
         self.__long_down_timer.cancel()
         self.__long_down_timer = None
 
-    def start_multi_click_timer(self, time: int, function, args: List[object]):
+    def start_multi_click_timer(self, interval: int, function, args: List[object]):
         logger.debug(f"Start multi click timer")
-        self.__multi_click_timer = Timer(time, function, args=(args,))
+        self.__multi_click_timer = Timer(interval, function, args=(args,))
         self.__multi_click_timer.start()
 
     def stop_multi_click_timer(self):
@@ -299,11 +301,13 @@ class ButtonPin(Pin):
     def multi_click_timer(self) -> Timer:
         return self.__multi_click_timer
 
-
     @property
     def dimmer_direction(self) -> bool:
         return self.__dimmer_direction
 
+    @dimmer_direction.setter
+    def dimmer_direction(self, dimmer_direction: bool):
+        self.__dimmer_direction = dimmer_direction
 
     @property
     def time_between_clicks(self) -> float:
@@ -321,7 +325,6 @@ class ButtonPin(Pin):
     def clicks(self) -> int:
         return self.__clicks
 
-
     @clicks.setter
     def clicks(self, clicks: int):
         self.__clicks = clicks
@@ -338,13 +341,64 @@ class ButtonPin(Pin):
     def longdown_executed(self, longdown_executed: bool):
         self.__longdown_executed = longdown_executed
 
-    @property
-    def dimmer_direction(self) -> bool:
-        return self.__dimmer_direction
 
-    @longdown_executed.setter
-    def dimmer_direction(self, dimmer_direction: bool):
-        self.__dimmer_direction = dimmer_direction
+class Arduino:
+    """Represents an actual arduino"""
+
+    def __init__(self, name: str, number_of_outputs_pins: int, number_of_button_pins: int):
+        self.name = name
+        self.number_of_output_pins = number_of_outputs_pins
+        self.number_of_button_pins = number_of_button_pins
+        self.output_pins = dict()
+        self._button_pins = dict()
+
+    @property
+    def button_pins(self) -> Dict[int, ButtonPin]:
+        return self._button_pins
+
+    def set_output_pin(self, output_pin: OutputPin):
+        self.output_pins[output_pin.number] = output_pin
+
+    def set_output_pins(self, output_pins: List[OutputPin]):
+        for pin in output_pins:
+            self.output_pins[pin.number] = pin
+
+    def set_button_pin(self, button_pin: ButtonPin):
+        self._button_pins[button_pin.number] = button_pin
+
+    def set_button_pins(self, button_pins: List[ButtonPin]):
+        for pin in button_pins:
+            self._button_pins[pin.number] = pin
+
+    def get_output_pin(self, pin_number: int) -> OutputPin:
+        return self.output_pins[pin_number]
+
+    def get_changed_pins(self, payload: str) -> Dict[int, bool]:
+        status = util.convert_hex_to_array(payload, self.number_of_output_pins)
+        changed_pins = dict()
+        for pin in self._button_pins.values():
+            if bool(int(status[pin.number])) != pin.state:
+                changed_pins[pin.number] = bool(int(status[pin.number]))
+                pin.state = bool(int(status[pin.number]))
+        return changed_pins
+
+
+class IndividualRealTimeDimAction(IndividualAction):
+    """Represents a dimmer action for a single arduino"""
+
+    def __init__(self,
+                 dim_speed: int,
+                 dim_light_value: int,
+                 delay: int,
+                 pin_numbers_on: List[int],
+                 pin_numbers_off: List[int],
+                 arduino: Arduino,
+                 button: ButtonPin):
+        super(IndividualAction).__init__(delay, pin_numbers_on, pin_numbers_off)
+        self.speed = dim_speed
+        self.dim_light_value = dim_light_value
+        self.arduino = arduino
+        self.button = button
 
 
 class MailNotification(Notification):
@@ -375,10 +429,10 @@ class TelegramNotification(Notification):
 
     def get_payload(self):
         return json.dumps(
-                    {
-                        "tokens": self.tokens,
-                        "message": self.message
-                    })
+            {
+                "tokens": self.tokens,
+                "message": self.message
+            })
 
 
 class ConditionList(Condition):
@@ -415,59 +469,21 @@ class OnAction(Action):
         super(OnAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notifications,
                                        condition, click_number)
 
-    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]],
-                       pin_to_dim: Dict[str, List[IndividualDimAction]],
-                       pins_for_real_time_dimmer: Dict[str, List[IndividualRealTimeDimAction]],
-                       button: ButtonPin, arduino: Arduino):
+    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
         pin_action = IndividualAction(self.delay, [], [])
         for pin in self.output_pins:
             logger.debug(f"pin number: '{pin.number}' with parent: '{pin.parent}'")
             pin_action.add_pin_on(pin.number)
-        if pin_action.has_values_on():
-            pins_to_switch.setdefault(pin.parent, []).append(pin_action)
-        logger.debug(f"Pins to switch on: '{str(pin_action.pin_numbers_on)}'")
-
-        if self.off_timer > 0:
-            pin_action = IndividualAction(self.delay, [], [])
-            for pin in self.output_pins:
-                pin_action.add_pin_off(pin.number)
-            if pin_action.has_values_off():
+            if pin_action.has_values_on():
                 pins_to_switch.setdefault(pin.parent, []).append(pin_action)
-
-
-class OnDimmerAction(DimmerAction):
-    def __init__(self,
-                 trigger: ActionTrigger,
-                 delay: int,
-                 off_timer: int,
-                 output_pins: List[OutputPin],
-                 notifications: List[Notification],
-                 condition: Optional[Condition],
-                 click_number: int,
-                 dimmer_speed: int,
-                 dimmer_light_value: int):
-        self.off_timer = off_timer
-        super(OnDimmerAction, self).__init__(trigger, ActionType.ON, delay, output_pins, notifications,
-                                       condition, click_number, dimmer_speed, dimmer_light_value)
-
-    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]],
-                       pin_to_dim: Dict[str, List[IndividualDimAction]],
-                       pins_for_real_time_dimmer: Dict[str, List[IndividualRealTimeDimAction]],
-                       button: ButtonPin, arduino: Arduino):
-        pin_action = IndividualDimAction(self.dimmer_speed, self.dimmer_light_value, self.delay, [], [])
-        for pin in self.output_pins:
-            logger.debug(f"pin number: '{pin.number}' with parent: '{pin.parent}'")
-            pin_action.add_pin_on(pin.number)
-        if pin_action.has_values_on():
-            pin_to_dim.setdefault(pin.parent, []).append(pin_action)
         logger.debug(f"Pins to switch on: '{str(pin_action.pin_numbers_on)}'")
 
         if self.off_timer > 0:
             pin_action = IndividualAction(self.delay, [], [])
             for pin in self.output_pins:
                 pin_action.add_pin_off(pin.number)
-            if pin_action.has_values_off():
-                pin_to_dim.setdefault(pin.parent, []).append(pin_action)
+                if pin_action.has_values_off():
+                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
 
 
 class OffAction(Action):
@@ -483,55 +499,19 @@ class OffAction(Action):
         super(OffAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notifications,
                                         condition, click_number)
 
-    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]],
-                       pin_to_dim: Dict[str, List[IndividualDimAction]],
-                       pins_for_real_time_dimmer: Dict[str, List[IndividualRealTimeDimAction]],
-                       button: ButtonPin, arduino: Arduino):
+    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
         pin_action = IndividualAction(self.delay, [], [])
         for pin in self.output_pins:
             pin_action.add_pin_off(pin.number)
-        if pin_action.has_values_off():
-            pins_to_switch.setdefault(pin.parent, []).append(pin_action)
-
-        if self.on_timer > 0:
-            pin_action = IndividualAction(self.on_timer, [], [])
-            for pin in self.output_pins:
-                pin_action.add_pin_on(pin.number)
-            if pin_action.has_values_on():
+            if pin_action.has_values_off():
                 pins_to_switch.setdefault(pin.parent, []).append(pin_action)
 
-
-class OffDimmerAction(DimmerAction):
-    def __init__(self,
-                 trigger: ActionTrigger,
-                 delay: int,
-                 on_timer: int,
-                 output_pins: List[OutputPin],
-                 notifications: List[Notification],
-                 condition: Optional[Condition],
-                 click_number: int,
-                 dimmer_speed: int,
-                 dimmer_light_value: int):
-        self.on_timer = on_timer
-        super(OffDimmerAction, self).__init__(trigger, ActionType.OFF, delay, output_pins, notifications,
-                                        condition, click_number, dimmer_speed, dimmer_light_value)
-
-    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]],
-                       pin_to_dim: Dict[str, List[IndividualDimAction]],
-                       pins_for_real_time_dimmer: Dict[str, List[IndividualRealTimeDimAction]],
-                       button: ButtonPin, arduino: Arduino):
-        pin_action = IndividualDimAction(self.dimmer_speed, self.dimmer_light_value, self.delay, [], [])
-        for pin in self.output_pins:
-            pin_action.add_pin_off(pin.number)
-        if pin_action.has_values_off():
-            pin_to_dim.setdefault(pin.parent, []).append(pin_action)
-
         if self.on_timer > 0:
             pin_action = IndividualAction(self.on_timer, [], [])
             for pin in self.output_pins:
                 pin_action.add_pin_on(pin.number)
-            if pin_action.has_values_on():
-                pin_to_dim.setdefault(pin.parent, []).append(pin_action)
+                if pin_action.has_values_on():
+                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
 
 
 class ToggleAction(Action):
@@ -547,24 +527,83 @@ class ToggleAction(Action):
                                            condition, click_number)
         self.master = master
 
-    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]],
-                       pin_to_dim: Dict[str, List[IndividualDimAction]],
-                       pins_for_real_time_dimmer: Dict[str, List[IndividualRealTimeDimAction]],
-                       master, button: ButtonPin, arduino: Arduino):
+    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]], master: bool):
         # if master is on put all the lights of and visa versa
         pin_action = IndividualAction(self.delay, [], [])
         if master:
             for pin in self.output_pins:
                 pin_action.add_pin_off(pin.number)
-            if pin_action.has_values_off():
-                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+                if pin_action.has_values_off():
+                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
             logger.debug(f"Pins to switch off: '{str(pin_action.pin_numbers_off)}'")
         else:
             for pin in self.output_pins:
                 pin_action.add_pin_on(pin.number)
-            if pin_action.has_values_on():
-                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+                if pin_action.has_values_on():
+                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
             logger.debug(f"Pins to switch on: '{str(pin_action.pin_numbers_on)}'")
+
+
+class OnDimmerAction(DimmerAction):
+    def __init__(self,
+                 trigger: ActionTrigger,
+                 delay: int,
+                 off_timer: int,
+                 output_pins: List[OutputPin],
+                 notifications: List[Notification],
+                 condition: Optional[Condition],
+                 click_number: int,
+                 dimmer_speed: int,
+                 dimmer_light_value: int):
+        self.__off_timer = off_timer
+        self.__dimmer_light_value = dimmer_light_value
+        super(OnDimmerAction, self).__init__(trigger, ActionType.ON_DIMMER, delay, output_pins, notifications,
+                                             condition, click_number, dimmer_speed)
+
+    def perform_action(self, pin_to_dim: Dict[str, List[IndividualDimAction]]):
+        pin_action = IndividualDimAction(self._dimmer_speed, self.__dimmer_light_value, self.delay)
+        for pin in self.output_pins:
+            logger.debug(f"pin number: '{pin.number}' with parent: '{pin.parent}'")
+            pin_action.add_pin(pin.number)
+            if pin_action.has_values():
+                pin_to_dim.setdefault(pin.parent, []).append(pin_action)
+        logger.debug(f"Pins to switch on: '{str(pin_action.pin_numbers_on)}'")
+
+        if self.__off_timer > 0:
+            pin_action = IndividualDimAction(self._dimmer_speed, 0, self.__off_timer)
+            for pin in self.output_pins:
+                pin_action.add_pin(pin.number)
+                if pin_action.has_values():
+                    pin_to_dim.setdefault(pin.parent, []).append(pin_action)
+
+
+class OffDimmerAction(DimmerAction):
+    def __init__(self,
+                 trigger: ActionTrigger,
+                 delay: int,
+                 on_timer: int,
+                 output_pins: List[OutputPin],
+                 notifications: List[Notification],
+                 condition: Optional[Condition],
+                 click_number: int,
+                 dimmer_speed: int):
+        self.__on_timer = on_timer
+        super(OffDimmerAction, self).__init__(trigger, ActionType.OFF_DIMMER, delay, output_pins, notifications,
+                                              condition, click_number, dimmer_speed)
+
+    def perform_action(self, pin_to_dim: Dict[str, List[IndividualDimAction]]):
+        pin_action = IndividualDimAction(self._dimmer_speed, 0, self.delay)
+        for pin in self.output_pins:
+            pin_action.add_pin(pin.number)
+            if pin_action.has_values():
+                pin_to_dim.setdefault(pin.parent, []).append(pin_action)
+
+        if self.__on_timer > 0:
+            pin_action = IndividualDimAction(self._dimmer_speed, 0, self.__on_timer)
+            for pin in self.output_pins:
+                pin_action.add_pin(pin.number)
+                if pin_action.has_values():
+                    pin_to_dim.setdefault(pin.parent, []).append(pin_action)
 
 
 class ToggleDimmerAction(DimmerAction):
@@ -579,96 +618,53 @@ class ToggleDimmerAction(DimmerAction):
                  dimmer_speed: int,
                  dimmer_light_value: int
                  ):
-        super(ToggleDimmerAction, self).__init__(trigger, ActionType.TOGGLE, delay, output_pins, notifications,
-                                           condition, click_number, dimmer_speed, dimmer_light_value)
+        super(ToggleDimmerAction, self).__init__(trigger, ActionType.TOGGLE_DIMMER, delay, output_pins, notifications,
+                                                 condition, click_number, dimmer_speed)
         self.master = master
+        self.__dimmer_light_value = dimmer_light_value
 
-    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]],
-                       pin_to_dim: Dict[str, List[IndividualDimAction]],
-                       pins_for_real_time_dimmer: Dict[str, List[IndividualRealTimeDimAction]],
-                       master, button: ButtonPin, arduino: Arduino):
+    def perform_action(self, pin_to_dim: Dict[str, List[IndividualDimAction]], master: int):
         # if master is on put all the lights of and visa versa
-        pin_action = IndividualDimAction(self.dimmer_speed, self.dimmer_light_value, self.delay, [], [])
-        if master:
+        if master > 0:
+            pin_action = IndividualDimAction(self._dimmer_speed, 0, self.delay)
             for pin in self.output_pins:
-                pin_action.add_pin_off(pin.number)
-            if pin_action.has_values_off():
-                pin_to_dim.setdefault(pin.parent, []).append(pin_action)
+                pin_action.add_pin(pin.number)
+                if pin_action.has_values():
+                    pin_to_dim.setdefault(pin.parent, []).append(pin_action)
             logger.debug(f"Pins to switch off: '{str(pin_action.pin_numbers_off)}'")
         else:
+            pin_action = IndividualDimAction(self._dimmer_speed, self.__dimmer_light_value, self.delay)
             for pin in self.output_pins:
-                pin_action.add_pin_on(pin.number)
-            if pin_action.has_values_on():
-                pin_to_dim.setdefault(pin.parent, []).append(pin_action)
+                pin_action.add_pin(pin.number)
+                if pin_action.has_values():
+                    pin_to_dim.setdefault(pin.parent, []).append(pin_action)
             logger.debug(f"Pins to switch on: '{str(pin_action.pin_numbers_on)}'")
 
 
-class DimAction(DimmerAction):
-
-    def __init__(self,
-                 trigger: ActionTrigger,
-                 delay: int,
-                 output_pins: List[OutputPin],
-                 notifications: List[Notification],
-                 master: OutputPin,
-                 condition: Optional[Condition],
-                 click_number: int,
-                 dimmer_speed: int,
-                 dimmer_light_value: int
-                 ):
-        super(DimAction, self).__init__(trigger, ActionType.DIMMER, delay, output_pins, notifications,
-                                                 condition, click_number, dimmer_speed, dimmer_light_value)
-        self.master = master
-
-    def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]],
-                       pin_to_dim: Dict[str, List[IndividualDimAction]],
-                       pins_for_real_time_dimmer: Dict[str, List[IndividualRealTimeDimAction]],
-                       master, button: ButtonPin, arduino: Arduino):
-        # if master is on put all the lights of and visa versa
-        pin_action = IndividualRealTimeDimAction(self.dimmer_speed, self.dimmer_light_value, self.delay, [], [], arduino, button)
-
-
-class Arduino:
-    """Represents an actual arduino"""
-
-    def __init__(self, name: str, number_of_outputs_pins: int, number_of_button_pins: int):
-        self.name = name
-        self.number_of_output_pins = number_of_outputs_pins
-        self.number_of_button_pins = number_of_button_pins
-        self.output_pins = dict()
-        self._button_pins = dict()
-
-    @property
-    def button_pins(self) -> Dict[int, ButtonPin]:
-        return self._button_pins
-
-    def set_output_pin(self, output_pin: OutputPin):
-        self.output_pins[output_pin.number] = output_pin
-
-    def set_output_pins(self, output_pins: List[OutputPin]):
-        for pin in output_pins:
-            self.output_pins[pin.number] = pin
-
-    def set_button_pin(self, button_pin: ButtonPin):
-        self._button_pins[button_pin.number] = button_pin
-
-    def set_button_pins(self, button_pins: List[ButtonPin]):
-        for pin in button_pins:
-            self._button_pins[pin.number] = pin
-
-
-    def get_output_pin(self, pin_number: int) -> OutputPin:
-        return self.output_pins[pin_number]
-
-
-    def get_changed_pins(self, payload: str) -> Dict[int, bool]:
-        status = util.convert_hex_to_array(payload, self.number_of_output_pins)
-        changed_pins = dict()
-        for pin in self._button_pins.values():
-            if bool(int(status[pin.number])) != pin.state:
-                changed_pins[pin.number] = bool(int(status[pin.number]))
-                pin.state = bool(int(status[pin.number]))
-        return changed_pins
+# class DimAction(DimmerAction):
+#
+#     def __init__(self,
+#                  trigger: ActionTrigger,
+#                  delay: int,
+#                  output_pins: List[OutputPin],
+#                  notifications: List[Notification],
+#                  master: OutputPin,
+#                  condition: Optional[Condition],
+#                  click_number: int,
+#                  dimmer_speed: int,
+#                  dimmer_light_value: int
+#                  ):
+#         super(DimAction, self).__init__(trigger, ActionType.DIMMER, delay, output_pins, notifications,
+#                                         condition, click_number, dimmer_speed, dimmer_light_value)
+#         self.master = master
+#
+#     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]],
+#                        pins_to_dim: Dict[str, List[IndividualDimAction]],
+#                        pins_for_real_time_dimmer: Dict[str, List[IndividualRealTimeDimAction]],
+#                        master, button: ButtonPin, arduino: Arduino):
+#         # if master is on put all the lights of and visa versa
+#         pin_action = IndividualRealTimeDimAction(self.dimmer_speed, self.dimmer_light_value, self.delay, [], [],
+#                                                  arduino, button)
 
 
 class ArduinoConfig:

@@ -29,7 +29,6 @@ class DbBase(ABC):
         pass
 
 
-
 class DummyDb(DbBase):
     """Dummy implementation of a database class. Returns fixed data for all operations"""
 
@@ -73,7 +72,6 @@ class MariaDB(DbBase):
                 for id, name, template_id in cursor:
                     arduinos.append(db_domain.Arduino(id, name, template_id))
                 return arduinos
-
 
     def get_output_pins(self) -> List[db_domain.OutputPin]:
         with closing(self.__create_connection()) as conn:

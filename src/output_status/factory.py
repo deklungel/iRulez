@@ -10,17 +10,17 @@ logger = log.get_logger('factory')
 
 
 class ArduinoConfigFactory:
-    def __init__(self, db: db.DbBase):
-        self.db = db
+    def __init__(self, database: db.DbBase):
+        self.__database = database
 
     def create_arduino_config(self) -> domain.ArduinoConfig:
         # Retrieve the whole universe from the database
         logger.debug('Retrieving arduinos from database')
-        arduinos = self.db.get_arduinos()
+        arduinos = self.__database.get_arduinos()
         logger.debug('Retrieving templates from database')
-        templates = self.db.get_templates()
+        templates = self.__database.get_templates()
         logger.debug('Retrieving output pins from database')
-        output_pins = self.db.get_output_pins()
+        output_pins = self.__database.get_output_pins()
 
         logger.info("Got all data from database")
 
@@ -45,7 +45,6 @@ class ArduinoConfigFactory:
         for arduino in created_arduinos.values():
             self.__validate_output_pins(arduino)
 
-
         return domain.ArduinoConfig(list(created_arduinos.values()))
 
     def __create_output_pin_and_add_to_arduino(self, output_pin: db_domain.OutputPin,
@@ -67,16 +66,12 @@ class ArduinoConfigFactory:
 
     def __create_arduino(self, arduino: db_domain.Arduino, templates: Dict[int, db_domain.Template]) -> domain.Arduino:
         template = templates.get(arduino.template_id, None)
-        nb_input = 16
         nb_output = 16
         if template is None:
             logger.warning(
                 f'Template {arduino.template_id} was not found in the templates. '
                 f'Fallback to default values for arduino {arduino.id}')
         else:
-            nb_input = template.nb_input_pins
             nb_output = template.nb_output_pins
 
         return domain.Arduino(arduino.name, nb_output)
-
-

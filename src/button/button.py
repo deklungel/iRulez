@@ -8,6 +8,7 @@ import src.irulez.constants as constants
 import src.irulez.log as log
 import src.irulez.util as util
 import src.output_status.ServiceClient as ServiceClient
+import src.button.action_executor as action_executor
 
 logger = log.get_logger('button')
 
@@ -32,11 +33,11 @@ for arduino in factory.create_arduino_config().arduinos:
 client = mqtt.Client()
 sender = mqtt_sender.MqttSender(client, arduinos)
 StatusService = ServiceClient.StatusServiceClient(serviceConfig['url'], serviceConfig['port'])
-action_processor = button_processor.ButtonActionProcessor(sender, arduinos, StatusService)
+executor = action_executor.ActionExecutor(sender, StatusService)
+action_processor = button_processor.ButtonActionProcessor(executor, arduinos, sender)
 
 
-
-def on_connect(client, userdata, flags, rc):
+def on_connect(connected_client, _, __, rc):
     """Callback function for when the mqtt client is connected."""
     logger.info("Connected client with result code " + str(rc))
 
@@ -45,36 +46,38 @@ def on_connect(client, userdata, flags, rc):
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.buttonTopic)
-    client.subscribe(constants.arduinoTopic + "/+/" + constants.buttonTopic)
+    connected_client.subscribe(constants.arduinoTopic + "/+/" + constants.buttonTopic)
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.buttonTimerFiredTopic)
-    client.subscribe(constants.arduinoTopic + "/" + constants.buttonTimerFiredTopic)
+    connected_client.subscribe(constants.arduinoTopic + "/" + constants.buttonTimerFiredTopic)
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.buttonMulticlickFiredTopic)
-    client.subscribe(constants.arduinoTopic + "/" + constants.buttonMulticlickFiredTopic)
+    connected_client.subscribe(constants.arduinoTopic + "/" + constants.buttonMulticlickFiredTopic)
 
 
-def on_subscribe(mqttc, obj, mid, granted_qos):
+def on_subscribe(_, __, mid, granted_qos):
     logger.debug("Subscribed: " + str(mid) + " " + str(granted_qos))
 
 
-def on_message(client, userdata, msg):
+def on_message(_, __, msg):
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
 
     # Get the name of the arduino from the topic
     name = util.get_arduino_name_from_topic(msg.topic)
 
-    # Check if the topic is a relay or button update.
+    # Check if the topic is a longdown fired topic
     if util.is_arduino_button_fired_topic(msg.topic):
         logger.debug("Button fired received.")
         action_processor.button_timer_fired(msg.payload)
         return
 
-    elif util.is_arduino_multiclick_fired_topic(msg.topic):
+    # Check if the topic is a multiclick fired topic
+    if util.is_arduino_multiclick_fired_topic(msg.topic):
         logger.debug("Button Multiclick received.")
         action_processor.button_multiclick_fired(msg.payload)
         return
 
-    elif util.is_arduino_button_topic(msg.topic):
+    # Check if the topic is a relay or button update.
+    if util.is_arduino_button_topic(msg.topic):
         logger.debug(f"Button change received.")
         action_processor.process_button_message(name, msg.payload)
         return

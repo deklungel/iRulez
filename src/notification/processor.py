@@ -12,8 +12,8 @@ class MailProcessor(ABC):
         pass
 
 
-class AuthenticateSMTP_Processor(MailProcessor):
-    def __init__(self, user: object, pwd: object, port: object, url: object) -> object:
+class AuthenticateSMTPProcessor(MailProcessor):
+    def __init__(self, user: object, pwd: object, port: object, url: object):
         self.gmail_user = user
         self.gmail_pwd = pwd
         self._from = user

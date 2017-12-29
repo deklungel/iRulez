@@ -13,13 +13,13 @@ config = configuration.Configuration()
 mailConfig = config.authenticate_SMTP_config()
 
 # Create gmail Processor
-mail = processor.AuthenticateSMTP_Processor(mailConfig['username'],
-                                            mailConfig['password'],
-                                            int(mailConfig['port']),
-                                            mailConfig['url'])
+mail = processor.AuthenticateSMTPProcessor(mailConfig['username'],
+                                           mailConfig['password'],
+                                           int(mailConfig['port']),
+                                           mailConfig['url'])
 
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(connected_client, _, __, rc):
     """Callback function for when the mqtt client is connected."""
     logger.info("Connected client with result code " + str(rc))
     # Subscribe in on_connect callback to automatically re-subscribe if the connection was lost
@@ -28,14 +28,14 @@ def on_connect(client, userdata, flags, rc):
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
     topic = str(constants.arduinoTopic) + "/" + str(constants.notificationTopic) + "/" + str(constants.mailTopic)
     logger.debug("Subscribing to " + str(topic))
-    client.subscribe(str(topic))
+    connected_client.subscribe(str(topic))
 
 
-def on_subscribe(mqttc, obj, mid, granted_qos):
+def on_subscribe(_, __, mid, granted_qos):
     logger.debug("Subscribed: " + str(mid) + " " + str(granted_qos))
 
 
-def on_message(client, userdata, msg):
+def on_message(_, __, msg):
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
     mail.send_mail(msg.payload.decode("utf-8"))

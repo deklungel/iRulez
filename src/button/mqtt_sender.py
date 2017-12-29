@@ -48,7 +48,6 @@ class MqttSender:
             }
         )
 
-
         logger.debug(f"Publishing: {publish_topic}{payload}")
         self.client.publish(publish_topic, payload, 0, False)
 
@@ -79,16 +78,18 @@ class MqttSender:
                 topic_name = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic
                 publish_topic = constants.arduinoTopic + '/' + constants.actionTopic + '/' + constants.dimmerModuleTopic
                 if json_list[name][i].delay != 0:
-                    topic_name = topic_name + '/' + constants.relativeTopic
+                    logger.error(f"Delayed dimmer module messages aren't supported yet!")
+                    return
+                    topic_name = topic_name + '/' + constants.dimmerModuleTopic
                     publish_topic = publish_topic + '/' + constants.timerTopic
 
                 payload = json.dumps(
                     {
                         "name": name,
                         "topic": topic_name,
-                        "on": json_list[name][i].pin_numbers_on, "off": json_list[name][i].pin_numbers_off,
+                        "pins": json_list[name][i].pin_numbers,
                         "delay": json_list[name][i].delay,
-                        "speed" : json_list[name][i].speed,
+                        "speed": json_list[name][i].speed,
                         "dim_light_value": json_list[name][i].dim_light_value,
                     }
                 )
@@ -96,16 +97,16 @@ class MqttSender:
                 logger.debug(f"Publishing: {publish_topic}{payload}")
                 self.client.publish(publish_topic, payload, 0, False)
 
-
-    def publish_real_time_dimmer_module_action(self, json_list: Dict[str, List[irulez_domain.IndividualRealTimeDimAction]]):
+    def publish_real_time_dimmer_module_action(self,
+                                               json_list: Dict[str, List[irulez_domain.IndividualRealTimeDimAction]]):
         for name in json_list:
             for i in range(len(json_list[name])):
                 topic_name = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic
-                publish_topic = constants.arduinoTopic + '/' + constants.actionTopic + '/' + constants.dimmerRealTimeModuleTopic
+                publish_topic = constants.arduinoTopic + '/' + constants.actionTopic + '/' + \
+                    constants.dimmerRealTimeModuleTopic
                 if json_list[name][i].delay != 0:
                     topic_name = topic_name + '/' + constants.relativeTopic
                     publish_topic = publish_topic + '/' + constants.timerTopic
-
 
                 payload = json.dumps(
                     {

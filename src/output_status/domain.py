@@ -1,12 +1,8 @@
 from enum import IntEnum
 import src.irulez.util as util
-from abc import ABC, abstractmethod
+from abc import ABC
 import src.irulez.log as log
-from datetime import datetime, time
-from typing import List, Dict, Optional
-import src.irulez.constants as constants
-import json
-from threading import Timer
+from typing import List
 
 logger = log.get_logger('domain')
 
@@ -80,10 +76,8 @@ class Arduino:
             else:
                 pin.state = 0
 
-
-    def set_dimmer_pin_status(self, payload: int, pin):
-        self.output_pins[pin].state = payload
-
+    def set_dimmer_pin_status(self, payload: int, pin_number: int):
+        self.output_pins[pin_number].state = payload
 
 
 class ArduinoConfig:

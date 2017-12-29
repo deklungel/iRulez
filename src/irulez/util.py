@@ -1,7 +1,8 @@
 import src.irulez.constants as constants
 import src.irulez.log as log
 from typing import Optional
-from typing import List
+from typing import List, Dict
+import json
 
 logger = log.get_logger('util')
 
@@ -27,9 +28,9 @@ def is_arduino_relative_action_topic(topic: str) -> bool:
 
 def is_arduino_timer_action_topic(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""
-    # Format arduino_number/action/something
+    # Format irulez_unique/action/relative/timer
     return is_arduino_topic(topic) and '/' + constants.actionTopic + '/' + constants.relativeTopic + '/' + \
-                                       constants.timerTopic in topic
+        constants.timerTopic in topic
 
 
 def is_arduino_button_topic(topic: str) -> bool:
@@ -42,44 +43,62 @@ def is_arduino_button_fired_topic(topic: str) -> bool:
     """Checks if the given topic is a button fired topic for an arduino"""
     return is_arduino_topic(topic) and '/' + constants.buttonTimerFiredTopic in topic
 
+
 def is_arduino_multiclick_fired_topic(topic: str) -> bool:
     """Checks if the given topic is a button fired topic for an arduino"""
     return is_arduino_topic(topic) and '/' + constants.buttonMulticlickFiredTopic in topic
+
 
 def is_arduino_status_topic(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""
     # Format arduino_number/action/something
     return is_arduino_topic(topic) and '/' + constants.statusTopic in topic
 
+
 def is_arduino_dimmer_status_topic(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""
     # Format arduino_number/action/something
     return is_arduino_topic(topic) and '/' + constants.dimmerStatusTopic in topic
 
-def is_arduino_real_time_dimmer__topic(topic: str) -> bool:
+
+def is_arduino_real_time_dimmer_topic(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""
     # Format arduino_number/action/something
     return is_arduino_topic(topic) and '/' + constants.dimmerRealTimeModuleTopic in topic
 
 
-
-def is_arduino_timer_dimmer_action_topic(topic: str) -> bool:
+def is_arduino_dimmer_timer_fired_topic_for_timer_module(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""
-    # Format arduino_number/action/something
-    return is_arduino_topic(topic) and '/' + constants.dimmerTopic + '/' + constants.timerTopic
+    # Format irulez_unique/action/dimmerTimerFired/timer
+    return is_arduino_topic(topic) and '/' + constants.actionTopic + '/' + constants.dimmerTimerFired + '/' + \
+        constants.timerTopic in topic
+
+
+def is_arduino_dimmer_timer_fired_topic(topic: str) -> bool:
+    """Checks if the given topic is an action topic for a dimmer"""
+    # Format irulez_unique/action/dimmerTimerFired
+    return is_arduino_topic(topic) and '/' + constants.actionTopic + '/' + constants.dimmerTimerFired in topic
+
+
+def is_arduino_dimmer_module_topic(topic: str) -> bool:
+    """Checks if the given topic is an action topic for a dimmer"""
+    # Format irulez_unique/action/dimmerTimerFired
+    return is_arduino_topic(topic) and '/' + constants.actionTopic + '/' + constants.dimmerModuleTopic in topic
 
 
 def get_arduino_name_from_topic(topic: str) -> Optional[str]:
     """Retrieves the name of the arduino from an arduino topic, or None if it couldn't be found"""
-    if not(is_arduino_topic(topic)):
+    if not (is_arduino_topic(topic)):
         return None
     return topic[len(constants.arduinoTopic + '/'):topic.find('/', len(constants.arduinoTopic + '/'))]
 
+
 def get_arduino_dimmerpin_from_topic(topic: str, name: str) -> Optional[int]:
     """Retrieves the name of the arduino from an arduino topic, or None if it couldn't be found"""
-    if not(is_arduino_topic(topic)):
+    if not (is_arduino_topic(topic)):
         return None
-    return int(topic[len(constants.arduinoTopic + '/' + name + '/'):topic.find('/', len(constants.arduinoTopic + '/' + name + '/'))])
+    return int(topic[len(constants.arduinoTopic + '/' + name + '/'):
+                     topic.find('/', len(constants.arduinoTopic + '/' + name + '/'))])
 
 
 def convert_array_to_hex(status: list) -> str:
@@ -101,3 +120,32 @@ def convert_hex_to_array(payload: str, number_of_pins: int) -> list:
 
 def compare_lists(begin_status: List[bool], end_status: List[bool]) -> bool:
     return begin_status == end_status
+
+
+def serialize_json(to_serialize: Dict):
+    return json.dumps(to_serialize)
+
+
+def deserialize_json(serialized: str):
+    return json.loads(serialized)
+
+
+def get_int_from_json_object(json_object, key: str) -> int:
+    to_return = json_object[key]
+    if to_return is None:
+        return 0
+
+    try:
+        return int(to_return)
+    except ValueError:
+        logger.error(f"{to_return} could not be cast to an int.")
+
+    return 0
+
+
+def get_str_from_json_object(json_object, key: str) -> str:
+    return json_object[key]
+
+
+def get_int_list_from_json_object(json_object, key: str) -> List[int]:
+    return json_object[key]

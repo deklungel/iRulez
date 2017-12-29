@@ -22,7 +22,6 @@ class MqttSender:
         # Accepts relative pins as input, converts them to absolute updates
         #  Current implementation sends updates to all arduinos or none.
 
-
         begin_status = self.status_service.get_arduino_status(str(json_object['name']))
         end_status = begin_status[:]
 

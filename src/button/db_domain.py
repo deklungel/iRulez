@@ -44,17 +44,30 @@ class Action:
                  output_pin_ids: List[int],
                  condition_id: Optional[int],
                  master_id: Optional[int],
-                 click_number: int):
-        self.master_id = master_id
+                 click_number: int,
+                 dimmer_speed: Optional[int],
+                 dimmer_light_value: Optional[int]):
+        # General properties
         self.id = id
-        self.condition_id = condition_id
-        self.notification_ids = notification_ids
-        self.output_pin_ids = output_pin_ids
-        self.delay = delay
-        self.timer = timer
-        self.action_type = action_type
         self.trigger_id = trigger_id
+        self.action_type = action_type
+        self.delay = delay
+        self.output_pin_ids = output_pin_ids
+        self.notification_ids = notification_ids
+        self.condition_id = condition_id
         self.click_number = click_number
+
+        # ON/OFF/ON_DIMMER/OFF_DIMMER action
+        self.timer = timer
+
+        # TOGGLE/TOGGLE_DIMMER action
+        self.master_id = master_id
+
+        # DIMMER
+        self.dimmer_speed = dimmer_speed
+
+        # ON_DIMMER/TOGGLE_DIMMER action
+        self.dimmer_light_value = dimmer_light_value
 
 
 class Trigger:
@@ -62,8 +75,6 @@ class Trigger:
         self.id = id
         self.trigger_type = trigger_type
         self.seconds_down = seconds_down
-
-
 
 
 class Condition:

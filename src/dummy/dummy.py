@@ -1,4 +1,4 @@
-import src.irulez.factory as factory
+import src.button.factory as factory
 
 import lib.paho.mqtt.client as mqtt
 import src.button.db
@@ -18,11 +18,11 @@ factory = factory.ArduinoConfigFactory(db)
 # Key is the name of the arduino
 logger.debug('Creating arduinos')
 arduinos = {}
-for arduino in factory.create_arduino_config().arduinos:
-    arduinos[arduino.name] = arduino
+for ard in factory.create_arduino_config().arduinos:
+    arduinos[ard.name] = ard
 
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(connected_client, _, __, rc):
     """Callback function for when the mqtt client is connected."""
     logger.info("Connected client with result code " + str(rc))
     # Subscribe in on_connect callback to automatically re-subscribe if the connection was lost
@@ -30,15 +30,15 @@ def on_connect(client, userdata, flags, rc):
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
     logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.actionTopic)
-    client.subscribe(constants.arduinoTopic + "/+/" + constants.actionTopic)
+    connected_client.subscribe(constants.arduinoTopic + "/+/" + constants.actionTopic)
     # TODO: Subscribe to dimmer values
 
 
-def on_subscribe(mqttc, obj, mid, granted_qos):
+def on_subscribe(_, __, mid, granted_qos):
     logger.debug("Subscribed: " + str(mid) + " " + str(granted_qos))
 
 
-def on_message(client, userdata, msg):
+def on_message(_, __, msg):
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
     global arduinos

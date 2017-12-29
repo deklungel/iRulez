@@ -17,6 +17,7 @@ class Configuration:
     def get_database_config(self) -> {}:
         return self.get_config('Database')
 
+    # noinspection PyPep8Naming
     def authenticate_SMTP_config(self) -> {}:
         return self.get_config('authenticate_SMTP')
 
