@@ -73,17 +73,32 @@ class DimmerActionProcessor:
         return to_return
 
     def process_dimmer_timer_fired(self, payload: str):
+        """
+        Check if dimming isn't stopped yet
+        Check if it's the last message, otherwise send new message to timer module
+        Send mqtt message(s) to arduino to actually dim
+        """
         dimming_action_id = uuid.UUID(payload)
         dimming_action = self.__dimming_actions.get(dimming_action_id, None)
         if dimming_action is None:
             logger.error(f"Received dimmer timer fired message of id '{dimming_action_id}', but action not found")
             return
 
-        # TODO: complete
-        # Check if dimming isn't stopped yet (also to implement)
-        # Check if we need a new timer for the next message (if it's not the last message)
-        #   Send new message to timer module
-        # Send mqtt message(s) to arduino to actually dim
+        if not isinstance(dimming_action, domain.DimmingAction):
+            logger.error(f"Found object for dimming action id '{dimming_action_id}', "
+                         f"but it wasn't a domain.DimmingAction")
+            return
+
+        # TODO: Check if dimming isn't stopped yet
+
+        if not dimming_action.is_final_step():
+            self.__sender.publish_dimming_action_to_timer(dimming_action_id, dimming_action.interval_time_between)
+
+        for pin_with_interval in dimming_action.get_current_pins_with_interval():
+            self.__sender.publish_dimming_action_to_arduino(dimming_action.arduino_name, pin_with_interval[0],
+                                                            pin_with_interval[1])
+
+        dimming_action.increment_step()
 
     # def process_button_message(self, payload: str, name: str):
     #     if name in self.buttonLow.keys():

@@ -54,7 +54,10 @@ dimmerModuleTopic = 'dimmerModule'
 dimmerRealTimeModuleTopic = 'dimmerRealTimeModuleTopic'
 
 # Used by the timer module to sent action commands to the dimmer module.
-dimmerTimerFired = "dimmerTimerFired"
+dimmerTimerFired = 'dimmerTimerFired'
+
+# Used to send commands to an arduino to change a dimmer value.
+dimAction = 'dimAction'
 
 # The amount of message need to be sent every second when dimming.
 dim_frequency_per_sec = 5
