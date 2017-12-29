@@ -93,6 +93,8 @@ class DimmerActionProcessor:
 
         if not dimming_action.is_final_step():
             self.__sender.publish_dimming_action_to_timer(dimming_action_id, dimming_action.interval_time_between)
+        else:
+            del(self.__dimming_actions[dimming_action_id])
 
         for pin_with_interval in dimming_action.get_current_pins_with_interval():
             self.__sender.publish_dimming_action_to_arduino(dimming_action.arduino_name, pin_with_interval[0],
