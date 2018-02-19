@@ -1,9 +1,9 @@
-import json
 from typing import Dict, List
 
 import src.button.domain as irulez_domain
 import src.irulez.constants as constants
 import src.irulez.log as log
+import src.irulez.util as util
 
 logger = log.get_logger('button_mqtt_sender')
 
@@ -22,7 +22,7 @@ class MqttSender:
                     topic_name = topic_name + '/' + constants.relativeTopic
                     publish_topic = publish_topic + '/' + constants.timerTopic
 
-                payload = json.dumps(
+                payload = util.serialize_json(
                     {
                         "name": name,
                         "topic": topic_name,
@@ -39,7 +39,7 @@ class MqttSender:
         clicks = timer[3]
 
         publish_topic = constants.arduinoTopic + '/' + constants.buttonTimerFiredTopic
-        payload = json.dumps(
+        payload = util.serialize_json(
             {
                 "name": arduino_name,
                 "button_pin": button_pin,
@@ -57,7 +57,7 @@ class MqttSender:
         clicks = multiclick[2]
 
         publish_topic = constants.arduinoTopic + '/' + constants.buttonMulticlickFiredTopic
-        payload = json.dumps(
+        payload = util.serialize_json(
             {
                 "name": arduino_name,
                 "button_pin": button_pin,
@@ -108,7 +108,7 @@ class MqttSender:
                     topic_name = topic_name + '/' + constants.relativeTopic
                     publish_topic = publish_topic + '/' + constants.timerTopic
 
-                payload = json.dumps(
+                payload = util.serialize_json(
                     {
                         "name": name,
                         "topic": topic_name,
