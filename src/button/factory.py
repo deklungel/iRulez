@@ -243,10 +243,12 @@ class ArduinoConfigFactory:
                                     condition, action.click_number)
         if action.action_type == 5:
             return domain.OnDimmerAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action,
-                                         condition, action.click_number, action.dimmer_speed, action.dimmer_light_value)
+                                         condition, action.click_number, action.dimmer_speed, action.dimmer_light_value,
+                                         action.cancel_on_button_release)
         if action.action_type == 6:
             return domain.OffDimmerAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action,
-                                          condition, action.click_number, action.dimmer_speed)
+                                          condition, action.click_number, action.dimmer_speed,
+                                          action.cancel_on_button_release)
         if action.action_type == 7:
             # Get master pin
             master_pin = output_pins.get(action.master_id, None)
@@ -254,7 +256,7 @@ class ArduinoConfigFactory:
                 logger.warning(f'The master pin {action.master_id} could not be found for action {action.id}')
             return domain.ToggleDimmerAction(trigger, action.delay, pins_of_action, notification_of_action, master_pin,
                                              condition, action.click_number, action.dimmer_speed,
-                                             action.dimmer_light_value)
+                                             action.dimmer_light_value, action.cancel_on_button_release)
 
         # Other types not supported yet
         logger.error(f'Type {action.action_type} not supported yet')

@@ -37,12 +37,20 @@ class DimmingAction:
         self.__pins_to_switch = []
         self.__interval_time_between = interval_time_between
         self.__current_step = 0
+        self.__stopped = False
 
     def add_pin(self, pin_with_intervals: PinWithIntervals):
         self.__pins_to_switch.append(pin_with_intervals)
 
     def increment_step(self) -> None:
         self.__current_step += 1
+
+    def stop(self) -> None:
+        self.__stopped = True
+
+    @property
+    def stopped(self) -> bool:
+        return self.__stopped
 
     @property
     def pins_with_intervals(self) -> List[PinWithIntervals]:
@@ -61,7 +69,7 @@ class DimmingAction:
         return self.__arduino_name
 
     def is_final_step(self) -> bool:
-        return self.__current_step == len(self.__pins_to_switch) - 1
+        return self.__current_step == len(self.__pins_to_switch[0].interval_values) - 1
 
     def get_current_pins_with_interval(self) -> List[Tuple[int, int]]:
         to_return = []

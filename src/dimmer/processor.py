@@ -19,24 +19,32 @@ class DimmerActionProcessor:
         # Dictionary with as key a uuid and value a domain.DimmingAction
         self.__dimming_actions = {}
 
-        self.__buttonLow = {}
+        # Dictionary with as key a button_key and value a uuid (representing the dimming action id)
+        # Button_key is a combination of arduino name and button number
+        self.__button_cancel_action = {}
 
     def process_dimmer_message(self, payload: str):
         logger.info("Processing " + payload)
         json_object = util.deserialize_json(payload)
         # Payload info
-        "name --> arduino name"
-        "topic"
-        "pins"
-        "delay"
-        "speed"
-        "dim_light_value"
+        # "name --> arduino name"
+        # "topic"
+        # "pins"
+        # "delay"
+        # "speed"
+        # "dim_light_value"
+        # "cancel_on_button_release"
+        # "arduino_name"
+        # "button_number"
 
         # Get data from payload
         name = util.get_str_from_json_object(json_object, 'name')
         pins_to_switch = util.get_int_list_from_json_object(json_object, 'pins')
         speed = util.get_int_from_json_object(json_object, 'speed')
         dim_light_value = util.get_int_from_json_object(json_object, 'dim_light_value')
+        cancel_on_button_release = util.get_bool_from_json_object(json_object, 'cancel_on_button_release')
+        arduino_name = util.get_str_from_json_object(json_object, 'arduino_name')
+        button_number = util.get_int_from_json_object(json_object, 'button_number')
 
         # Calculate the time between messages
         timer_between_messages = int(1000 / constants.dim_frequency_per_sec)
@@ -58,6 +66,9 @@ class DimmerActionProcessor:
         # Add the dimming action to the dictionary
         dimming_action_id = uuid.uuid4()
         self.__dimming_actions[dimming_action_id] = dimming_action
+
+        if cancel_on_button_release:
+            self.__button_cancel_action[arduino_name + str(button_number)] = dimming_action_id
 
         # Send message to the timer module to time the first dimming message
         self.__sender.publish_dimming_action_to_timer(dimming_action_id, timer_between_messages)
@@ -89,7 +100,8 @@ class DimmerActionProcessor:
                          f"but it wasn't a domain.DimmingAction")
             return
 
-        # TODO: Check if dimming isn't stopped yet
+        if dimming_action.stopped:
+            return
 
         if not dimming_action.is_final_step():
             self.__sender.publish_dimming_action_to_timer(dimming_action_id, dimming_action.interval_time_between)
@@ -102,59 +114,31 @@ class DimmerActionProcessor:
 
         dimming_action.increment_step()
 
-    # def process_button_message(self, payload: str, name: str):
-    #     if name in self.buttonLow.keys():
-    #         pin_to_remove = []
-    #         status = util.convert_hex_to_array(payload, self.buttonLow[name].number_of_pins)
-    #         for button in self.buttonLow[name].button_numbers:
-    #             if status[button] == 1:
-    #                 return
-    #             # stop the dimmer
-    #             pin_to_remove.append(button)
-    #
-    #         # clean up released buttons
-    #         self.buttonLow[name].cleanup()
-    #
-    #         # check if arduino needs to be subscribed
-    #         if len(self.buttonLow[name].button_numbers) == 0:
-    #             del self.buttonLow[name]
-    #             self.client.unsubscribe(constants.arduinoTopic + "/" + name + "/" + constants.buttonTopic)
-    #
-    #     else:
-    #         logger.warning("We should not receive this messagage from MQTT")
-    #         self.client.unsubscribe(constants.arduinoTopic + "/" + name + "/" + constants.buttonTopic)
+    def process_dimmer_cancelled(self, payload: str):
+        logger.info("Processing " + payload)
+        json_object = util.deserialize_json(payload)
+        # Payload info
+        # "arduino_name"
+        # "button_number"
 
-    # def process_dimmer_real_time_message(self, payload: str):
-    #     logger.info("Processing " + payload)
-    #     json_object = json.loads(payload)
-    #
-    #     arduino_name = json_object['arduino_name']
-    #     button_number = json_object['button_number']
-    #
-    #     if arduino_name in self.buttonLow.keys():
-    #         if button_number not in self.buttonLow[arduino_name].button_numbers:
-    #             self.buttonLow[arduino_name].button_numbers.append(button_number)
-    #     else:
-    #         self.client.subscribe(constants.arduinoTopic + "/" + arduino_name + "/" + constants.buttonTopic)
-    #         self.buttonLow[arduino_name] = domain.ButtonLow(json_object['button_number'],
-    #                                                         json_object['number_of_pins'])
-    #
-    #     # Payload
-    #     """
-    #     "name"
-    #     "topic"
-    #     "on"
-    #     "off"
-    #     "delay"
-    #     "arduino_name"
-    #     "button_number"
-    #     "speed"
-    #     "dim_light_value"
-    #     "dim_direction_up"
-    #     "number_of_pins
-    #     """
-    #     for pin in list(json_object['on']):
-    #         pass
-    #
-    #     for pin in list(json_object['off']):
-    #         pass
+        arduino_name = util.get_str_from_json_object(json_object, 'arduino_name')
+        button_number = util.get_int_from_json_object(json_object, 'button_number')
+        key = arduino_name + str(button_number)
+
+        action_uuid_to_cancel = self.__button_cancel_action.get(key, None)
+        if action_uuid_to_cancel is None:
+            logger.info(f"No action to cancel found for arduino {arduino_name}, button {button_number}")
+            return
+
+        dimming_action = self.__dimming_actions.get(action_uuid_to_cancel, None)
+        if dimming_action is None:
+            logger.warn(f"Received dimmer timer fired message of id '{action_uuid_to_cancel}', but action not found")
+            return
+
+        if not isinstance(dimming_action, domain.DimmingAction):
+            logger.error(f"Found object for dimming action id '{action_uuid_to_cancel}', "
+                         f"but it wasn't a domain.DimmingAction")
+            return
+
+        dimming_action.stop()
+        del(self.__button_cancel_action[key])

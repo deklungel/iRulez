@@ -49,12 +49,11 @@ dimmerStatusTopic = 'dimmerStatus'
 # Used to sent commands to the dimmer module.
 dimmerModuleTopic = 'dimmerModule'
 
-# Name of the dimmer realtime module topic
-# Used to sent commands to the dimmer module about realtime dimmings
-dimmerRealTimeModuleTopic = 'dimmerRealTimeModuleTopic'
-
 # Used by the timer module to sent action commands to the dimmer module.
 dimmerTimerFired = 'dimmerTimerFired'
+
+# Used by button to notify the dimmer module a dimmer action should be cancelled.
+dimmerCancelled = 'dimmerCancelled'
 
 # Used to send commands to an arduino to change a dimmer value.
 dimAction = 'dimAction'

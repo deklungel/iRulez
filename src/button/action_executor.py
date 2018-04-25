@@ -53,10 +53,7 @@ class ActionExecutor:
     def execute_action(self,
                        action: domain.Action,
                        pins_to_switch: Dict[str, List[domain.IndividualAction]],
-                       pins_to_dim: Dict[str, List[domain.IndividualDimAction]],
-                       pins_for_real_time_dimmer: Dict[str, List[domain.IndividualRealTimeDimAction]],
-                       button: domain.ButtonPin,
-                       arduino_name: str) -> None:
+                       pins_to_dim: Dict[str, List[domain.IndividualDimAction]]) -> None:
         """ Performs the given action by manipulating the given dictionaries with pins. """
         if self.check_condition(action.get_condition()):
             logger.info(f"Process action with type '{action.action_type}'")
@@ -82,12 +79,10 @@ class ActionExecutor:
     def execute_actions(self, actions: List[domain.Action], button: domain.ButtonPin, arduino_name: str):
         pins_to_switch = {}
         pins_to_dim = {}
-        pins_for_real_time_dimmer = {}
 
         logger.debug(f"Publish immediate actions")
         for action in actions:
-            self.execute_action(action, pins_to_switch, pins_to_dim, pins_for_real_time_dimmer, button, arduino_name)
+            self.execute_action(action, pins_to_switch, pins_to_dim)
 
         self.__sender.publish_relative_action(pins_to_switch)
-        self.__sender.publish_dimmer_module_action(pins_to_dim)
-        self.__sender.publish_real_time_dimmer_module_action(pins_for_real_time_dimmer)
+        self.__sender.publish_dimmer_module_action(pins_to_dim, arduino_name, button.number)

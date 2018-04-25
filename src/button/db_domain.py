@@ -46,6 +46,7 @@ class Action:
                  master_id: Optional[int],
                  click_number: int,
                  dimmer_speed: Optional[int],
+                 cancel_on_button_release: Optional[bool],
                  dimmer_light_value: Optional[int]):
         # General properties
         self.id = id
@@ -65,6 +66,7 @@ class Action:
 
         # DIMMER
         self.dimmer_speed = dimmer_speed
+        self.cancel_on_button_release = cancel_on_button_release
 
         # ON_DIMMER/TOGGLE_DIMMER action
         self.dimmer_light_value = dimmer_light_value

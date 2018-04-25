@@ -61,12 +61,6 @@ def is_arduino_dimmer_status_topic(topic: str) -> bool:
     return is_arduino_topic(topic) and '/' + constants.dimmerStatusTopic in topic
 
 
-def is_arduino_real_time_dimmer_topic(topic: str) -> bool:
-    """Checks if the given topic is an action topic for an arduino"""
-    # Format arduino_number/action/something
-    return is_arduino_topic(topic) and '/' + constants.dimmerRealTimeModuleTopic in topic
-
-
 def is_arduino_dimmer_timer_fired_topic_for_timer_module(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""
     # Format irulez_unique/action/dimmerTimerFired/timer
@@ -80,10 +74,16 @@ def is_arduino_dimmer_timer_fired_topic(topic: str) -> bool:
     return is_arduino_topic(topic) and '/' + constants.actionTopic + '/' + constants.dimmerTimerFired in topic
 
 
-def is_arduino_dimmer_module_topic(topic: str) -> bool:
+def is_arduino_dimmer_action_topic(topic: str) -> bool:
     """Checks if the given topic is an action topic for a dimmer"""
     # Format irulez_unique/action/dimmerTimerFired
     return is_arduino_topic(topic) and '/' + constants.actionTopic + '/' + constants.dimmerModuleTopic in topic
+
+
+def is_arduino_dimmer_cancelled_topic(topic: str) -> bool:
+    """Checks if the given topic is a cancelled topic for a dimmer"""
+    # Format irulez_unique/dimmerCancelled/dimmerTimerFired
+    return is_arduino_topic(topic) and '/' + constants.dimmerCancelled + '/' + constants.dimmerModuleTopic in topic
 
 
 def get_arduino_name_from_topic(topic: str) -> Optional[str]:
@@ -149,3 +149,16 @@ def get_str_from_json_object(json_object, key: str) -> str:
 
 def get_int_list_from_json_object(json_object, key: str) -> List[int]:
     return json_object[key]
+
+
+def get_bool_from_json_object(json_object, key: str) -> bool:
+    to_return = json_object[key]
+    if to_return is None:
+        return False
+
+    try:
+        return bool(to_return)
+    except ValueError:
+        logger.error(f"{to_return} could not be cast to an int.")
+
+    return False

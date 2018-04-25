@@ -105,6 +105,9 @@ class ButtonActionProcessor:
                 self.__action_executor.execute_actions(button.get_button_after_release_actions(), button, arduino.name)
         button.longdown_executed = False
 
+        if button.has_cancellable_dimmer_actions():
+            self.__sender.publish_dimmer_cancelled_action(arduino.name, button.number)
+
     def button_multiclick_fired(self, payload: str):
         """
             if clicks == payload clicks
@@ -165,7 +168,7 @@ class ButtonActionProcessor:
         else:
             button.clicks = 0
 
-    def process_button(self, arduino: domain.Arduino, pin, value: bool):
+    def process_button(self, arduino: domain.Arduino, pin: int, value: bool):
         button = arduino.button_pins[pin]
         logger.debug(f"button pin: {button.number} with value: {value}")
         if value:

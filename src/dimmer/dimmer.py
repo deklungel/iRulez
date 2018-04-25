@@ -40,6 +40,10 @@ def on_connect(connected_client, _, __, rc) -> None:
     logger.debug("Subscribing to " + str(subscribe))
     connected_client.subscribe(subscribe)
 
+    subscribe = constants.arduinoTopic + '/' + constants.dimmerCancelled + '/' + constants.dimmerModuleTopic
+    logger.debug("Subscribing to " + str(subscribe))
+    connected_client.subscribe(subscribe)
+
     # # Subscribe to real time dimmer
     # subscribe = constants.arduinoTopic + '/' + constants.actionTopic + '/' + constants.dimmerRealTimeModuleTopic
     # logger.debug("Subscribing to " + str(subscribe))
@@ -58,13 +62,17 @@ def on_message(_, __, msg) -> None:
     logger.debug(f"Process dimmer message")
 
     # Check if message is a command message from the button module to start dimming
-    if util.is_arduino_dimmer_module_topic(msg.topic):
+    if util.is_arduino_dimmer_action_topic(msg.topic):
         processor.process_dimmer_message(msg.payload.decode("utf-8"))
         return
 
     # Check if message is a timer fired message from the timer module to send the next dimming message
     if util.is_arduino_dimmer_timer_fired_topic(msg.topic):
         processor.process_dimmer_timer_fired(msg.payload.decode("utf-8"))
+        return
+
+    if util.is_arduino_dimmer_cancelled_topic(msg.topic):
+        processor.process_dimmer_cancelled(msg.payload.decode("utf-8"))
         return
 
     # # Check if message is for real time dimmer

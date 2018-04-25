@@ -48,14 +48,10 @@ def on_message(_, __, msg) -> None:
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
 
-    # Find arduino name of topic
-    if not (util.is_arduino_status_topic(msg.topic)):
-        logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
-        # Unknown topic
-        return
-
     # Get the name of the arduino from the topic
     name = util.get_arduino_name_from_topic(msg.topic)
+
+    # Process message
     if util.is_arduino_status_topic(msg.topic):
         logger.debug(f"Update the relay status of a normal arduino")
         update_processor.update_arduino_output_pins(name, msg.payload)
@@ -63,6 +59,8 @@ def on_message(_, __, msg) -> None:
         dimmer_pin = util.get_arduino_dimmerpin_from_topic(msg.topic, name)
         logger.debug(f"Update the relay status of a dimmer")
         update_processor.update_arduino_dimmer_pins(name, dimmer_pin, msg.payload)
+    else:
+        logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
 
 
 # Set callback functions
