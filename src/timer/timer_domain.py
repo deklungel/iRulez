@@ -64,7 +64,7 @@ class RelativeActionTimer(Timer):
                 logger.debug(f"off pin {pin} has been deleted from timer")
 
     def check_empty_timer(self) -> bool:
-        return len(self.output_pins_on) == 0 and len(self.output_pins_on) == 0
+        return len(self.output_pins_on) == 0 and len(self.output_pins_off) == 0
 
 
 class DefaultTimer(Timer):

@@ -107,7 +107,7 @@ class TimerProcessor:
                 python_timer = self.PythonTimers.get(timer_id, None)
                 if python_timer is None:
                     logger.info(f"Could not find Python timer with timer_id '{timer_id}'.")
-                logger.info(f"Cancel timer")
+                logger.info(f"Cancel timer 1")
                 python_timer.cancel()
                 to_be_delete.append(timer_id)
 

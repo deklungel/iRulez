@@ -14,6 +14,23 @@ class MqttSender:
         self.arduinos = arduinos
 
     def publish_relative_action(self, json_list: Dict[str, List[irulez_domain.IndividualAction]]):
+        # for name in json_list:
+        #     topic_name = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic
+        #     publish_topic = constants.arduinoTopic + '/' + constants.actionTopic + '/' + constants.relativeTopic
+        #     if json_list[name].delay != 0:
+        #         topic_name = topic_name + '/' + constants.relativeTopic
+        #         publish_topic = publish_topic + '/' + constants.timerTopic
+        #
+        #     payload = util.serialize_json(
+        #         {
+        #             "name": name,
+        #             "topic": topic_name,
+        #             "on": json_list[name].pin_numbers_on, "off": json_list[name].pin_numbers_off,
+        #             "delay": json_list[name].delay})
+        #
+        #     logger.debug(f"Publishing: {publish_topic}{payload}")
+        #     self.client.publish(publish_topic, payload, 0, False)
+
         for name in json_list:
             for i in range(len(json_list[name])):
                 topic_name = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic

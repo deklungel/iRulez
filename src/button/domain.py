@@ -487,20 +487,31 @@ class OnAction(Action):
                                        condition, click_number)
 
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
-        pin_action = IndividualAction(self.delay, [], [])
+        temp_pin_actions = {}
         for pin in self.output_pins:
-            logger.debug(f"pin number: '{pin.number}' with parent: '{pin.parent}'")
-            pin_action.add_pin_on(pin.number)
-            if pin_action.has_values_on():
-                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
-        logger.debug(f"Pins to switch on: '{str(pin_action.pin_numbers_on)}'")
+            if pin.parent not in temp_pin_actions:
+                pin_action = IndividualAction(self.delay, [], [])
+                pin_action.add_pin_on(pin.number)
+                temp_pin_actions[pin.parent] = pin_action
+            else:
+                temp_pin_actions[pin.parent].add_pin_on(pin.number)
+
+        for key in temp_pin_actions:
+            if temp_pin_actions[key].has_values_on():
+                pins_to_switch.setdefault(key, []).append(temp_pin_actions[key])
 
         if self.off_timer > 0:
-            pin_action = IndividualAction(self.delay, [], [])
             for pin in self.output_pins:
-                pin_action.add_pin_off(pin.number)
-                if pin_action.has_values_off():
-                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+                if pin.parent not in temp_pin_actions:
+                    pin_action = IndividualAction(self.off_timer, [], [])
+                    pin_action.add_pin_off(pin.number)
+                    temp_pin_actions[pin.parent] = pin_action
+                else:
+                    temp_pin_actions[pin.parent].add_pin_off(pin.number)
+
+            for key in temp_pin_actions:
+                if temp_pin_actions[key].has_values_off():
+                    pins_to_switch.setdefault(key, []).append(temp_pin_actions[key])
 
 
 class OffAction(Action):
@@ -517,18 +528,31 @@ class OffAction(Action):
                                         condition, click_number)
 
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]]):
-        pin_action = IndividualAction(self.delay, [], [])
+        temp_pin_actions = {}
         for pin in self.output_pins:
-            pin_action.add_pin_off(pin.number)
-            if pin_action.has_values_off():
-                pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+            if pin.parent not in temp_pin_actions:
+                pin_action = IndividualAction(self.delay, [], [])
+                pin_action.add_pin_off(pin.number)
+                temp_pin_actions[pin.parent] = pin_action
+            else:
+                temp_pin_actions[pin.parent].add_pin_off(pin.number)
+
+        for key in temp_pin_actions:
+            if temp_pin_actions[key].has_values_off():
+                pins_to_switch.setdefault(key, []).append(temp_pin_actions[key])
 
         if self.on_timer > 0:
-            pin_action = IndividualAction(self.on_timer, [], [])
             for pin in self.output_pins:
-                pin_action.add_pin_on(pin.number)
-                if pin_action.has_values_on():
-                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
+                if pin.parent not in temp_pin_actions:
+                    pin_action = IndividualAction(self.on_timer, [], [])
+                    pin_action.add_pin_on(pin.number)
+                    temp_pin_actions[pin.parent] = pin_action
+                else:
+                    temp_pin_actions[pin.parent].add_pin_on(pin.number)
+
+            for key in temp_pin_actions:
+                if temp_pin_actions[key].has_values_on():
+                    pins_to_switch.setdefault(key, []).append(temp_pin_actions[key])
 
 
 class ToggleAction(Action):
@@ -546,19 +570,31 @@ class ToggleAction(Action):
 
     def perform_action(self, pins_to_switch: Dict[str, List[IndividualAction]], master: bool):
         # if master is on put all the lights of and visa versa
-        pin_action = IndividualAction(self.delay, [], [])
+        temp_pin_actions = {}
         if master:
             for pin in self.output_pins:
-                pin_action.add_pin_off(pin.number)
-                if pin_action.has_values_off():
-                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
-            logger.debug(f"Pins to switch off: '{str(pin_action.pin_numbers_off)}'")
+                if pin.parent not in temp_pin_actions:
+                    pin_action = IndividualAction(self.delay, [], [])
+                    pin_action.add_pin_off(pin.number)
+                    temp_pin_actions[pin.parent] = pin_action
+                else:
+                    temp_pin_actions[pin.parent].add_pin_off(pin.number)
+
+            for key in temp_pin_actions:
+                if temp_pin_actions[key].has_values_off():
+                    pins_to_switch.setdefault(key, []).append(temp_pin_actions[key])
         else:
             for pin in self.output_pins:
-                pin_action.add_pin_on(pin.number)
-                if pin_action.has_values_on():
-                    pins_to_switch.setdefault(pin.parent, []).append(pin_action)
-            logger.debug(f"Pins to switch on: '{str(pin_action.pin_numbers_on)}'")
+                if pin.parent not in temp_pin_actions:
+                    pin_action = IndividualAction(self.delay, [], [])
+                    pin_action.add_pin_on(pin.number)
+                    temp_pin_actions[pin.parent] = pin_action
+                else:
+                    temp_pin_actions[pin.parent].add_pin_on(pin.number)
+
+            for key in temp_pin_actions:
+                if temp_pin_actions[key].has_values_on():
+                    pins_to_switch.setdefault(key, []).append(temp_pin_actions[key])
 
 
 class OnDimmerAction(DimmerAction):
