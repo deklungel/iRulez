@@ -29,6 +29,11 @@ virtual_IO_board_name = 'virtual_IO_Board'
 virtual_IO_board_buttons = 20
 virtual_IO_board_outputs = 20
 
+# Name of the virtual_dimmer_board
+virtual_dimmer_board_name = 'virtual_dimmer_Board'
+virtual_dimmer_board_buttons = 20
+virtual_dimmer_board_outputs = 20
+
 # Name of  the notification topics
 notificationTopic = 'notification'
 
