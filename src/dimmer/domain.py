@@ -69,7 +69,10 @@ class DimmingAction:
         return self.__arduino_name
 
     def is_final_step(self) -> bool:
-        return self.__current_step == len(self.__pins_to_switch[0].interval_values) - 1
+        for pin in self.__pins_to_switch:
+            if self.__current_step == len(pin.interval_values) - 1 and len(pin.interval_values) > 0:
+                return True
+        return False
 
     def get_current_pins_with_interval(self) -> List[Tuple[int, int]]:
         to_return = []
