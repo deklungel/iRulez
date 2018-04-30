@@ -79,7 +79,8 @@ class DimmerActionProcessor:
         current = float(start_value)
         for i in range(0, number_of_parts):
             current += step
-            to_return.append(int(current))
+            if current != start_value:
+                to_return.append(int(current))
 
         return to_return
 

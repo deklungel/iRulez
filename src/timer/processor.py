@@ -28,7 +28,7 @@ class TimerProcessor:
         # create an id for new timer
         timer_id = uuid.uuid4()
         self.__default_timers[timer_id] = timer_domain.DefaultTimer(topic, payload)
-        t = Timer(int(delay), self.__execute_default_timer, args=(timer_id,))
+        t = Timer(int(delay)/100, self.__execute_default_timer, args=(timer_id,))
         t.start()
         self.PythonTimers[timer_id] = t
         logger.info(f"Timer created with '{timer_id}'.")

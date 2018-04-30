@@ -24,10 +24,10 @@ def on_connect(connected_client, _, __, rc) -> None:
     connected_client.subscribe(constants.arduinoTopic + "/" + constants.virtual_IO_board_name + "/" +
                                constants.actionTopic)
 
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.virtual_dimmer_board_name + "/" +
-                 constants.actionTopic)
-    connected_client.subscribe(constants.arduinoTopic + "/" + constants.virtual_dimmer_board_name + "/" +
-                               constants.actionTopic)
+    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.virtual_IO_board_name + "/" +
+                 constants.dimAction + "/+")
+    connected_client.subscribe(constants.arduinoTopic + "/" + constants.virtual_IO_board_name + "/" +
+                               constants.dimAction + "/+")
 
 
 def on_subscribe(_, __, mid, granted_qos) -> None:
@@ -43,7 +43,7 @@ def on_message(_, __, msg) -> None:
         logger.debug(f"Publishing new status of arduino '{constants.virtual_IO_board_name}: {msg.payload}'")
         client.publish(constants.arduinoTopic + '/' + constants.virtual_IO_board_name + '/status',
                        str(msg.payload.decode('ascii')), 0, True)
-    elif util.is_arduino_dimmer_action_topic():
+    elif util.is_arduino_dimmer_action_topic(msg.topic):
         logger.debug(f"Publishing new status of arduino '{constants.virtual_dimmer_board_name}: {msg.payload}'")
         client.publish(constants.arduinoTopic + '/' + constants.virtual_dimmer_board_name + '/status',
                        str(msg.payload.decode('ascii')), 0, True)
@@ -53,7 +53,7 @@ def on_message(_, __, msg) -> None:
         return
 
 
-    
+
 
 
 # Create client

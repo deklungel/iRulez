@@ -681,22 +681,31 @@ class ToggleDimmerAction(DimmerAction):
 
     def perform_action(self, pin_to_dim: Dict[str, List[IndividualDimAction]], master: int):
         # if master is on put all the lights of and visa versa
+        temp_pin_actions = {}
         if master > 0:
-            pin_action = IndividualDimAction(self._dimmer_speed, 0, self.delay, self._cancel_on_button_release)
+            # pin_action = IndividualDimAction(self._dimmer_speed, 0, self.delay, self._cancel_on_button_release)
             for pin in self.output_pins:
-                pin_action.add_pin(pin.number)
-                if pin_action.has_values():
-                    pin_to_dim.setdefault(pin.parent, []).append(pin_action)
-            logger.debug(f"Pins to switch off: '{str(pin_action.pin_numbers_off)}'")
-        else:
-            pin_action = IndividualDimAction(self._dimmer_speed, self.__dimmer_light_value, self.delay,
-                                             self._cancel_on_button_release)
-            for pin in self.output_pins:
-                pin_action.add_pin(pin.number)
-                if pin_action.has_values():
-                    pin_to_dim.setdefault(pin.parent, []).append(pin_action)
-            logger.debug(f"Pins to switch on: '{str(pin_action.pin_numbers_on)}'")
+                if pin.parent not in temp_pin_actions:
+                    pin_action = IndividualDimAction(self._dimmer_speed, 0, self.delay, self._cancel_on_button_release)
+                    pin_action.add_pin(pin.number)
+                    temp_pin_actions[pin.parent] = pin_action
+                else:
+                    temp_pin_actions[pin.parent].add_pin(pin.number)
+            for key in temp_pin_actions:
+                if temp_pin_actions[key].has_values():
+                        pin_to_dim.setdefault(key, []).append(temp_pin_actions[key])
 
+        else:
+            for pin in self.output_pins:
+                if pin.parent not in temp_pin_actions:
+                    pin_action = IndividualDimAction(self._dimmer_speed, self.__dimmer_light_value, self.delay, self._cancel_on_button_release)
+                    pin_action.add_pin(pin.number)
+                    temp_pin_actions[pin.parent] = pin_action
+                else:
+                    temp_pin_actions[pin.parent].add_pin(pin.number)
+            for key in temp_pin_actions:
+                if temp_pin_actions[key].has_values():
+                    pin_to_dim.setdefault(key, []).append(temp_pin_actions[key])
 
 class ArduinoConfig:
     """Represents the configuration of all known arduinos"""
