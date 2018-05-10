@@ -608,9 +608,11 @@ class OnDimmerAction(DimmerAction):
                  click_number: int,
                  dimmer_speed: int,
                  dimmer_light_value: int,
-                 cancel_on_button_release: bool):
+                 cancel_on_button_release: bool,
+                 master_dim_id: int):
         self.__off_timer = off_timer
         self.__dimmer_light_value = dimmer_light_value
+        self.__master_dim_id = master_dim_id
         super(OnDimmerAction, self).__init__(trigger, ActionType.ON_DIMMER, delay, output_pins, notifications,
                                              condition, click_number, dimmer_speed, cancel_on_button_release)
 
@@ -620,7 +622,8 @@ class OnDimmerAction(DimmerAction):
             if pin.parent not in temp_pin_actions:
                 if self.__dimmer_light_value is None:
                     self.__dimmer_light_value = 100
-                pin_action = IndividualDimAction(self._dimmer_speed, self.__dimmer_light_value, self.delay, self._cancel_on_button_release)
+                pin_action = IndividualDimAction(self._dimmer_speed, self.__dimmer_light_value, self.delay,
+                                                 self._cancel_on_button_release)
                 pin_action.add_pin(pin.number)
                 temp_pin_actions[pin.parent] = pin_action
             else:
@@ -632,7 +635,8 @@ class OnDimmerAction(DimmerAction):
         if self.__off_timer > 0:
             for pin in self.output_pins:
                 if pin.parent not in temp_pin_actions:
-                    pin_action = IndividualDimAction(self._dimmer_speed, 0, self.__off_timer, self._cancel_on_button_release)
+                    pin_action = IndividualDimAction(self._dimmer_speed, 0, self.__off_timer,
+                                                     self._cancel_on_button_release)
                     pin_action.add_pin(pin.number)
                     temp_pin_actions[pin.parent] = pin_action
                 else:
@@ -673,7 +677,8 @@ class OffDimmerAction(DimmerAction):
         if self.__on_timer > 0:
             for pin in self.output_pins:
                 if pin.parent not in temp_pin_actions:
-                    pin_action = IndividualDimAction(self._dimmer_speed, self.__dimmer_light_value, self.__on_timer, self._cancel_on_button_release)
+                    pin_action = IndividualDimAction(self._dimmer_speed, 0, self.__on_timer,
+                                                     self._cancel_on_button_release)
                     pin_action.add_pin(pin.number)
                     temp_pin_actions[pin.parent] = pin_action
                 else:
@@ -694,11 +699,13 @@ class ToggleDimmerAction(DimmerAction):
                  click_number: int,
                  dimmer_speed: int,
                  dimmer_light_value: int,
-                 cancel_on_button_release: bool):
+                 cancel_on_button_release: bool,
+                 master_dim_id: int):
         super(ToggleDimmerAction, self).__init__(trigger, ActionType.TOGGLE_DIMMER, delay, output_pins, notifications,
                                                  condition, click_number, dimmer_speed, cancel_on_button_release)
         self.master = master
         self.__dimmer_light_value = dimmer_light_value
+        self.__master_dim_id = master_dim_id
 
     def perform_action(self, pin_to_dim: Dict[str, List[IndividualDimAction]], master: int):
         # if master is on put all the lights of and visa versa
@@ -718,7 +725,8 @@ class ToggleDimmerAction(DimmerAction):
         else:
             for pin in self.output_pins:
                 if pin.parent not in temp_pin_actions:
-                    pin_action = IndividualDimAction(self._dimmer_speed, self.__dimmer_light_value, self.delay, self._cancel_on_button_release)
+                    pin_action = IndividualDimAction(self._dimmer_speed, self.__dimmer_light_value, self.delay,
+                                                     self._cancel_on_button_release)
                     pin_action.add_pin(pin.number)
                     temp_pin_actions[pin.parent] = pin_action
                 else:
@@ -726,6 +734,7 @@ class ToggleDimmerAction(DimmerAction):
             for key in temp_pin_actions:
                 if temp_pin_actions[key].has_values():
                     pin_to_dim.setdefault(key, []).append(temp_pin_actions[key])
+
 
 class ArduinoConfig:
     """Represents the configuration of all known arduinos"""

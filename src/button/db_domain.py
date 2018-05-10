@@ -47,7 +47,25 @@ class Action:
                  click_number: int,
                  dimmer_speed: Optional[int],
                  cancel_on_button_release: Optional[bool],
-                 dimmer_light_value: Optional[int]):
+                 dimmer_light_value: Optional[int],
+                 master_dimmer_id: Optional[int]):
+        """
+        Creates a new Action
+
+        :param id: The identifier of this action
+        :param action_type: The kind of action. See src.button.domain.ActionType class for possible values
+        :param trigger_id: The identifier of the trigger of this action
+        :param notification_ids: The identifiers of the notifications of this action. Can be empty.
+        :param delay: The delay before this action should be executed.
+        :param timer: The timer after which the action should be reverted. Only applies for ON/OFF actions
+        :param output_pin_ids: The identifiers of the output pins affected by this action.
+        :param condition_id: The (optional) identifier of the condition that should apply for this action.
+        :param master_id: The master pin that should determine the the TOGGLE action. This pin will be looked at when
+                            determining whether it should toggle on or off
+        :param
+        :param master_dimmer_id: The identifier of the dimmer whose last known value should be taken when switching
+                                    the dimmer on.
+        """
         # General properties
         self.id = id
         self.trigger_id = trigger_id
@@ -70,6 +88,7 @@ class Action:
 
         # ON_DIMMER/TOGGLE_DIMMER action
         self.dimmer_light_value = dimmer_light_value
+        self.master_dimmer_id = master_dimmer_id
 
 
 class Trigger:
