@@ -101,11 +101,11 @@ class DummyDb(DbBase):
         # Action 2 execute immediately, pins 8,9,10 TOGGLE, master 8, after 30 sec
         # Action 3 execute long down 5 sec, pins 8,9,10 TOGGLE, master 8, with mail notification
         # Action 4 execute after release, pins 11, 12, 13 TOGGLE, master 8, with mail notification
-        return [db_domain.Action(0, 2, 0, [0, 1], 0, 15, [0, 10], 4, None, 1, None, None, None),
-                db_domain.Action(1, 3, 0, [], 0, 0, [2, 9], None, None, 1, None, None, None),
-                db_domain.Action(2, 1, 0, [0, 1], 30, 0, [8, 9, 10], None, 8, 1, None, None, None),
-                db_domain.Action(3, 1, 2, [0], 0, 0, [8, 9, 10], None, 8, 1, None, None, None),
-                db_domain.Action(4, 1, 1, [0], 0, 0, [11, 12, 13], 5, 11, 1, None, None, None)]
+        return [db_domain.Action(0, 2, 0, [0, 1], 0, 15, [0, 10], 4, None, 1, None, None, None, None),
+                db_domain.Action(1, 3, 0, [], 0, 0, [2, 9], None, None, 1, None, None, None, None),
+                db_domain.Action(2, 1, 0, [0, 1], 30, 0, [8, 9, 10], None, 8, 1, None, None, None, None),
+                db_domain.Action(3, 1, 2, [0], 0, 0, [8, 9, 10], None, 8, 1, None, None, None, None),
+                db_domain.Action(4, 1, 1, [0], 0, 0, [11, 12, 13], 5, 11, 1, None, None, None, None)]
 
     def get_input_pins(self) -> List[db_domain.InputPin]:
         to_return = []
@@ -245,11 +245,11 @@ class MariaDB(DbBase):
         with closing(self.__create_connection()) as conn:
             with closing(conn.cursor(buffered=True)) as cursor:
                 cursor.execute(
-                    "SELECT id, action_type, trigger_id, delay, timer, condition_id, master_id, click_number, "
-                    "dimmer_speed, cancel_on_button_release, dimmer_light_value FROM tbl_Action")
+                    "SELECT id, action_type, trigger_id, delay, timer, condition_id, master_id, dim_master_id, "
+                    "click_number, dimmer_speed, dimmer_light_value, cancel_on_button_release FROM tbl_Action")
                 actions = []
-                for id, action_type, trigger_id, delay, timer, condition_id, master_id, click_number, dimmer_speed, \
-                    cancel_on_button_release, dimmer_light_value in cursor:
+                for id, action_type, trigger_id, delay, timer, condition_id, master_id, dim_master_id, click_number, \
+                        dimmer_speed, dimmer_light_value, cancel_on_button_release in cursor:
                     with closing(conn.cursor(buffered=True)) as action_cursor:
                         action_cursor.execute("SELECT OutputPin_ID FROM tbl_Action_OutputPin WHERE Action_ID=%s", (id,))
                         output_pin_ids = []
@@ -264,7 +264,7 @@ class MariaDB(DbBase):
                     actions.append(
                         db_domain.Action(id, action_type, trigger_id, notification_ids, delay, timer, output_pin_ids,
                                          condition_id, master_id, click_number, dimmer_speed, cancel_on_button_release,
-                                         dimmer_light_value))
+                                         dimmer_light_value, dim_master_id))
                 return actions
 
     def __create_connection(self) -> None:
