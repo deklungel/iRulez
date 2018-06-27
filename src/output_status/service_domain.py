@@ -14,3 +14,11 @@ class Service(ABC):
     @abstractmethod
     def get_arduino_dim_pin_status(self, name: str, pin: int) -> Optional[int]:
         pass
+
+    @abstractmethod
+    def get_dimmer_light_value(self, id: int) -> Optional[int]:
+        pass
+
+    @abstractmethod
+    def get_dimmer_direction_up(self, id: int) -> Optional[bool]:
+        pass

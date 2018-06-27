@@ -9,6 +9,7 @@ logger = log.get_logger('StatusServiceServer')
 
 
 class OutputServiceServer(service.Service):
+
     def __init__(self, arduinos: Dict[str, domain.Arduino], url: object, port: object):
         self.arduinos = arduinos
         self.url = url
@@ -20,6 +21,9 @@ class OutputServiceServer(service.Service):
         server.register_function(self.get_arduino_pin_status, "arduino_pin_status")
         server.register_function(self.get_arduino_dim_pin_status, "arduino_pin_dim_status")
         server.register_function(self.get_arduino_status, "arduino_status")
+        server.register_function(self.get_dimmer_light_value, "dimmer_light_value")
+        server.register_function(self.get_dimmer_direction_up, "dimmer_direction_up")
+
         server.register_function(self.test, "GET")
         server.register_multicall_functions()
         th = threading.Thread(target=server.serve_forever)
@@ -52,6 +56,12 @@ class OutputServiceServer(service.Service):
         for pin in arduino.output_pins.values():
             status.append(pin.state)
         return status
+
+    def get_dimmer_light_value(self, id: int) -> Optional[int]:
+        return 66
+
+    def get_dimmer_direction_up(self, id: int) -> Optional[bool]:
+        return True
 
     def test(self) -> str:
         return "Hello World"

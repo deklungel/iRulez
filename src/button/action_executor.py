@@ -70,7 +70,9 @@ class ActionExecutor:
                 action.perform_action(pins_to_dim)
             elif isinstance(action, domain.ToggleDimmerAction):
                 master = self.__status_service.get_arduino_dim_pin_status(action.master.parent, action.master.number)
-                action.perform_action(pins_to_dim, master)
+                light_value = self.__status_service.get_dimmer_light_value(action.master.parent, action.master.number)
+                dim_direction = self.__status_service.get_dimmer_direction_up(action.master.parent, action.master.number)
+                action.perform_action(pins_to_dim, master, light_value)
             else:
                 logger.error(f"Undefined action of type '{action.action_type}' ({type(action)})")
         else:
