@@ -707,10 +707,10 @@ class ToggleDimmerAction(DimmerAction):
         self.__dimmer_light_value = dimmer_light_value
         self.__master_dim_id = master_dim_id
 
-    def perform_action(self, pin_to_dim: Dict[str, List[IndividualDimAction]], master: int, light_value):
+    def perform_action(self, pin_to_dim: Dict[str, List[IndividualDimAction]], master: str, light_value):
         # if master is on put all the lights of and visa versa
         temp_pin_actions = {}
-        if master > 0:
+        if master.status > 0:
             for pin in self.output_pins:
                 if pin.parent not in temp_pin_actions:
                     pin_action = IndividualDimAction(self._dimmer_speed, 0, self.delay, self._cancel_on_button_release)

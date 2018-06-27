@@ -21,6 +21,7 @@ class Pin(ABC):
         self.number = number
         self.pin_type = pin_type
         self.state = 0
+        self.__direction = None
 
     def get_state(self) -> bool:
         if self.state > 0:
@@ -30,6 +31,8 @@ class Pin(ABC):
     def get_dim_state(self) -> int:
         return self.state
 
+    def get_direction(self) -> str:
+        return self.__direction
 
 class OutputPin(Pin):
     """Represents a single pin on an arduino"""

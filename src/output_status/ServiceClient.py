@@ -24,7 +24,7 @@ class StatusServiceClient(service.Service):
         logger.debug(f"status: {str(status)}")
         return status
 
-    def get_arduino_dim_pin_status(self, name: str, pin: int) -> int:
+    def get_arduino_dim_pin_status(self, name: str, pin: int) -> str:
         with xmlrpc.client.ServerProxy(f"http://{self.url}:{self.port}/") as proxy:
             status = proxy.arduino_pin_dim_status(name, pin)
         logger.debug(f"status: {str(status)}")
@@ -36,8 +36,3 @@ class StatusServiceClient(service.Service):
         logger.debug(f"status: {str(status)}")
         return status
 
-    def get_dimmer_direction_up(self, id: int) -> Optional[bool]:
-        with xmlrpc.client.ServerProxy(f"http://{self.url}:{self.port}/") as proxy:
-            status = proxy.dimmer_direction_up(id)
-        logger.debug(f"status: {str(status)}")
-        return status

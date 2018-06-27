@@ -4,6 +4,7 @@ from xmlrpc.server import SimpleXMLRPCServer
 import src.output_status.domain as domain
 import src.irulez.log as log
 import src.output_status.service_domain as service
+import src.irulez.util as util
 
 logger = log.get_logger('StatusServiceServer')
 
@@ -38,13 +39,18 @@ class OutputServiceServer(service.Service):
             return None
         return arduino.output_pins[pin].get_state()
 
-    def get_arduino_dim_pin_status(self, name: str, pin: int) -> Optional[int]:
+    def get_arduino_dim_pin_status(self, name: str, pin: int) -> Optional[str]:
         arduino = self.arduinos.get(name, None)
         if arduino is None:
             # Unknown arduino
             logger.info(f"Could not find arduino with name '{name}'.")
             return None
-        return arduino.output_pins[pin].get_dim_state()
+        return util.serialize_json(
+            {
+                "state": arduino.output_pins[pin].get_dim_state(),
+                "direction": arduino.output_pins[pin].get_direction()
+            }
+        )
 
     def get_arduino_status(self, name: str) -> List[bool]:
         arduino = self.arduinos.get(name, None)
@@ -60,8 +66,6 @@ class OutputServiceServer(service.Service):
     def get_dimmer_light_value(self, id: int) -> Optional[int]:
         return 66
 
-    def get_dimmer_direction_up(self, id: int) -> Optional[bool]:
-        return True
 
     def test(self) -> str:
         return "Hello World"
