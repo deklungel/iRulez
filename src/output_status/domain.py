@@ -2,6 +2,7 @@ from enum import IntEnum
 import src.irulez.util as util
 from abc import ABC
 import src.irulez.log as log
+import src.irulez.constants as constants
 from typing import List
 
 logger = log.get_logger('domain')
@@ -18,21 +19,36 @@ class Pin(ABC):
     """Represents a pin on an arduino"""
 
     def __init__(self, number: int, pin_type: ArduinoPinType):
-        self.number = number
-        self.pin_type = pin_type
-        self.state = 0
+        self.__number = number
+        self.__pin_type = pin_type
+        self.__state = 0
         self.__direction = None
 
-    def get_state(self) -> bool:
-        if self.state > 0:
+    @property
+    def state(self) -> bool:
+        if self.__state > 0:
             return True
         return False
 
-    def get_dim_state(self) -> int:
-        return self.state
+    @state.setter
+    def state(self, state) -> None:
+        self.__state = state
 
-    def get_direction(self) -> str:
+    @property
+    def number(self) -> int:
+        return self.__number
+
+    @property
+    def dim_state(self) -> int:
+        return self.__state
+
+    @property
+    def direction(self) -> str:
         return self.__direction
+
+    @direction.setter
+    def direction(self, direction) -> None:
+        self.__direction = direction
 
 class OutputPin(Pin):
     """Represents a single pin on an arduino"""
@@ -80,6 +96,11 @@ class Arduino:
                 pin.state = 0
 
     def set_dimmer_pin_status(self, payload: int, pin_number: int):
+        pin = self.output_pins[pin_number]
+        if pin.state - payload > 0:
+            pin.direction = constants.dim_direction_down
+        elif pin.state - payload < 0:
+            pin.direction = constants.dim_direction_up
         self.output_pins[pin_number].state = payload
 
 

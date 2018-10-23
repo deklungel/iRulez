@@ -83,7 +83,7 @@ class TimerProcessor:
             return
 
         self.sender.publish_relative_action(timer_domain.IndividualAction(action_timer.name,
-                                                                          constants.arduinoTopic + '/' +
+                                                                          constants.iRulezTopic + '/' +
                                                                           constants.actionTopic + '/' +
                                                                           constants.relativeTopic, 0,
                                                                           action_timer.output_pins_on,

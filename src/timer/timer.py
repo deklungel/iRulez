@@ -23,20 +23,20 @@ def on_connect(connected_client, _, __, rc) -> None:
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
 
     # When the button module sends a timed relay action to the relative convertor module
-    topic = "{0}/{1}/{2}/{3}".format(str(constants.arduinoTopic), str(constants.actionTopic),
+    topic = "{0}/{1}/{2}/{3}".format(str(constants.iRulezTopic), str(constants.actionTopic),
                                      str(constants.relativeTopic), str(constants.timerTopic))
     logger.debug("Subscribing to " + str(topic))
     connected_client.subscribe(str(topic))
 
     # When the button module sends a timed dim action to the dimmer module
-    topic = "{0}/{1}/{2}/{3}".format(str(constants.arduinoTopic), str(constants.actionTopic),
+    topic = "{0}/{1}/{2}/{3}".format(str(constants.iRulezTopic), str(constants.actionTopic),
                                      str(constants.dimmerModuleTopic), str(constants.timerTopic))
     logger.debug("Subscribing to " + str(topic))
     connected_client.subscribe(str(topic))
 
     # When the dimmer module sends a message to itself
-    topic = constants.arduinoTopic + '/' + constants.actionTopic + '/' + constants.dimmerTimerFired + '/' + \
-        constants.timerTopic
+    topic = constants.iRulezTopic + '/' + constants.actionTopic + '/' + constants.dimmerTimerFired + '/' + \
+            constants.timerTopic
     logger.debug("Subscribing to " + str(topic))
     connected_client.subscribe(str(topic))
 

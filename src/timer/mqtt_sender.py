@@ -12,8 +12,8 @@ class MqttSender:
     def publish_relative_action(self, individual_action) -> None:
         payload = \
             util.serialize_json({"name": individual_action.name,
-                                 "topic": constants.arduinoTopic + '/' + individual_action.name + '/' +
-                                constants.actionTopic,
+                                 "topic": constants.iRulezTopic + '/' + individual_action.name + '/' +
+                                          constants.actionTopic,
                                  "on": individual_action.pin_numbers_on, "off": individual_action.pin_numbers_off,
                                  "delay": individual_action.delay})
 

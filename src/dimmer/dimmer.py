@@ -31,16 +31,16 @@ def on_connect(connected_client, _, __, rc) -> None:
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
 
     # Receives message from button about dimmer state switch
-    subscribe = constants.arduinoTopic + '/' + constants.actionTopic + '/' + constants.dimmerModuleTopic
+    subscribe = constants.iRulezTopic + '/' + constants.actionTopic + '/' + constants.dimmerModuleTopic
     logger.debug("Subscribing to " + str(subscribe))
     connected_client.subscribe(subscribe)
 
     # Receives message from timer module when a dimmer pin should be updated.
-    subscribe = constants.arduinoTopic + '/' + constants.actionTopic + '/' + constants.dimmerTimerFired
+    subscribe = constants.iRulezTopic + '/' + constants.actionTopic + '/' + constants.dimmerTimerFired
     logger.debug("Subscribing to " + str(subscribe))
     connected_client.subscribe(subscribe)
 
-    subscribe = constants.arduinoTopic + '/' + constants.dimmerCancelled + '/' + constants.dimmerModuleTopic
+    subscribe = constants.iRulezTopic + '/' + constants.dimmerCancelled + '/' + constants.dimmerModuleTopic
     logger.debug("Subscribing to " + str(subscribe))
     connected_client.subscribe(subscribe)
 

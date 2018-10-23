@@ -4,6 +4,7 @@ from typing import Dict, List
 import src.irulez.log as log
 from datetime import datetime
 import src.output_status.ServiceClient as ServiceClient
+import src.irulez.util as util
 
 logger = log.get_logger('button_processor')
 
@@ -53,7 +54,8 @@ class ActionExecutor:
     def execute_action(self,
                        action: domain.Action,
                        pins_to_switch: Dict[str, List[domain.IndividualAction]],
-                       pins_to_dim: Dict[str, List[domain.IndividualDimAction]]) -> None:
+                       pins_to_dim: Dict[str, List[domain.IndividualDimAction]],
+                       last_light_values_to_update: Dict[str, Dict[int, int]]) -> None:
         """ Performs the given action by manipulating the given dictionaries with pins. """
         if self.check_condition(action.get_condition()):
             logger.info(f"Process action with type '{action.action_type}'")
@@ -69,9 +71,20 @@ class ActionExecutor:
             elif isinstance(action, domain.OffDimmerAction):
                 action.perform_action(pins_to_dim)
             elif isinstance(action, domain.ToggleDimmerAction):
-                master = self.__status_service.get_arduino_dim_pin_status(action.master.parent, action.master.number)
-                last_light_value = self.__status_service.get_dimmer_light_value(action.master_dimmer_id)
-                action.perform_action(pins_to_dim, master, last_light_value)
+                master_json = self.__status_service.get_arduino_dim_pin_status(action.master.parent,
+                                                                               action.master.number)
+                # JSON contains 'state' and 'direction'
+                master = util.deserialize_json(master_json)
+                state = util.get_int_from_json_object(master, 'state')
+                direction = util.get_str_from_json_object(master, 'direction')
+                last_light_value_optional = None
+                if action.master_dim_id is not None:
+                    last_light_value_optional = self.__status_service.get_dimmer_light_value(action.master.parent,
+                                                                                         action.master_dim_id)
+                last_light_value = 100
+                if last_light_value_optional is not None:
+                    last_light_value = last_light_value_optional
+                action.perform_action(pins_to_dim, last_light_values_to_update, state, direction, last_light_value)
             else:
                 logger.error(f"Undefined action of type '{action.action_type}' ({type(action)})")
         else:
@@ -80,10 +93,11 @@ class ActionExecutor:
     def execute_actions(self, actions: List[domain.Action], button: domain.ButtonPin, arduino_name: str):
         pins_to_switch = {}
         pins_to_dim = {}
+        last_light_values_to_update = {}
 
         logger.debug(f"Publish immediate actions")
         for action in actions:
-            self.execute_action(action, pins_to_switch, pins_to_dim)
+            self.execute_action(action, pins_to_switch, pins_to_dim, last_light_values_to_update)
 
         self.__sender.publish_relative_action(pins_to_switch)
         self.__sender.publish_dimmer_module_action(pins_to_dim, arduino_name, button.number)

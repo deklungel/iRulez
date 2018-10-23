@@ -60,9 +60,13 @@ class Action:
         :param timer: The timer after which the action should be reverted. Only applies for ON/OFF actions
         :param output_pin_ids: The identifiers of the output pins affected by this action.
         :param condition_id: The (optional) identifier of the condition that should apply for this action.
-        :param master_id: The master pin that should determine the the TOGGLE action. This pin will be looked at when
+        :param master_id: The master pin that should determine the TOGGLE action. This pin will be looked at when
                             determining whether it should toggle on or off
-        :param
+        :param click_number: Number of times that has to be clicked on multiclick action to activate
+        :param dimmer_speed: How fast/slow the dimmer has to change light intensity
+        :param cancel_on_button_release: If this is set to true, the dimmer will stop dimming as soon as the button is released
+        :param dimmer_light_value: If set to -1, a dimmer will remember its last known value before switching off
+                                    If set to a value, a dimmer will go to this value by default/not remember last value
         :param master_dimmer_id: The identifier of the dimmer whose last known value should be taken when switching
                                     the dimmer on.
         """

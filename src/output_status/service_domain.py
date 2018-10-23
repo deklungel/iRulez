@@ -16,6 +16,6 @@ class Service(ABC):
         pass
 
     @abstractmethod
-    def get_dimmer_light_value(self, id: int) -> Optional[int]:
+    def get_dimmer_light_value(self, name: str, id: int) -> Optional[int]:
         pass
 

@@ -111,6 +111,13 @@ class OutputPin(Pin):
     """Represents a single pin on an arduino"""
 
     def __init__(self, number: int, parent: str, state=False):
+        """
+        Creates a new output pin
+
+        :param number: number of this pin on the given arduino
+        :param parent: name of the arduino
+        :param state: Initial state
+        """
         super(OutputPin, self).__init__(number, ArduinoPinType.OUTPUT, state)
         self.parent = parent
 
@@ -425,7 +432,7 @@ class MailNotification(Notification):
         self.subject = subject
 
     def get_topic_name(self) -> str:
-        return constants.arduinoTopic + "/" + constants.notificationTopic + "/" + constants.mailTopic
+        return constants.iRulezTopic + "/" + constants.notificationTopic + "/" + constants.mailTopic
 
     def get_payload(self) -> str:
         return util.serialize_json(
@@ -442,7 +449,7 @@ class TelegramNotification(Notification):
         self.tokens = tokens
 
     def get_topic_name(self) -> str:
-        return constants.arduinoTopic + "/" + constants.notificationTopic + "/" + constants.telegramTopic
+        return constants.iRulezTopic + "/" + constants.notificationTopic + "/" + constants.telegramTopic
 
     def get_payload(self) -> str:
         return util.serialize_json(
@@ -700,17 +707,55 @@ class ToggleDimmerAction(DimmerAction):
                  dimmer_speed: int,
                  dimmer_light_value: int,
                  cancel_on_button_release: bool,
-                 master_dim_id: int):
+                 master_dim_id: Optional[int]):
         super(ToggleDimmerAction, self).__init__(trigger, ActionType.TOGGLE_DIMMER, delay, output_pins, notifications,
                                                  condition, click_number, dimmer_speed, cancel_on_button_release)
         self.master = master
         self.__dimmer_light_value = dimmer_light_value
         self.__master_dim_id = master_dim_id
 
-    def perform_action(self, pin_to_dim: Dict[str, List[IndividualDimAction]], master: str, light_value):
-        # if master is on put all the lights of and visa versa
+    @property
+    def master_dim_id(self) -> Optional[int]:
+        return self.__master_dim_id
+
+    def perform_action(self,
+                       pin_to_dim: Dict[str, List[IndividualDimAction]],
+                       last_light_values_to_update: Dict[str, Dict[int, int]],
+                       master_state: int,
+                       master_direction: str,
+                       last_light_value: int):
         temp_pin_actions = {}
-        if master.status > 0:
+        # If master is off, start turning all lights on, regardless of button pressed or button longdown
+        # If cancel_on_button_release is set to true and last dim direction was down, we start dimming up
+        # If master_state is 100, start turning all lights off
+        if master_state == 0 or \
+                (self.cancel_on_button_release and
+                 master_direction == constants.dim_direction_down and
+                 master_state != 100):
+            # If __dimmer_light_value is configured, use that value. Otherwise use the last known value
+            light_value_to_set = self.__dimmer_light_value
+            if light_value_to_set == -1:
+                light_value_to_set = last_light_value
+
+            # Generate dim actions for each impacted pin
+            for pin in self.output_pins:
+                if pin.parent not in temp_pin_actions:
+                    pin_action = IndividualDimAction(self._dimmer_speed, light_value_to_set, self.delay,
+                                                     self._cancel_on_button_release)
+                    pin_action.add_pin(pin.number)
+                    temp_pin_actions[pin.parent] = pin_action
+                else:
+                    temp_pin_actions[pin.parent].add_pin(pin.number)
+            for key in temp_pin_actions:
+                if temp_pin_actions[key].has_values():
+                    pin_to_dim.setdefault(key, []).append(temp_pin_actions[key])
+        # If master is on and cancel_on_button_release is false or last dim direction was up, we start dimming down
+        else:
+            if not self.cancel_on_button_release:
+                last_light_values_to_update.setdefault(self.master.parent, dict())
+                arduino_dict = last_light_values_to_update.get(self.master.parent)
+                arduino_dict.setdefault(self.master_dim_id, master_state)
+
             for pin in self.output_pins:
                 if pin.parent not in temp_pin_actions:
                     pin_action = IndividualDimAction(self._dimmer_speed, 0, self.delay, self._cancel_on_button_release)
@@ -721,21 +766,6 @@ class ToggleDimmerAction(DimmerAction):
             for key in temp_pin_actions:
                 if temp_pin_actions[key].has_values():
                         pin_to_dim.setdefault(key, []).append(temp_pin_actions[key])
-
-        else:
-            if self.__dimmer_light_value == -1:
-                self.__dimmer_light_value  == light_value
-            for pin in self.output_pins:
-                if pin.parent not in temp_pin_actions:
-                    pin_action = IndividualDimAction(self._dimmer_speed, self.__dimmer_light_value, self.delay,
-                                                     self._cancel_on_button_release)
-                    pin_action.add_pin(pin.number)
-                    temp_pin_actions[pin.parent] = pin_action
-                else:
-                    temp_pin_actions[pin.parent].add_pin(pin.number)
-            for key in temp_pin_actions:
-                if temp_pin_actions[key].has_values():
-                    pin_to_dim.setdefault(key, []).append(temp_pin_actions[key])
 
 
 class ArduinoConfig:

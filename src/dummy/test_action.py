@@ -37,14 +37,14 @@ payload = util.convert_array_to_hex(pin_states)
 payload_release = util.convert_array_to_hex(pin_states_Release)
 
 if button_type == 'C':
-    log.info(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload)
-    publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic, payload,
+    log.info(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload)
+    publish.single(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic, payload,
                    auth={'username': mqttConfig['username'], 'password': mqttConfig['password']},
                    hostname=mqttConfig['ip'],
                    port=int(mqttConfig['port']), retain=False)
     time.sleep(1)
-    log.info(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload_release)
-    publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic, payload_release,
+    log.info(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload_release)
+    publish.single(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic, payload_release,
                    auth={'username': mqttConfig['username'], 'password': mqttConfig['password']},
                    hostname=mqttConfig['ip'],
                    port=int(mqttConfig['port']), retain=False)
@@ -53,21 +53,21 @@ if button_type == 'L':
     lowtimer = input("Low for how many sec, 0 for forever? [0] ")
     if lowtimer == '':
         lowtimer = 0
-    log.info(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload)
-    publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic, payload,
+    log.info(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload)
+    publish.single(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic, payload,
                    auth={'username': mqttConfig['username'], 'password': mqttConfig['password']},
                    hostname=mqttConfig['ip'],
                    port=int(mqttConfig['port']), retain=False)
     time.sleep(int(lowtimer))
-    log.info(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload_release)
-    publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic, payload_release,
+    log.info(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload_release)
+    publish.single(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic, payload_release,
                    auth={'username': mqttConfig['username'], 'password': mqttConfig['password']},
                    hostname=mqttConfig['ip'],
                    port=int(mqttConfig['port']), retain=False)
 
 if button_type == 'H':
-    log.info(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload_release)
-    publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic, payload_release,
+    log.info(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload_release)
+    publish.single(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic, payload_release,
                    auth={'username': mqttConfig['username'], 'password': mqttConfig['password']},
                    hostname=mqttConfig['ip'],
                    port=int(mqttConfig['port']), retain=False)
@@ -77,13 +77,13 @@ if button_type == 'M':
     if clicks == '':
         clicks = 3
     for x in range(0, int(clicks)):
-        log.info(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload)
-        publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic, payload,
+        log.info(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload)
+        publish.single(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic, payload,
                        auth={'username': mqttConfig['username'], 'password': mqttConfig['password']},
                        hostname=mqttConfig['ip'],
                        port=int(mqttConfig['port']), retain=False)
-        log.info(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload_release)
-        publish.single(constants.arduinoTopic + "/" + arduino + "/" + constants.buttonTopic, payload_release,
+        log.info(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload_release)
+        publish.single(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic, payload_release,
                        auth={'username': mqttConfig['username'], 'password': mqttConfig['password']},
                        hostname=mqttConfig['ip'],
                        port=int(mqttConfig['port']), retain=False)

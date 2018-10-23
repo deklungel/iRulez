@@ -30,9 +30,10 @@ class StatusServiceClient(service.Service):
         logger.debug(f"status: {str(status)}")
         return status
 
-    def get_dimmer_light_value(self, id: int) -> Optional[int]:
+    def get_dimmer_light_value(self, name: str, id: int) -> Optional[int]:
+        logger.debug(f"Requesting dimmer light value for {name} and id {id}")
         with xmlrpc.client.ServerProxy(f"http://{self.url}:{self.port}/") as proxy:
-            status = proxy.dimmer_light_value(id)
+            status = proxy.dimmer_light_value(name, id)
         logger.debug(f"status: {str(status)}")
         return status
 

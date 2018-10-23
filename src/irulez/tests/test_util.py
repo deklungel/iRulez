@@ -9,7 +9,7 @@ class TestIsArduinoTopic(unittest.TestCase):
         self.assertFalse(result)
 
     def test_valid_string(self) -> None:
-        result = util.is_arduino_topic(constants.arduinoTopic + '/')
+        result = util.is_arduino_topic(constants.iRulezTopic + '/')
         self.assertTrue(result)
 
     def test_invalid_string(self) -> None:
@@ -17,7 +17,7 @@ class TestIsArduinoTopic(unittest.TestCase):
         self.assertFalse(result)
 
     def test_not_startswith_arduino_topic(self) -> None:
-        result = util.is_arduino_topic('blabla ' + constants.arduinoTopic)
+        result = util.is_arduino_topic('blabla ' + constants.iRulezTopic)
         self.assertFalse(result)
 
 

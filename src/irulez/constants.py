@@ -1,5 +1,5 @@
-# Name of all arduino topics
-arduinoTopic = 'iRulezIO16'
+# Name of all iRulez topics
+iRulezTopic = 'iRulezIO16'
 
 # Name of an relative action topic
 # Used to send relative updates to output pins to the relative convertor
@@ -51,7 +51,7 @@ timerTopic = 'timer'
 dimmerStatusTopic = 'dimmerStatus'
 
 # Name of the action topic for a dimmer
-# Used to sent commands to the dimmer module.
+# Used to send commands to the dimmer module.
 dimmerModuleTopic = 'dimmerModule'
 
 # Used by the timer module to sent action commands to the dimmer module.
@@ -63,5 +63,12 @@ dimmerCancelled = 'dimmerCancelled'
 # Used to send commands to an arduino to change a dimmer value.
 dimAction = 'dimAction'
 
+# Used to send last_light_value updates to the output_status service.
+dimLastLightValue = 'dimLastLightValue'
+
 # The amount of message need to be sent every second when dimming.
 dim_frequency_per_sec = 5
+
+# dimmer directions
+dim_direction_up = 'up'
+dim_direction_down = 'down'

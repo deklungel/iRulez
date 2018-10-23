@@ -11,7 +11,7 @@ def is_arduino_topic(topic: str) -> bool:
     """Checks if the given topic is a topic of an arduino"""
     if topic is None:
         return False
-    return topic.startswith(constants.arduinoTopic)
+    return topic.startswith(constants.iRulezTopic)
 
 
 def is_arduino_action_topic(topic: str) -> bool:
@@ -90,15 +90,15 @@ def get_arduino_name_from_topic(topic: str) -> Optional[str]:
     """Retrieves the name of the arduino from an arduino topic, or None if it couldn't be found"""
     if not (is_arduino_topic(topic)):
         return None
-    return topic[len(constants.arduinoTopic + '/'):topic.find('/', len(constants.arduinoTopic + '/'))]
+    return topic[len(constants.iRulezTopic + '/'):topic.find('/', len(constants.iRulezTopic + '/'))]
 
 
 def get_arduino_dimmerpin_from_topic(topic: str, name: str) -> Optional[int]:
     """Retrieves the name of the arduino from an arduino topic, or None if it couldn't be found"""
     if not (is_arduino_topic(topic)):
         return None
-    return int(topic[len(constants.arduinoTopic + '/' + name + '/'):
-                     topic.find('/', len(constants.arduinoTopic + '/' + name + '/'))])
+    return int(topic[len(constants.iRulezTopic + '/' + name + '/'):
+                     topic.find('/', len(constants.iRulezTopic + '/' + name + '/'))])
 
 
 def convert_array_to_hex(status: list) -> str:

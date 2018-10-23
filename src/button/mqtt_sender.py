@@ -4,6 +4,7 @@ import src.button.domain as irulez_domain
 import src.irulez.constants as constants
 import src.irulez.log as log
 import src.irulez.util as util
+import src.irulez.topic_factory as topic_factory
 
 logger = log.get_logger('button_mqtt_sender')
 
@@ -33,8 +34,8 @@ class MqttSender:
 
         for name in json_list:
             for i in range(len(json_list[name])):
-                topic_name = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic
-                publish_topic = constants.arduinoTopic + '/' + constants.actionTopic + '/' + constants.relativeTopic
+                topic_name = constants.iRulezTopic + '/' + name + '/' + constants.actionTopic
+                publish_topic = constants.iRulezTopic + '/' + constants.actionTopic + '/' + constants.relativeTopic
                 if json_list[name][i].delay != 0:
                     topic_name = topic_name + '/' + constants.relativeTopic
                     publish_topic = publish_topic + '/' + constants.timerTopic
@@ -55,7 +56,7 @@ class MqttSender:
         seconds_down = timer[2]
         clicks = timer[3]
 
-        publish_topic = constants.arduinoTopic + '/' + constants.buttonTimerFiredTopic
+        publish_topic = constants.iRulezTopic + '/' + constants.buttonTimerFiredTopic
         payload = util.serialize_json(
             {
                 "name": arduino_name,
@@ -73,7 +74,7 @@ class MqttSender:
         button_pin = multiclick[1]
         clicks = multiclick[2]
 
-        publish_topic = constants.arduinoTopic + '/' + constants.buttonMulticlickFiredTopic
+        publish_topic = constants.iRulezTopic + '/' + constants.buttonMulticlickFiredTopic
         payload = util.serialize_json(
             {
                 "name": arduino_name,
@@ -93,8 +94,8 @@ class MqttSender:
                                      arduino_name: str, button_number: int):
         for name in json_list:
             for i in range(len(json_list[name])):
-                topic_name = constants.arduinoTopic + '/' + name + '/' + constants.actionTopic
-                publish_topic = constants.arduinoTopic + '/' + constants.actionTopic + '/' + constants.dimmerModuleTopic
+                topic_name = constants.iRulezTopic + '/' + name + '/' + constants.actionTopic
+                publish_topic = constants.iRulezTopic + '/' + constants.actionTopic + '/' + constants.dimmerModuleTopic
                 if json_list[name][i].delay != 0:
                     logger.error(f"Delayed dimmer module messages aren't supported yet!")
                     return
@@ -119,8 +120,19 @@ class MqttSender:
                 self.client.publish(publish_topic, payload, 0, False)
 
     def publish_dimmer_cancelled_action(self, arduino_name: str, button_number: int) -> None:
-        publish_topic = constants.arduinoTopic + '/' + constants.dimmerCancelled + '/' + constants.dimmerModuleTopic
+        publish_topic = constants.iRulezTopic + '/' + constants.dimmerCancelled + '/' + constants.dimmerModuleTopic
         payload = util.serialize_json({"arduino_name": arduino_name, "button_number": button_number})
 
         logger.debug(f"Publishing: {publish_topic}{payload}")
         self.client.publish(publish_topic, payload, 0, False)
+
+    def publish_last_light_values(self, last_light_values_to_update: Dict[str, Dict[int, int]]) -> None:
+        publish_topic = topic_factory.create_last_light_value_update_topic()
+        for arduino_name in last_light_values_to_update:
+            for dimmer_output_pin_id in last_light_values_to_update[arduino_name]:
+                payload = util.serialize_json({'arduino_name': arduino_name,
+                                               'dimmer_id': dimmer_output_pin_id,
+                                               'last_light_value': last_light_values_to_update[arduino_name][dimmer_output_pin_id]})
+
+                logger.debug(f"Publishing: {publish_topic}{payload}")
+                self.client.publish(publish_topic, payload, 0, False)

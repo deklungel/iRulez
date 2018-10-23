@@ -255,6 +255,9 @@ class ArduinoConfigFactory:
             master_pin = output_pins.get(action.master_id, None)
             if master_pin is None:
                 logger.warning(f'The master pin {action.master_id} could not be found for action {action.id}')
+            if action.master_dimmer_id is None and (action.dimmer_light_value is None or action.dimmer_light_value < 1):
+                logger.error(f'The master dimmer pin id was not set and no dimmer_light_value was set'
+                               f' while creating a ToggleDimmerAction for action id {action.id}.')
             return domain.ToggleDimmerAction(trigger, action.delay, pins_of_action, notification_of_action, master_pin,
                                              condition, action.click_number, action.dimmer_speed,
                                              action.cancel_on_button_release, action.dimmer_light_value,

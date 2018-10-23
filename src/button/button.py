@@ -45,12 +45,12 @@ def on_connect(connected_client, _, __, rc) -> None:
     # Subscribe to all arduino hexnumber actions
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/+/" + constants.buttonTopic)
-    connected_client.subscribe(constants.arduinoTopic + "/+/" + constants.buttonTopic)
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.buttonTimerFiredTopic)
-    connected_client.subscribe(constants.arduinoTopic + "/" + constants.buttonTimerFiredTopic)
-    logger.debug("Subscribing to " + str(constants.arduinoTopic) + "/" + constants.buttonMulticlickFiredTopic)
-    connected_client.subscribe(constants.arduinoTopic + "/" + constants.buttonMulticlickFiredTopic)
+    logger.debug("Subscribing to " + str(constants.iRulezTopic) + "/+/" + constants.buttonTopic)
+    connected_client.subscribe(constants.iRulezTopic + "/+/" + constants.buttonTopic)
+    logger.debug("Subscribing to " + str(constants.iRulezTopic) + "/" + constants.buttonTimerFiredTopic)
+    connected_client.subscribe(constants.iRulezTopic + "/" + constants.buttonTimerFiredTopic)
+    logger.debug("Subscribing to " + str(constants.iRulezTopic) + "/" + constants.buttonMulticlickFiredTopic)
+    connected_client.subscribe(constants.iRulezTopic + "/" + constants.buttonMulticlickFiredTopic)
 
 
 def on_subscribe(_, __, mid, granted_qos) -> None:

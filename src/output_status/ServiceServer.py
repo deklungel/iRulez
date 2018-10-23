@@ -23,7 +23,6 @@ class OutputServiceServer(service.Service):
         server.register_function(self.get_arduino_dim_pin_status, "arduino_pin_dim_status")
         server.register_function(self.get_arduino_status, "arduino_status")
         server.register_function(self.get_dimmer_light_value, "dimmer_light_value")
-        server.register_function(self.get_dimmer_direction_up, "dimmer_direction_up")
 
         server.register_function(self.test, "GET")
         server.register_multicall_functions()
@@ -37,7 +36,7 @@ class OutputServiceServer(service.Service):
             # Unknown arduino
             logger.info(f"Could not find arduino with name '{name}'.")
             return None
-        return arduino.output_pins[pin].get_state()
+        return arduino.output_pins[pin].state
 
     def get_arduino_dim_pin_status(self, name: str, pin: int) -> Optional[str]:
         arduino = self.arduinos.get(name, None)
@@ -47,8 +46,8 @@ class OutputServiceServer(service.Service):
             return None
         return util.serialize_json(
             {
-                "state": arduino.output_pins[pin].get_dim_state(),
-                "direction": arduino.output_pins[pin].get_direction()
+                "state": arduino.output_pins[pin].dim_state,
+                "direction": arduino.output_pins[pin].direction
             }
         )
 
@@ -63,9 +62,8 @@ class OutputServiceServer(service.Service):
             status.append(pin.state)
         return status
 
-    def get_dimmer_light_value(self, id: int) -> Optional[int]:
+    def get_dimmer_light_value(self, name: str, id: int) -> Optional[int]:
         return 66
-
 
     def test(self) -> str:
         return "Hello World"

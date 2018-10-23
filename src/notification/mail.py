@@ -26,7 +26,7 @@ def on_connect(connected_client, _, __, rc) -> None:
     # Subscribe to all arduino hexnumber actions
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
-    topic = str(constants.arduinoTopic) + "/" + str(constants.notificationTopic) + "/" + str(constants.mailTopic)
+    topic = str(constants.iRulezTopic) + "/" + str(constants.notificationTopic) + "/" + str(constants.mailTopic)
     logger.debug("Subscribing to " + str(topic))
     connected_client.subscribe(str(topic))
 
