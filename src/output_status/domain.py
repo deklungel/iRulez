@@ -22,8 +22,7 @@ class Pin(ABC):
         self.__number = number
         self.__pin_type = pin_type
         self.__state = 0
-        self.__direction = None
-        self.__last_light_value = None
+        self.__direction = constants.dim_direction_up
 
     @property
     def state(self) -> bool:
@@ -32,7 +31,7 @@ class Pin(ABC):
         return False
 
     @state.setter
-    def state(self, state) -> None:
+    def state(self, state: int) -> None:
         self.__state = state
 
     @property
@@ -51,14 +50,6 @@ class Pin(ABC):
     def direction(self, direction: str) -> None:
         self.__direction = direction
 
-    @property
-    def last_light_value(self) -> Optional[int]:
-        return self.__last_light_value
-
-    @last_light_value.setter
-    def last_light_value(self, last_light_value: int) -> None:
-        self.__last_light_value = last_light_value
-
 
 class OutputPin(Pin):
     """Represents a single pin on an arduino"""
@@ -66,6 +57,26 @@ class OutputPin(Pin):
     def __init__(self, number: int, parent: str):
         super(OutputPin, self).__init__(number, ArduinoPinType.OUTPUT)
         self.parent = parent
+
+
+class DimmerLightValue:
+    """Class for keeping the last_light_value of a dimmer_id"""
+
+    def __init__(self, id: int, last_light_value: int):
+        self.__last_light_value = last_light_value
+        self.__id = id
+
+    @property
+    def id(self) -> int:
+        return self.__id
+
+    @property
+    def last_light_value(self) -> int:
+        return self.__last_light_value
+
+    @last_light_value.setter
+    def last_light_value(self, last_light_value: int) -> None:
+        self.__last_light_value = last_light_value
 
 
 class Arduino:
@@ -98,6 +109,13 @@ class Arduino:
         # convert array to hex string
         return util.convert_array_to_hex(pin_states)
 
+    def get_output_dim_pin_status(self) -> str:
+        to_return = ''
+        for pin in self.output_pins.values():
+            to_return += str(pin.dim_state) + ' '
+
+        return to_return
+
     def get_output_pin(self, pin_number: int) -> OutputPin:
         return self.output_pins[pin_number]
 
@@ -111,15 +129,11 @@ class Arduino:
 
     def set_dimmer_pin_status(self, payload: int, pin_number: int) -> None:
         pin = self.output_pins[pin_number]
-        if pin.state - payload > 0:
+        if pin.dim_state - payload > 0:
             pin.direction = constants.dim_direction_down
-        elif pin.state - payload < 0:
+        elif pin.dim_state - payload < 0:
             pin.direction = constants.dim_direction_up
         self.output_pins[pin_number].state = payload
-
-    def set_dimmer_pin_last_light_value(self, dimmer_id: int, last_light_value: int) -> None:
-        pin = self.output_pins[dimmer_id]
-        pin.last_light_value = last_light_value
 
 
 class ArduinoConfig:

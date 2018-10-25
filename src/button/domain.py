@@ -373,12 +373,16 @@ class Arduino:
         self.name = name
         self.number_of_output_pins = number_of_outputs_pins
         self.number_of_button_pins = number_of_button_pins
-        self.output_pins = dict()
+        self.__output_pins = dict()
         self._button_pins = dict()
 
     @property
     def button_pins(self) -> Dict[int, ButtonPin]:
         return self._button_pins
+
+    @property
+    def output_pins(self) -> Dict[int, OutputPin]:
+        return self.__output_pins
 
     def set_output_pin(self, output_pin: OutputPin):
         self.output_pins[output_pin.number] = output_pin
@@ -720,7 +724,7 @@ class ToggleDimmerAction(DimmerAction):
 
     def perform_action(self,
                        pin_to_dim: Dict[str, List[IndividualDimAction]],
-                       last_light_values_to_update: Dict[str, Dict[int, int]],
+                       last_light_values_to_update: Dict[int, int],
                        master_state: int,
                        master_direction: str,
                        last_light_value: int):
@@ -728,6 +732,9 @@ class ToggleDimmerAction(DimmerAction):
         # If master is off, start turning all lights on, regardless of button pressed or button longdown
         # If cancel_on_button_release is set to true and last dim direction was down, we start dimming up
         # If master_state is 100, start turning all lights off
+
+        logger.debug(f"{master_state}, {self.cancel_on_button_release}, {master_direction}")
+
         if master_state == 0 or \
                 (self.cancel_on_button_release and
                  master_direction == constants.dim_direction_down and
@@ -736,6 +743,8 @@ class ToggleDimmerAction(DimmerAction):
             light_value_to_set = self.__dimmer_light_value
             if light_value_to_set == -1:
                 light_value_to_set = last_light_value
+
+            logger.debug(f"{light_value_to_set}")
 
             # Generate dim actions for each impacted pin
             for pin in self.output_pins:
@@ -752,9 +761,7 @@ class ToggleDimmerAction(DimmerAction):
         # If master is on and cancel_on_button_release is false or last dim direction was up, we start dimming down
         else:
             if not self.cancel_on_button_release:
-                last_light_values_to_update.setdefault(self.master.parent, dict())
-                arduino_dict = last_light_values_to_update.get(self.master.parent)
-                arduino_dict.setdefault(self.master_dim_id, master_state)
+                last_light_values_to_update.setdefault(self.master_dim_id, master_state)
 
             for pin in self.output_pins:
                 if pin.parent not in temp_pin_actions:

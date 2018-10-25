@@ -20,6 +20,12 @@ def is_arduino_action_topic(topic: str) -> bool:
     return is_arduino_topic(topic) and '/' + constants.actionTopic in topic
 
 
+def is_arduino_dim_action_topic(topic: str) -> bool:
+    """Checks if the given topic is a dim action topic for an arduino"""
+    # Format arduino_number/dimAction/something
+    return is_arduino_topic(topic) and '/' + constants.dimAction in topic
+
+
 def is_irulez_event_topic(topic: str) -> bool:
     """Checks if the given topic is an event topic of iRulez"""
     return is_arduino_topic(topic) and '/' + constants.eventTopic in topic

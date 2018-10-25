@@ -70,14 +70,14 @@ class DimmingAction:
 
     def is_final_step(self) -> bool:
         for pin in self.__pins_to_switch:
-            if self.__current_step == len(pin.interval_values) - 1 and len(pin.interval_values) > 0:
-                return True
-        return False
+            if self.__current_step < len(pin.interval_values):
+                return False
+        return True
 
     def get_current_pins_with_interval(self) -> List[Tuple[int, int]]:
         to_return = []
         for pin_with_intervals in self.__pins_to_switch:
-            if len(pin_with_intervals.interval_values) != 0:
+            if len(pin_with_intervals.interval_values) != 0 and self.__current_step < len(pin_with_intervals.interval_values):
                 to_return.append((pin_with_intervals.pin, pin_with_intervals.interval_values[self.__current_step]))
 
         return to_return

@@ -72,6 +72,9 @@ dimLastLightValue = 'dimLastLightValue'
 # The amount of message need to be sent every second when dimming.
 dim_frequency_per_sec = 5
 
+# Time to subtract from timers to send to timer service to take into account mqtt delays etc
+delay_for_timer = 40.0
+
 # dimmer directions
 dim_direction_up = 'up'
 dim_direction_down = 'down'

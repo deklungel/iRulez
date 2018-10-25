@@ -11,10 +11,15 @@ logger = log.get_logger('StatusServiceServer')
 
 class OutputServiceServer(service.Service):
 
-    def __init__(self, arduinos: Dict[str, domain.Arduino], url: object, port: object):
+    def __init__(self,
+                 arduinos: Dict[str, domain.Arduino],
+                 dimmer_light_values: Dict[int, domain.DimmerLightValue],
+                 url: object,
+                 port: object):
         self.arduinos = arduinos
         self.url = url
         self.port = port
+        self.__dimmer_light_values = dimmer_light_values
 
     def connect(self) -> None:
         server = SimpleXMLRPCServer((self.url, self.port))
@@ -29,6 +34,10 @@ class OutputServiceServer(service.Service):
         th = threading.Thread(target=server.serve_forever)
         th.daemon = True
         th.start()
+
+    @property
+    def dimmer_light_values(self) -> Dict[int, domain.DimmerLightValue]:
+        return self.__dimmer_light_values
 
     def get_arduino_pin_status(self, name: str, pin: int) -> Optional[bool]:
         arduino = self.arduinos.get(name, None)
@@ -63,7 +72,10 @@ class OutputServiceServer(service.Service):
         return status
 
     def get_dimmer_light_value(self, name: str, id: int) -> Optional[int]:
-        return 66
+        dimmer_light_value = self.dimmer_light_values.get(id, None)
+        if dimmer_light_value is None:
+            return 100
+        return dimmer_light_value.last_light_value
 
     def test(self) -> str:
         return "Hello World"

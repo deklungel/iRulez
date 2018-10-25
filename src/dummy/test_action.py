@@ -14,17 +14,17 @@ databaseConfig = config.get_database_config()
 
 arduino = input("Arduino name? <[DEMO]|virtual_IO_Board> ")
 number_of_pin = input("Number of pins? <[16]|20> ")
-pin = input("Pin [10]")
-button_type = input("C: [CLICK], L: LOW, H: HIGH M : Multi-click ")
+pin = input("Pin [9]")
+button_type = input("C: CLICK, L: [LOW], H: HIGH M : Multi-click ")
 if button_type == '':
-    button_type = 'C'
+    button_type = 'L'
 
 if arduino == '':
     arduino = "DEMO"
 if number_of_pin == '':
     number_of_pin = 16
 if pin == '':
-    pin = 10
+    pin = 9
 
 
 pin_states = [0] * int(number_of_pin)

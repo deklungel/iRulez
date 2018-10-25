@@ -23,9 +23,11 @@ arduinos = {}
 for arduino in factory.create_arduino_config().arduinos:
     arduinos[arduino.name] = arduino
 
+dimmer_light_values = {}
+
 # Create client
 client = mqtt.Client()
-update_processor = service_processor.ServiceProcessor(arduinos)
+update_processor = service_processor.ServiceProcessor(arduinos, dimmer_light_values)
 
 
 def on_connect(connected_client, _, __, rc) -> None:
@@ -81,7 +83,10 @@ serviceConfig = config.get_service_server_config()
 client.username_pw_set(mqttConfig['username'], mqttConfig['password'])
 client.connect(mqttConfig['ip'], int(mqttConfig['port']), 60)
 
-StatusServiceServer = ServiceServer.OutputServiceServer(arduinos, serviceConfig['url'], int(serviceConfig['port']))
+StatusServiceServer = ServiceServer.OutputServiceServer(arduinos,
+                                                        dimmer_light_values,
+                                                        serviceConfig['url'],
+                                                        int(serviceConfig['port']))
 StatusServiceServer.connect()
 
 logger.info("Starting loop forever")

@@ -55,7 +55,7 @@ class ActionExecutor:
                        action: domain.Action,
                        pins_to_switch: Dict[str, List[domain.IndividualAction]],
                        pins_to_dim: Dict[str, List[domain.IndividualDimAction]],
-                       last_light_values_to_update: Dict[str, Dict[int, int]]) -> None:
+                       last_light_values_to_update: Dict[int, int]) -> None:
         """ Performs the given action by manipulating the given dictionaries with pins. """
         if self.check_condition(action.get_condition()):
             logger.info(f"Process action with type '{action.action_type}'")
@@ -99,5 +99,6 @@ class ActionExecutor:
         for action in actions:
             self.execute_action(action, pins_to_switch, pins_to_dim, last_light_values_to_update)
 
+        self.__sender.publish_last_light_values(last_light_values_to_update)
         self.__sender.publish_relative_action(pins_to_switch)
         self.__sender.publish_dimmer_module_action(pins_to_dim, arduino_name, button.number)

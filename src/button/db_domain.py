@@ -4,24 +4,36 @@ from typing import List, Optional
 
 class Arduino:
     def __init__(self, id: int, name: str, template_id: int):
-        self.id = id
+        self.__id = id
         self.name = name
         self.template_id = template_id
+
+    @property
+    def id(self) -> int:
+        return self.__id
 
 
 class Template:
     def __init__(self, id: int, name: str, nb_input_pins: int, nb_output_pins: int):
-        self.id = id
+        self.__id = id
         self.name = name
         self.nb_input_pins = nb_input_pins
         self.nb_output_pins = nb_output_pins
+
+    @property
+    def id(self) -> int:
+        return self.__id
 
 
 class OutputPin:
     def __init__(self, id: int, number: int, parent_id: int):
         self.parent_id = parent_id
         self.number = number
-        self.id = id
+        self.__id = id
+
+    @property
+    def id(self) -> int:
+        return self.__id
 
 
 class InputPin:
@@ -30,7 +42,11 @@ class InputPin:
         self.action_ids = action_ids
         self.number = number
         self.time_between_clicks = time_between_clicks
-        self.id = id
+        self.__id = id
+
+    @property
+    def id(self) -> int:
+        return self.__id
 
 
 class Action:
@@ -154,16 +170,20 @@ class Action:
 
 class Trigger:
     def __init__(self, id: int, trigger_type: int, seconds_down: Optional[int]):
-        self.id = id
+        self.__id = id
         self.trigger_type = trigger_type
         self.seconds_down = seconds_down
+
+    @property
+    def id(self) -> int:
+        return self.__id
 
 
 class Condition:
     def __init__(self, id: int, type: int, operator: Optional[int], condition_ids: Optional[List[int]],
                  output_pin_id: Optional[int], status: Optional[bool], from_time: Optional[time],
                  to_time: Optional[time]):
-        self.id = id
+        self.__id = id
         self.type = type
         self.to_time = to_time
         self.from_time = from_time
@@ -172,14 +192,22 @@ class Condition:
         self.condition_ids = condition_ids
         self.operator = operator
 
+    @property
+    def id(self) -> int:
+        return self.__id
+
 
 class Notification:
     def __init__(self, id: int, message: str, notification_type: int, enabled: bool, subject: Optional[str],
                  mail_address: List[str], tokens: List[str]):
-        self.id = id
+        self.__id = id
         self.notification_type = notification_type
         self.message = message
         self.enabled = enabled
         self.subject = subject
         self.emails = mail_address
         self.tokens = tokens
+
+    @property
+    def id(self) -> int:
+        return self.__id

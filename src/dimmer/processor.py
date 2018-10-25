@@ -7,6 +7,7 @@ import src.dimmer.domain as domain
 from typing import List
 import src.output_status.ServiceClient as ServiceClient
 import uuid
+import math
 
 logger = log.get_logger('dimmer_processor')
 
@@ -46,21 +47,28 @@ class DimmerActionProcessor:
         arduino_name = util.get_str_from_json_object(json_object, 'arduino_name')
         button_number = util.get_int_from_json_object(json_object, 'button_number')
 
-        # Calculate the time between messages
+        # Calculate the time between messages, f.e. 5
         timer_between_messages = int(1000 / constants.dim_frequency_per_sec)
-
-        # calculate in how many message the light will go from 100 to 0.
-        # f.e. with a speed of 1sec (1000 msec) we have 5 parts
-        number_of_parts = int(speed / timer_between_messages)
-        if number_of_parts < 1:
-            number_of_parts = 1
 
         # Create dimming action, containing all needed information
         dimming_action = domain.DimmingAction(name, timer_between_messages)
         for pin in pins_to_switch:
             # For each pin, calculate the values that need to be sent to the arduino for each message
-            current_value = self.__status_service.get_arduino_dim_pin_status(name, pin)
-            interval_values = self.__get_interval_values(number_of_parts, current_value, dim_light_value)
+            master_json = self.__status_service.get_arduino_dim_pin_status(name, pin)
+            # JSON contains 'state' and 'direction'
+            master = util.deserialize_json(master_json)
+            state = util.get_int_from_json_object(master, 'state')
+
+            # calculate in how many message the light will go from 100 to 0.
+            # f.e. with a speed of 1sec (1000 msec) we have 5 parts
+            # 100 -> 0 -> 5 parts want 1000 / 200 = 5
+            # 50 -> 0 -> 3 parts want 500 / 200 = 3
+            # 50 -> 10 -> 2 parts want 400 / 200 = 2
+            # end - start * (speed / 100) / 200
+            number_of_parts = math.ceil((abs(dim_light_value - state)) * float(speed)/timer_between_messages/100)
+            if number_of_parts < 1:
+                number_of_parts = 1
+            interval_values = self.__get_interval_values(number_of_parts, state, dim_light_value)
             dimming_action.add_pin(domain.PinWithIntervals(pin, interval_values))
 
         # Add the dimming action to the dictionary
@@ -81,6 +89,8 @@ class DimmerActionProcessor:
             current += step
             if current != start_value:
                 to_return.append(int(current))
+
+        logger.debug(f"get interval values result: {number_of_parts}, {start_value}, {end_value}, {to_return}")
 
         return to_return
 

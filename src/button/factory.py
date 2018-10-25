@@ -206,6 +206,9 @@ class ArduinoConfigFactory:
             return None
 
         # Try to retrieve all output pins
+        if action.output_pin_ids is None or len(action.output_pin_ids) == 0:
+            logger.error(f"Action with id '{action.id}' has no output pins declared.")
+
         pins_of_action = []
         for pin_id in action.output_pin_ids:
             pin = output_pins.get(pin_id, None)
@@ -258,6 +261,11 @@ class ArduinoConfigFactory:
             if action.master_dimmer_id is None and (action.dimmer_light_value is None or action.dimmer_light_value < 1):
                 logger.error(f'The master dimmer pin id was not set and no dimmer_light_value was set'
                              f' while creating a ToggleDimmerAction for action id {action.id}.')
+            if action.dimmer_light_value is None:
+                logger.error(f'Dimmer light value is not set. Set between 0 - 100 or -1 to use last known value.')
+            if action.dimmer_speed is None:
+                logger.error(f"Dimmer speed is not set for action '{action.id}''")
+
             return domain.ToggleDimmerAction(trigger, action.delay, pins_of_action, notification_of_action, master_pin,
                                              condition, action.click_number, action.dimmer_speed,
                                              action.dimmer_light_value, action.cancel_on_button_release,

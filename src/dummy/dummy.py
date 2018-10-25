@@ -31,7 +31,11 @@ def on_connect(connected_client, _, __, rc) -> None:
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
     logger.debug("Subscribing to " + str(constants.iRulezTopic) + "/+/" + constants.actionTopic)
     connected_client.subscribe(constants.iRulezTopic + "/+/" + constants.actionTopic)
-    # TODO: Subscribe to dimmer values
+
+    logger.debug("Subscribing to " + str(constants.iRulezTopic) + "/" + '+' + "/" +
+                 constants.dimAction + "/+")
+    connected_client.subscribe(constants.iRulezTopic + "/" + '+' + "/" +
+                               constants.dimAction + "/+")
 
 
 def on_subscribe(_, __, mid, granted_qos) -> None:
@@ -43,12 +47,41 @@ def on_message(_, __, msg) -> None:
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
     global arduinos
 
-    # Find arduino name of topic
-    if not (util.is_arduino_action_topic(msg.topic)):
+    if util.is_arduino_action_topic(msg.topic):
+        handle_arduino_action(msg)
+    elif util.is_arduino_dim_action_topic(msg.topic):
+        handle_arduino_dim_action(msg)
+    else:
         logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
-        # Unknown topic
+
+
+def handle_arduino_dim_action(msg) -> None:
+    # Get the name of the arduino from the topic
+    name = util.get_arduino_name_from_topic(msg.topic)
+
+    # .get(key, None) gets the element with key from a dictionary or None if it doesn't exist
+    arduino = arduinos.get(name, None)
+    if arduino is None:
+        # Unknown arduino
+        logger.info(f"Could not find arduino with name '{name}'.")
         return
 
+    pin_number = msg.topic[len(constants.iRulezTopic + '/' + name + '/' + constants.dimAction + '/'):]
+    value = int(msg.payload)
+    logger.debug(f"Got dim action for arduino '{name}' and pin '{pin_number}' with value '{value}'")
+
+    pin = arduino.output_pins.get(pin_number, None)
+    if pin is None:
+        logger.warning(f"Arduino '{name}' has no pin with number '{pin_number}'")
+
+    logger.debug(f"Publishing new dimmer status of arduino '{name}', pin '{pin_number}': '{value}'")
+    client.publish(constants.iRulezTopic + '/' + name + '/' + pin_number + '/' + constants.dimmerStatusTopic,
+                   value,
+                   0,
+                   False)
+
+
+def handle_arduino_action(msg) -> None:
     # Get the name of the arduino from the topic
     name = util.get_arduino_name_from_topic(msg.topic)
 
@@ -76,7 +109,7 @@ def on_message(_, __, msg) -> None:
     # Publish new status
     status = arduino.get_output_pin_status()
     logger.debug(f"Publishing new status of arduino '{name}': '{status}'")
-    client.publish(constants.iRulezTopic + '/' + name + '/status', status, True)
+    client.publish(constants.iRulezTopic + '/' + name + '/status', status, 0, False)
 
 
 # Create client

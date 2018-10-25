@@ -28,10 +28,15 @@ class TimerProcessor:
         # create an id for new timer
         timer_id = uuid.uuid4()
         self.__default_timers[timer_id] = timer_domain.DefaultTimer(topic, payload)
-        t = Timer(int(delay)/100, self.__execute_default_timer, args=(timer_id,))
-        t.start()
-        self.PythonTimers[timer_id] = t
-        logger.info(f"Timer created with '{timer_id}'.")
+        delay_for_timer = float(delay - constants.delay_for_timer)/1000
+        if delay_for_timer <= 0:
+            logger.info(f"Executing action right away since timer delay was '{delay_for_timer}'")
+            self.__execute_default_timer(timer_id)
+        else:
+            t = Timer(delay_for_timer, self.__execute_default_timer, args=(timer_id,))
+            t.start()
+            self.PythonTimers[timer_id] = t
+            logger.info(f"Timer created with '{timer_id}'.")
 
     def __execute_default_timer(self, timer_id) -> None:
         logger.info(f"Default timer with timer_id '{timer_id}' has finished. Start executing actions.")
@@ -44,7 +49,9 @@ class TimerProcessor:
         # After the timer is executed we remove the timers from ActionTimers and PythonTimers
         logger.debug(f"Delete executed timers")
         del (self.__default_timers[timer_id])
-        del (self.PythonTimers[timer_id])
+
+        if timer_id in self.PythonTimers:
+            del (self.PythonTimers[timer_id])
 
         if not isinstance(timer_to_execute, timer_domain.DefaultTimer):
             logger.error(f"Found timer in __default_timers with id '{timer_id}', "
@@ -92,7 +99,8 @@ class TimerProcessor:
         # After the timer is executed we remove the timers from ActionTimers and PythonTimers
         logger.debug(f"Delete executed timers")
         del (self.ActionTimers[timer_id])
-        del (self.PythonTimers[timer_id])
+        if timer_id in self.PythonTimers:
+            del (self.PythonTimers[timer_id])
 
     def check_output_pin(self, json_object: []):
         for timer_id in self.ActionTimers:
@@ -113,5 +121,6 @@ class TimerProcessor:
 
         for timer_id in to_be_delete:
             del (self.ActionTimers[timer_id])
-            del (self.PythonTimers[timer_id])
+            if timer_id in self.PythonTimers:
+                del (self.PythonTimers[timer_id])
             logger.info(f"Delete ActionTimer and PythonTimers with timer_id '{timer_id}'.")
