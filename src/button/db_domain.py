@@ -72,28 +72,84 @@ class Action:
                                     the dimmer on.
         """
         # General properties
-        self.id = id
-        self.trigger_id = trigger_id
-        self.action_type = action_type
-        self.delay = delay
-        self.output_pin_ids = output_pin_ids
-        self.notification_ids = notification_ids
-        self.condition_id = condition_id
-        self.click_number = click_number
+        self.__id = id
+        self.__trigger_id = trigger_id
+        self.__action_type = action_type
+        self.__delay = delay
+        self.__output_pin_ids = output_pin_ids
+        self.__notification_ids = notification_ids
+        self.__condition_id = condition_id
+        self.__click_number = click_number
 
         # ON/OFF/ON_DIMMER/OFF_DIMMER action
-        self.timer = timer
+        self.__timer = timer
 
         # TOGGLE/TOGGLE_DIMMER action
-        self.master_id = master_id
+        self.__master_id = master_id
 
         # DIMMER
-        self.dimmer_speed = dimmer_speed
-        self.cancel_on_button_release = cancel_on_button_release
+        self.__dimmer_speed = dimmer_speed
+        self.__cancel_on_button_release = cancel_on_button_release
 
         # ON_DIMMER/TOGGLE_DIMMER action
-        self.dimmer_light_value = dimmer_light_value
-        self.master_dimmer_id = master_dimmer_id
+        self.__dimmer_light_value = dimmer_light_value
+        self.__master_dimmer_id = master_dimmer_id
+
+    @property
+    def id(self) -> int:
+        return self.__id
+
+    @property
+    def trigger_id(self) -> int:
+        return self.__trigger_id
+
+    @property
+    def action_type(self) -> int:
+        return self.__action_type
+
+    @property
+    def notification_ids(self) -> List[int]:
+        return self.__notification_ids
+
+    @property
+    def delay(self) -> int:
+        return self.__delay
+
+    @property
+    def output_pin_ids(self) -> List[int]:
+        return self.__output_pin_ids
+
+    @property
+    def timer(self) -> int:
+        return self.__timer
+
+    @property
+    def condition_id(self) -> Optional[int]:
+        return self.__condition_id
+
+    @property
+    def master_id(self) -> Optional[int]:
+        return self.__master_id
+
+    @property
+    def click_number(self) -> int:
+        return self.__click_number
+
+    @property
+    def dimmer_speed(self) -> Optional[int]:
+        return self.__dimmer_speed
+
+    @property
+    def cancel_on_button_release(self) -> Optional[bool]:
+        return self.__cancel_on_button_release
+
+    @property
+    def dimmer_light_value(self) -> Optional[int]:
+        return self.__dimmer_light_value
+
+    @property
+    def master_dimmer_id(self) -> Optional[int]:
+        return self.__master_dimmer_id
 
 
 class Trigger:

@@ -244,7 +244,7 @@ class ArduinoConfigFactory:
         if action.action_type == 5:
             return domain.OnDimmerAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action,
                                          condition, action.click_number, action.dimmer_speed,
-                                         action.cancel_on_button_release, action.dimmer_light_value,
+                                         action.dimmer_light_value, action.cancel_on_button_release,
                                          action.master_dimmer_id)
         if action.action_type == 6:
             return domain.OffDimmerAction(trigger, action.delay, action.timer, pins_of_action, notification_of_action,
@@ -260,7 +260,7 @@ class ArduinoConfigFactory:
                              f' while creating a ToggleDimmerAction for action id {action.id}.')
             return domain.ToggleDimmerAction(trigger, action.delay, pins_of_action, notification_of_action, master_pin,
                                              condition, action.click_number, action.dimmer_speed,
-                                             action.cancel_on_button_release, action.dimmer_light_value,
+                                             action.dimmer_light_value, action.cancel_on_button_release,
                                              action.master_dimmer_id)
 
         # Other types not supported yet
