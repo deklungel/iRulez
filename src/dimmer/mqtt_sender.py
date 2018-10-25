@@ -24,6 +24,6 @@ class MqttSender:
         self.__client.publish(publish_topic, payload, 0, False)
 
     def publish_dimming_action_to_arduino(self, arduino_name: str, pin_number: int, dim_value: int):
-        publish_topic = topic_factory.create_arduino_dimaction_topic(arduino_name, pin_number)
+        publish_topic = topic_factory.create_arduino_dim_action_topic(arduino_name, pin_number)
         logger.debug(f"Publishing: {publish_topic} / {dim_value}")
         self.__client.publish(publish_topic, dim_value, 0, False)

@@ -1,17 +1,9 @@
-import logging
+import src.irulez.log as log
 
 import lib.paho.mqtt.client as mqtt
 from src.irulez import configuration
 
-logger = logging.getLogger('logger')
-logger.info('Logger starting')
-logger.setLevel(logging.DEBUG)
-
-handler = logging.StreamHandler()
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = log.get_logger('logger')
 
 
 def on_connect(connected_client, _, __, rc) -> None:

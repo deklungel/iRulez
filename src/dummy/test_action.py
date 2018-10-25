@@ -50,15 +50,15 @@ if button_type == 'C':
                    port=int(mqttConfig['port']), retain=False)
 
 if button_type == 'L':
-    lowtimer = input("Low for how many sec, 0 for forever? [0] ")
-    if lowtimer == '':
-        lowtimer = 0
+    low_timer = input("Low for how many sec, 0 for forever? [0] ")
+    if low_timer == '':
+        low_timer = 0
     log.info(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload)
     publish.single(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic, payload,
                    auth={'username': mqttConfig['username'], 'password': mqttConfig['password']},
                    hostname=mqttConfig['ip'],
                    port=int(mqttConfig['port']), retain=False)
-    time.sleep(int(lowtimer))
+    time.sleep(int(low_timer))
     log.info(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic + "/" + payload_release)
     publish.single(constants.iRulezTopic + "/" + arduino + "/" + constants.buttonTopic, payload_release,
                    auth={'username': mqttConfig['username'], 'password': mqttConfig['password']},

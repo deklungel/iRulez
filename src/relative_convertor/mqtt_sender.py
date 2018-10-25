@@ -3,7 +3,7 @@ import src.irulez.log as log
 import src.output_status.ServiceClient as ServiceClient
 from typing import List, Dict
 
-logger = log.get_logger('relative_convertor_mqtt_sender')
+logger = log.get_logger('relative_converter_mqtt_sender')
 
 
 class MqttSender:

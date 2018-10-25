@@ -64,7 +64,8 @@ class Action:
                             determining whether it should toggle on or off
         :param click_number: Number of times that has to be clicked on multiclick action to activate
         :param dimmer_speed: How fast/slow the dimmer has to change light intensity
-        :param cancel_on_button_release: If this is set to true, the dimmer will stop dimming as soon as the button is released
+        :param cancel_on_button_release: If this is set to true, the dimmer will stop dimming as soon
+                                            as the button is released
         :param dimmer_light_value: If set to -1, a dimmer will remember its last known value before switching off
                                     If set to a value, a dimmer will go to this value by default/not remember last value
         :param master_dimmer_id: The identifier of the dimmer whose last known value should be taken when switching
@@ -118,11 +119,11 @@ class Condition:
 
 class Notification:
     def __init__(self, id: int, message: str, notification_type: int, enabled: bool, subject: Optional[str],
-                 mail_adress: List[str], tokens: List[str]):
+                 mail_address: List[str], tokens: List[str]):
         self.id = id
         self.notification_type = notification_type
         self.message = message
         self.enabled = enabled
         self.subject = subject
-        self.emails = mail_adress
+        self.emails = mail_address
         self.tokens = tokens

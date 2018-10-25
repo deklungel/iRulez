@@ -11,11 +11,11 @@ class MqttSender:
 
     def publish_relative_action(self, individual_action) -> None:
         payload = \
-            util.serialize_json({"name": individual_action.name,
-                                 "topic": constants.iRulezTopic + '/' + individual_action.name + '/' +
-                                          constants.actionTopic,
-                                 "on": individual_action.pin_numbers_on, "off": individual_action.pin_numbers_off,
-                                 "delay": individual_action.delay})
+            util.serialize_json(
+                {"name": individual_action.name,
+                 "topic": constants.iRulezTopic + '/' + individual_action.name + '/' + constants.actionTopic,
+                 "on": individual_action.pin_numbers_on, "off": individual_action.pin_numbers_off,
+                 "delay": individual_action.delay})
 
         logger.debug(f"Publishing: {individual_action.topic}{payload}")
         self.client.publish(individual_action.topic, payload, 0, False)

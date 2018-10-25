@@ -20,6 +20,11 @@ def is_arduino_action_topic(topic: str) -> bool:
     return is_arduino_topic(topic) and '/' + constants.actionTopic in topic
 
 
+def is_irulez_event_topic(topic: str) -> bool:
+    """Checks if the given topic is an event topic of iRulez"""
+    return is_arduino_topic(topic) and '/' + constants.eventTopic in topic
+
+
 def is_arduino_relative_action_topic(topic: str) -> bool:
     """Checks if the given topic is an action topic for an arduino"""
     # Format arduino_number/action/something
@@ -86,6 +91,12 @@ def is_arduino_dimmer_cancelled_topic(topic: str) -> bool:
     return is_arduino_topic(topic) and '/' + constants.dimmerCancelled + '/' + constants.dimmerModuleTopic in topic
 
 
+def is_irulez_last_light_value_event_topic(topic: str) -> bool:
+    """Checks if the given topic is an event for last_light_value"""
+    # irulez/event/dimLastLightValue
+    return is_irulez_event_topic(topic) and '/' + constants.dimLastLightValue in topic
+
+
 def get_arduino_name_from_topic(topic: str) -> Optional[str]:
     """Retrieves the name of the arduino from an arduino topic, or None if it couldn't be found"""
     if not (is_arduino_topic(topic)):
@@ -93,7 +104,7 @@ def get_arduino_name_from_topic(topic: str) -> Optional[str]:
     return topic[len(constants.iRulezTopic + '/'):topic.find('/', len(constants.iRulezTopic + '/'))]
 
 
-def get_arduino_dimmerpin_from_topic(topic: str, name: str) -> Optional[int]:
+def get_arduino_dimmer_pin_from_topic(topic: str, name: str) -> Optional[int]:
     """Retrieves the name of the arduino from an arduino topic, or None if it couldn't be found"""
     if not (is_arduino_topic(topic)):
         return None

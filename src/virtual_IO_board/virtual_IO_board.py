@@ -53,9 +53,6 @@ def on_message(_, __, msg) -> None:
         return
 
 
-
-
-
 # Create client
 client = mqtt.Client()
 

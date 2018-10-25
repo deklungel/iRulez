@@ -2,7 +2,7 @@
 iRulezTopic = 'iRulezIO16'
 
 # Name of an relative action topic
-# Used to send relative updates to output pins to the relative convertor
+# Used to send relative updates to output pins to the relative converter
 relativeTopic = 'relative'
 
 # Name of an action topic
@@ -13,6 +13,9 @@ actionTopic = 'action'
 # Name of a status topic
 # Arduinos will sent their current output pin states when they change.
 statusTopic = 'status'
+
+# Used to emit events
+eventTopic = 'event'
 
 # Name of a button topic
 # Arduinos will sent their current input pin states when they change.

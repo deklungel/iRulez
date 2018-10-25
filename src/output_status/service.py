@@ -3,6 +3,7 @@ import lib.paho.mqtt.client as mqtt
 import src.irulez.constants as constants
 import src.output_status.db as db
 import src.irulez.util as util
+import src.irulez.topic_factory as topic_factory
 import src.output_status.processors as service_processor
 import src.irulez.configuration as configuration
 import src.output_status.factory as factory
@@ -38,6 +39,7 @@ def on_connect(connected_client, _, __, rc) -> None:
     logger.debug("Subscribing to " + str(constants.iRulezTopic) + "/+/" + constants.statusTopic)
     connected_client.subscribe(constants.iRulezTopic + "/+/" + constants.statusTopic)
     connected_client.subscribe(constants.iRulezTopic + "/+/+/" + constants.dimmerStatusTopic)
+    connected_client.subscribe(topic_factory.create_last_light_value_update_topic())
 
 
 def on_subscribe(_, __, mid, granted_qos) -> None:
@@ -56,9 +58,12 @@ def on_message(_, __, msg) -> None:
         logger.debug(f"Update the relay status of a normal arduino")
         update_processor.update_arduino_output_pins(name, msg.payload)
     elif util.is_arduino_dimmer_status_topic(msg.topic):
-        dimmer_pin = util.get_arduino_dimmerpin_from_topic(msg.topic, name)
+        dimmer_pin = util.get_arduino_dimmer_pin_from_topic(msg.topic, name)
         logger.debug(f"Update the relay status of a dimmer")
         update_processor.update_arduino_dimmer_pins(name, dimmer_pin, msg.payload)
+    elif util.is_irulez_last_light_value_event_topic(msg.topic):
+        logger.debug(f"Last_light_value received")
+        update_processor.update_last_light_value(msg.payload)
     else:
         logger.warning(f"Topic '{msg.topic}' is of no interest to us. Are we subscribed to too much?")
 

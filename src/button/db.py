@@ -154,7 +154,7 @@ class MariaDB(DbBase):
                     "to_time_min FROM tbl_Condition")
                 conditions = []
                 for id, type, operator, output_pin_id, status, from_time_hour, from_time_min, to_time_hour, \
-                    to_time_min in cursor:
+                        to_time_min in cursor:
                     with closing(conn.cursor(buffered=True)) as condition_cursor:
                         condition_cursor.execute(
                             "SELECT Condition_Child FROM tbl_Condition_Condition WHERE Condition_Parent=%s", (id,))

@@ -130,9 +130,10 @@ class MqttSender:
         publish_topic = topic_factory.create_last_light_value_update_topic()
         for arduino_name in last_light_values_to_update:
             for dimmer_output_pin_id in last_light_values_to_update[arduino_name]:
-                payload = util.serialize_json({'arduino_name': arduino_name,
-                                               'dimmer_id': dimmer_output_pin_id,
-                                               'last_light_value': last_light_values_to_update[arduino_name][dimmer_output_pin_id]})
+                payload = util.serialize_json(
+                    {'arduino_name': arduino_name,
+                     'dimmer_id': dimmer_output_pin_id,
+                     'last_light_value': last_light_values_to_update[arduino_name][dimmer_output_pin_id]})
 
                 logger.debug(f"Publishing: {publish_topic}{payload}")
                 self.client.publish(publish_topic, payload, 0, False)

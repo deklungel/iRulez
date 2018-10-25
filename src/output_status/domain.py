@@ -3,7 +3,7 @@ import src.irulez.util as util
 from abc import ABC
 import src.irulez.log as log
 import src.irulez.constants as constants
-from typing import List
+from typing import List, Optional, Dict
 
 logger = log.get_logger('domain')
 
@@ -23,6 +23,7 @@ class Pin(ABC):
         self.__pin_type = pin_type
         self.__state = 0
         self.__direction = None
+        self.__last_light_value = None
 
     @property
     def state(self) -> bool:
@@ -43,12 +44,21 @@ class Pin(ABC):
         return self.__state
 
     @property
-    def direction(self) -> str:
+    def direction(self) -> Optional[str]:
         return self.__direction
 
     @direction.setter
-    def direction(self, direction) -> None:
+    def direction(self, direction: str) -> None:
         self.__direction = direction
+
+    @property
+    def last_light_value(self) -> Optional[int]:
+        return self.__last_light_value
+
+    @last_light_value.setter
+    def last_light_value(self, last_light_value: int) -> None:
+        self.__last_light_value = last_light_value
+
 
 class OutputPin(Pin):
     """Represents a single pin on an arduino"""
@@ -64,12 +74,16 @@ class Arduino:
     def __init__(self, name: str, number_of_outputs_pins: int):
         self.name = name
         self.number_of_output_pins = number_of_outputs_pins
-        self.output_pins = dict()
+        self.__output_pins = dict()
 
-    def set_output_pin(self, output_pin: OutputPin):
+    @property
+    def output_pins(self) -> Dict[int, OutputPin]:
+        return self.__output_pins
+
+    def set_output_pin(self, output_pin: OutputPin) -> None:
         self.output_pins[output_pin.number] = output_pin
 
-    def set_output_pins(self, output_pins: List[OutputPin]):
+    def set_output_pins(self, output_pins: List[OutputPin]) -> None:
         for pin in output_pins:
             self.output_pins[pin.number] = pin
 
@@ -87,7 +101,7 @@ class Arduino:
     def get_output_pin(self, pin_number: int) -> OutputPin:
         return self.output_pins[pin_number]
 
-    def set_output_pin_status(self, payload: str):
+    def set_output_pin_status(self, payload: str) -> None:
         status = util.convert_hex_to_array(payload, self.number_of_output_pins)
         for pin in self.output_pins.values():
             if int(status[pin.number]) == 1:
@@ -95,13 +109,17 @@ class Arduino:
             else:
                 pin.state = 0
 
-    def set_dimmer_pin_status(self, payload: int, pin_number: int):
+    def set_dimmer_pin_status(self, payload: int, pin_number: int) -> None:
         pin = self.output_pins[pin_number]
         if pin.state - payload > 0:
             pin.direction = constants.dim_direction_down
         elif pin.state - payload < 0:
             pin.direction = constants.dim_direction_up
         self.output_pins[pin_number].state = payload
+
+    def set_dimmer_pin_last_light_value(self, dimmer_id: int, last_light_value: int) -> None:
+        pin = self.output_pins[dimmer_id]
+        pin.last_light_value = last_light_value
 
 
 class ArduinoConfig:

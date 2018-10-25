@@ -1,4 +1,5 @@
 import src.irulez.log as log
+import src.irulez.util as util
 
 logger = log.get_logger('service_processor')
 
@@ -26,3 +27,16 @@ class ServiceProcessor:
         logger.debug(f"Board with name '{name}' found")
         arduino.set_dimmer_pin_status(int(payload), dimmer_pin)
         logger.debug(f"dimmer values: '{arduino.get_output_pin_status()}'.")
+
+    def update_last_light_value(self, payload: str):
+        json_object = util.deserialize_json(payload)
+        arduino_name = util.get_str_from_json_object(json_object, 'arduino_name')
+        dimmer_id = util.get_int_from_json_object(json_object, 'dimmer_id')
+        last_light_value = util.get_int_from_json_object(json_object, 'last_light_value')
+
+        arduino = self.arduinos.get(arduino_name, None)
+        if arduino is None:
+            # Unknown arduino
+            logger.info(f"Could not find arduino with name '{arduino_name}'.")
+            return
+        arduino.set_dimmer_pin_last_light_value(dimmer_id, last_light_value)

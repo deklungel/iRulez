@@ -80,7 +80,7 @@ class ActionExecutor:
                 last_light_value_optional = None
                 if action.master_dim_id is not None:
                     last_light_value_optional = self.__status_service.get_dimmer_light_value(action.master.parent,
-                                                                                         action.master_dim_id)
+                                                                                             action.master_dim_id)
                 last_light_value = 100
                 if last_light_value_optional is not None:
                     last_light_value = last_light_value_optional

@@ -22,7 +22,7 @@ def on_connect(connected_client, _, __, rc) -> None:
     # '+' means single level wildcard. '#' means multi level wildcard.
     # See http://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices
 
-    # When the button module sends a timed relay action to the relative convertor module
+    # When the button module sends a timed relay action to the relative converter module
     topic = "{0}/{1}/{2}/{3}".format(str(constants.iRulezTopic), str(constants.actionTopic),
                                      str(constants.relativeTopic), str(constants.timerTopic))
     logger.debug("Subscribing to " + str(topic))
@@ -36,7 +36,7 @@ def on_connect(connected_client, _, __, rc) -> None:
 
     # When the dimmer module sends a message to itself
     topic = constants.iRulezTopic + '/' + constants.actionTopic + '/' + constants.dimmerTimerFired + '/' + \
-            constants.timerTopic
+        constants.timerTopic
     logger.debug("Subscribing to " + str(topic))
     connected_client.subscribe(str(topic))
 
@@ -49,7 +49,7 @@ def on_message(_, __, msg) -> None:
     """Callback function for when a new message is received."""
     logger.debug(f"Received message {msg.topic}: {msg.payload}")
 
-    # Check if the topic is an action for sending a timed message to the relative convertor module
+    # Check if the topic is an action for sending a timed message to the relative converter module
     if util.is_arduino_timer_action_topic(msg.topic):
         logger.debug(f"Process the timer action")
         TimeProcessor.process_timer_action_request(msg.payload.decode("utf-8"))
