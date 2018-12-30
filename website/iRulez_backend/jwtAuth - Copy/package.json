@@ -1,0 +1,22 @@
+{
+  "name": "jwtauth",
+  "version": "1.0.0",
+  "main": "app.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "express": "^4.15.2",
+    "express-jwt": "^5.3.0",
+    "jsonwebtoken": "^8.4.0",
+    "md5": "^2.2.1",
+    "mysql": "^2.16.0",
+    "rand-token": "^0.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-plugin-react": "^6.10.3"
+  }
+}
