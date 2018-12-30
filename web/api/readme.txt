@@ -1,1 +1,0 @@
-this folder hold the REST-webservices which generate output in JSON
