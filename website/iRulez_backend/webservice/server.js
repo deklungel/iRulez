@@ -26,18 +26,6 @@ var pool  = mysql.createPool({
   database: "iRulez"
 });
 
-var con = mysql.createConnection({
-  host: "10.0.50.50",
-  user: "root",
-  password: "irulez4database",
-  database: "iRulez"
-});
-
-// con.connect(function(err) {
-//   if (err) throw err;
-//   console.log("Connected!");
-// });
-
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -72,12 +60,26 @@ app.get('/api/users',checkIfAuthenticated,
       var decoded = jwt.decode(token, RSA_PUBLIC_KEY);
       console.log(decoded.role);
       console.log(req.body);
+      var sql = "INSERT INTO tbl_users (email, role, password) VALUES ('"+req.body.email+"', '"+req.body.role+"','"+req.body.password+"')";
+      executeQuery(sql,function(){
+        console.log("response 200");
+        res.json({user:"add"})
+        //res.sendStatus(200);
+      })
     }
     catch(err){
       console.log(err) // bar
-      res.sendStatus(401); 
+      res.sendStatus(405); 
     }
   });
+
+  function executeQuery(sql,callback){
+    pool.query(sql, function (err, result) {
+      if (err) throw err;
+      callback();
+    })
+  }
+
 
   function  getUsers(callback){
     sql = "SELECT id, email, role FROM tbl_users";

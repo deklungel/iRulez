@@ -226,11 +226,7 @@ const styles = theme => ({
 class EnhancedTable extends React.Component {
 
   componentDidMount(){
-    Auth.fetch('http://localhost:4002/api/users').then(
-      function(result) {
-        this.setState({data: result.users})
-      }.bind(this)
-    )
+    this.getUsersFromBackend();
   }
 
   state = {
@@ -243,6 +239,14 @@ class EnhancedTable extends React.Component {
     newUsersFormOpen: false,
     role: 'user',
   };
+
+  getUsersFromBackend() {
+    Auth.fetch('http://localhost:4002/api/users').then(
+      function(result) {
+        this.setState({data: result.users})
+      }.bind(this)
+    )
+  }
 
   handleUserformClickOpen = () => {
     this.setState({ newUsersFormOpen: true });
@@ -315,7 +319,6 @@ class EnhancedTable extends React.Component {
   isSelected = id => this.state.selected.indexOf(id) !== -1;
 
   addUser = () => {
-    alert("user added");
     this.handleUserFormClose();
     var options = {
       'method': 'POST',
@@ -323,9 +326,10 @@ class EnhancedTable extends React.Component {
     }
     Auth.fetch('http://localhost:4002/api/AddUser',options).then(
       function(result) {
-        alert(result);
+        this.getUsersFromBackend();
       }.bind(this)
     )
+
   }
   render() {
     const { classes } = this.props;
