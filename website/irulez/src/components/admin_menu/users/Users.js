@@ -20,17 +20,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import AddCircle from '@material-ui/icons/AddCircle';
 import { lighten } from '@material-ui/core/styles/colorManipulator';
 
-import Button from '@material-ui/core/Button';
-import TextField from '@material-ui/core/TextField';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import InputAdornment from '@material-ui/core/InputAdornment';
-
-import md5 from 'md5';
+import NewUser from './NewUser';
 
 import withAuth from '../../withAuth';
 import withMenuList from '../../withMenuList';
@@ -152,7 +142,7 @@ const toolbarStyles = theme => ({
 });
 
 let EnhancedTableToolbar = props => {
-  const { numSelected, classes, addUser } = props;
+  const { numSelected, classes, addUser, deleteUser } = props;
 
   return (
     <Toolbar
@@ -180,13 +170,13 @@ let EnhancedTableToolbar = props => {
                 <EditIcon />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Delete">
+            <Tooltip title="Delete"  onClick={deleteUser}>
             <IconButton aria-label="Delete">
               <DeleteIcon />
             </IconButton>
           </Tooltip></div>
           ) : 
-          <Tooltip title="Delete">
+          <Tooltip title="Delete" onClick={deleteUser}>
             <IconButton aria-label="Delete">
               <DeleteIcon />
             </IconButton>
@@ -237,15 +227,15 @@ class EnhancedTable extends React.Component {
     page: 0,
     rowsPerPage: 10,
     newUsersFormOpen: false,
-    role: 'user',
   };
 
-  getUsersFromBackend() {
+  getUsersFromBackend = () => {
     Auth.fetch('http://localhost:4002/api/users').then(
       function(result) {
         this.setState({data: result.users})
       }.bind(this)
     )
+    this.setState({ selected: [] });
   }
 
   handleUserformClickOpen = () => {
@@ -254,7 +244,6 @@ class EnhancedTable extends React.Component {
 
   handleUserFormClose = () => {
     this.setState({ newUsersFormOpen: false });
-
   };
 
   handleRequestSort = (event, property) => {
@@ -305,40 +294,34 @@ class EnhancedTable extends React.Component {
     this.setState({ rowsPerPage: event.target.value });
   };
 
-  handleClickShowPassword = () => {
-    this.setState(state => ({ showPassword: !state.showPassword }));
-  };
 
- 
-  handleChange = name => event => {
-    this.setState({
-      [name]: event.target.value,
-    });
-  };
-
-  isSelected = id => this.state.selected.indexOf(id) !== -1;
-
-  addUser = () => {
-    this.handleUserFormClose();
+  handleDelete = () => {
     var options = {
       'method': 'POST',
-      'body' : JSON.stringify({email: this.state.email, password: md5(this.state.password), role: this.state.role})
+      'body' : JSON.stringify({id: this.state.selected})
     }
-    Auth.fetch('http://localhost:4002/api/AddUser',options).then(
+    Auth.fetch('http://localhost:4002/api/DeleteUsers',options).then(
       function(result) {
         this.getUsersFromBackend();
       }.bind(this)
     )
-
+  
   }
+ 
+
+
+  isSelected = id => this.state.selected.indexOf(id) !== -1;
+
+
   render() {
     const { classes } = this.props;
     const { data, order, orderBy, selected, rowsPerPage, page } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
     return (
+      <div>
       <Paper className={classes.root}>
-        <EnhancedTableToolbar numSelected={selected.length} addUser={this.handleUserformClickOpen}/>
+        <EnhancedTableToolbar numSelected={selected.length} addUser={this.handleUserformClickOpen} deleteUser={this.handleDelete}/>
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -399,80 +382,10 @@ class EnhancedTable extends React.Component {
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
 
-        <Dialog
-          open={this.state.newUsersFormOpen}
-          onClose={this.handleUserFormClose}
-          aria-labelledby="form-dialog-title"
-        >
-          <DialogTitle id="form-dialog-title">New User</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="email"
-              value={this.state.user}
-              onChange={this.handleChange('email')}
-              label="Email Address"
-              type="email"
-              fullWidth
-            />
-          <TextField
-          id="outlined-adornment-password"
-          className={classNames(classes.margin, classes.textField)}
-          type={this.state.showPassword ? 'text' : 'password'}
-          label="Password"
-          onChange={this.handleChange('password')}
-          fullWidth
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  aria-label="Toggle password visibility"
-                  onClick={this.handleClickShowPassword}
-                >
-                  {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        <TextField
-          id="outlined-select-currency-native"
-          select
-          label="Role"
-          className={classes.textField}
-          value={this.state.role}
-          onChange={this.handleChange('role')}
-          SelectProps={{
-            native: true,
-            MenuProps: {
-              className: classes.menu,
-            },
-          }}
-          margin="dense"
-          fullWidth
-        >
-    
-            <option key="user" value="user">
-              User
-            </option>
-            <option key="admin" value="admin">
-              Administrator
-            </option>
-        </TextField>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.handleUserFormClose} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={this.addUser} color="primary">
-              Add
-            </Button>
-          </DialogActions>
-        </Dialog>
-
+       
       </Paper>
+       <NewUser open={this.state.newUsersFormOpen} handleUserFormClose={this.handleUserFormClose} getUsersFromBackend={this.getUsersFromBackend}/>
+</div>
     );
   }
 }

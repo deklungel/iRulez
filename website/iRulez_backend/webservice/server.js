@@ -73,6 +73,26 @@ app.get('/api/users',checkIfAuthenticated,
     }
   });
 
+  app.post('/api/DeleteUsers',checkIfAuthenticated,
+  function(req, res) {
+    console.log("api/DeleteUsers");
+    var token = fromHeaderOrQuerystring(req);
+    try{
+      var decoded = jwt.decode(token, RSA_PUBLIC_KEY);
+      var sql = "DELETE FROM tbl_users WHERE id IN ('"+ req.body.id.join("','") +"')";
+      console.log(sql)
+      executeQuery(sql,function(){
+        console.log("response 200");
+        res.json({user:"delete"})
+        //res.sendStatus(200);
+      })
+    }
+    catch(err){
+      console.log(err) // bar
+      res.sendStatus(405); 
+    }
+  });
+
   function executeQuery(sql,callback){
     pool.query(sql, function (err, result) {
       if (err) throw err;
