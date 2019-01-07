@@ -7,10 +7,10 @@ var bodyParser = require('body-parser');
 var mysql = require('mysql');
 
 
-app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-    extended: true
-})); 
+  extended: true
+}));
 
 const RSA_PUBLIC_KEY = fs.readFileSync('./public.key');
 
@@ -18,8 +18,8 @@ const checkIfAuthenticated = expressJwt({
   secret: RSA_PUBLIC_KEY
 });
 
-var pool  = mysql.createPool({
-  connectionLimit : 10,
+var pool = mysql.createPool({
+  connectionLimit: 10,
   host: "10.0.50.50",
   user: "root",
   password: "irulez4database",
@@ -27,112 +27,123 @@ var pool  = mysql.createPool({
 });
 
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
   next();
 });
 
-app.get('/api/users',checkIfAuthenticated,
-  function(req, res) {
-    console.log("api/users");
-    var token = fromHeaderOrQuerystring(req);
-    try{
-      var decoded = jwt.decode(token, RSA_PUBLIC_KEY);
-      console.log(decoded.role) // bar
-      getUsers(function(returnValue){
-        res.json({users: returnValue.result})
-        console.log(returnValue);
-      });
+app.get('/api/*', checkIfAuthenticated,
+  function (req, res) {
+    switch (req.url) {
+      case '/api/users':
+        get_user(req,res);
+        break;
+      default:
+        console.log("response 501");
+        res.sendStatus(501);
     }
-    catch(err){
-      console.log(err) // bar
-      res.sendStatus(401); 
+  })
+
+app.post('/api/user/*', checkIfAuthenticated,
+  function (req, res) {
+    switch (req.url) {
+      case "/api/user/add":
+        user_add(req, res);
+        break;
+      case "/api/user/delete":
+        user_delete(req, res);
+        break;
+      case "/api/user/edit":
+        user_edit(req, res);
+        break;
+      default:
+        console.log("response 501");
+        res.sendStatus(501);
     }
+
   });
 
-  app.post('/api/AddUser',checkIfAuthenticated,
-  function(req, res) {
-    console.log("api/AddUser");
-    var token = fromHeaderOrQuerystring(req);
-    try{
-      var decoded = jwt.decode(token, RSA_PUBLIC_KEY);
-      console.log(decoded.role);
-      console.log(req.body);
-      var sql = "INSERT INTO tbl_users (email, role, password) VALUES ('"+req.body.email+"', '"+req.body.role+"','"+req.body.password+"')";
-      executeQuery(sql,function(){
-        console.log("response 200");
-        res.json({user:"add"})
-        //res.sendStatus(200);
-      })
+  function get_user(req,res){
+    console.log(req.url);
+    try {
+      sql = "SELECT id, email, role FROM tbl_users";
+      processRequest(req, res, sql)
     }
-    catch(err){
+    catch (err) {
       console.log(err) // bar
-      res.sendStatus(405); 
+      res.sendStatus(401);
     }
-  });
-
-  app.post('/api/DeleteUsers',checkIfAuthenticated,
-  function(req, res) {
-    console.log("api/DeleteUsers");
-    var token = fromHeaderOrQuerystring(req);
-    try{
-      var decoded = jwt.decode(token, RSA_PUBLIC_KEY);
-      var sql = "DELETE FROM tbl_users WHERE id IN ('"+ req.body.id.join("','") +"')";
-      console.log(sql)
-      executeQuery(sql,function(){
-        console.log("response 200");
-        res.json({user:"delete"})
-        //res.sendStatus(200);
-      })
-    }
-    catch(err){
-      console.log(err) // bar
-      res.sendStatus(405); 
-    }
-  });
-
-  function executeQuery(sql,callback){
-    pool.query(sql, function (err, result) {
-      if (err) throw err;
-      callback();
-    })
   }
 
-
-  function  getUsers(callback){
-    sql = "SELECT id, email, role FROM tbl_users";
-    console.log(sql);
-    pool.query(sql, function (err, result, fields) {
-        if (err) throw err;
-            if (result.length == 0) {
-                console.log("return false");
-                callback(null);
-            }
-            else{
-                callback({result});
-            }
-    });
-
+function user_add(req, res) {
+  try {
+    var sql = "INSERT INTO tbl_users (email, role, password) VALUES ('" + req.body.email + "', '" + req.body.role + "','" + req.body.password + "')";
+    processRequest(req, res, sql)
+  }
+  catch (err) {
+    console.log(err) // bar
+    res.sendStatus(405);
+  }
 }
 
-app.put('/api/status', checkIfAuthenticated, function (req, res) {
-  console.log(req.body.message);
-  console.log("/api/status");
-  res.sendStatus(204); 
-});
-
-  function fromHeaderOrQuerystring (req) {
-    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-        return req.headers.authorization.split(' ')[1];
-    } else if (req.query && req.query.token) {
-      return req.query.token;
-    }
-    return null;
+function user_delete(req, res) {
+  try {
+    var sql = "DELETE FROM tbl_users WHERE id IN ('" + req.body.id.join("','") + "')";
+    processRequest(req, res, sql)
   }
+  catch (err) {
+    console.log(err) // bar
+    res.sendStatus(405);
+  }
+}
+function user_edit(req, res) {
+  try {
+    var values = [];
+    if (req.body.email) {
+      values.push("email='" + req.body.email)
+    }
+    if (req.body.role) {
+      values.push("role='" + req.body.role)
+    }
+    var sql = "UPDATE tbl_users SET " + values.join("', ") + "' WHERE id = " + req.body.id;
+    processRequest(req, res, sql)
+  }
+  catch (err) {
+    console.log(err) // bar
+    res.sendStatus(405);
+  }
+}
 
- 
-  port = 4002
-  app.listen(port);
-  console.log('Server running... port ' + port);
+function processRequest(req, res, sql) {
+  console.log(req.url);
+  var token = fromHeaderOrQuerystring(req);
+  var decoded = jwt.decode(token, RSA_PUBLIC_KEY);
+  console.log(sql)
+  executeQuery(sql,function (result) {
+    res.json( result )
+    console.log (result)
+  })
+}
+function executeQuery(sql, callback) {
+  pool.query(sql, function (err, result) {
+    if (err) throw err;
+    callback({users: result});
+  })
+}
+
+
+function fromHeaderOrQuerystring(req) {
+  if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+    return req.headers.authorization.split(' ')[1];
+  } else if (req.query && req.query.token) {
+    return req.query.token;
+  }
+  return null;
+}
+
+
+port = 4002
+app.listen(port);
+console.log('Server running... port ' + port);

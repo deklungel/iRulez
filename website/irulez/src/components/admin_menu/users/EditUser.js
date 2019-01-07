@@ -7,10 +7,6 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import Visibility from '@material-ui/icons/Visibility';
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import IconButton from '@material-ui/core/IconButton';
 import { withStyles } from '@material-ui/core/styles';
 
 import md5 from 'md5';
@@ -21,45 +17,66 @@ const Auth = new AuthService();
 
 const styles = theme => ({
     textField: {
-      marginLeft: theme.spacing.unit,
-      marginRight: theme.spacing.unit,
+        marginLeft: theme.spacing.unit,
+        marginRight: theme.spacing.unit,
     }
-  });
+});
 
-class NewUser extends Component {
-
+class EditUser extends Component {
+    componentWillReceiveProps(newProps) {
+        this.setState({ email: newProps.user.email });
+        this.setState({ role: newProps.user.role });
+        this.setState({ id: newProps.user.id });
+    }
     state = {
+        id: '',
         email: '',
-        password: '',
-        role: 'user',
-        showPassword: false,
+        role: '',
+        changed_email: false,
+        changed_role: false,
     };
 
-    handleClickShowPassword = () => {
-        this.setState(state => ({ showPassword: !state.showPassword }));
-    };
 
     handleChange = name => event => {
+        let changed = "changed_" + name
+
         this.setState({
             [name]: event.target.value,
+            [changed]: true,
         });
+        if (event.target.value === this.props.user[name]) {
+            this.setState({
+                [changed]: false,
+            })
+        }
+
     };
 
-    addUser = () => {
-        this.closeForm();
-        var options = {
-          'method': 'POST',
-          'body' : JSON.stringify({email: this.state.email, password: md5(this.state.password), role: this.state.role})
+    EditUser = () => {
+        if (this.state.changed_email || this.state.changed_role) {
+            var json = {}
+            json.id = this.state.id 
+            if(this.state.changed_email){
+                json.email = this.state.email
+            }
+            if(this.state.changed_role){
+                json.role = this.state.role
+            }
+            var options = {
+                'method': 'POST',
+                'body': JSON.stringify(json)
+            }
+            Auth.fetch('http://localhost:4002/api/user/edit', options).then(
+                function (result) {
+                    this.closeForm();
+                    this.props.getUsersFromBackend();
+                }.bind(this)
+            )
         }
-        Auth.fetch('http://localhost:4002/api/user/add',options).then(
-          function(result) {
-            this.props.getUsersFromBackend();
-          }.bind(this)
-        )
-    
-      }
+
+    }
     closeForm = () => {
-        this.props.handleFormClose("newForm");
+        this.props.handleFormClose("EditForm");
     }
 
     render() {
@@ -71,37 +88,17 @@ class NewUser extends Component {
                 onClose={this.closeForm}
                 aria-labelledby="form-dialog-title"
             >
-                <DialogTitle id="form-dialog-title">New User</DialogTitle>
+                <DialogTitle id="form-dialog-title">Edit User</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
                         className={classNames(classes.margin, classes.textField)}
                         id="email"
-                        value={this.state.user}
+                        value={this.state.email}
                         onChange={this.handleChange('email')}
                         label="Email Address"
                         type="email"
                         fullWidth
-                    />
-                    <TextField
-                        id="password"
-                        className={classNames(classes.margin, classes.textField)}
-                        type={this.state.showPassword ? 'text' : 'password'}
-                        label="Password"
-                        onChange={this.handleChange('password')}
-                        fullWidth
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        aria-label="Toggle password visibility"
-                                        onClick={this.handleClickShowPassword}
-                                    >
-                                        {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
-                        }}
                     />
 
                     <TextField
@@ -133,8 +130,8 @@ class NewUser extends Component {
                     <Button onClick={this.closeForm} color="primary">
                         Cancel
             </Button>
-                    <Button onClick={this.addUser} color="primary">
-                        Add
+                    <Button onClick={this.EditUser} color="primary">
+                        Edit
             </Button>
                 </DialogActions>
             </Dialog>
@@ -143,4 +140,4 @@ class NewUser extends Component {
 
 }
 
-export default withStyles(styles)(NewUser);
+export default withStyles(styles)(EditUser);
