@@ -1,5 +1,4 @@
 import decode from 'jwt-decode';
-import md5 from 'md5';
 
 export default class AuthService {
     // Initializing important variables
@@ -16,7 +15,7 @@ export default class AuthService {
             method: 'POST',
             body: JSON.stringify({
                 username: username,
-                password: md5(password)
+                password: password
             })
         }).then(res => {
             this.setToken(res.token) // Setting the token in localStorage

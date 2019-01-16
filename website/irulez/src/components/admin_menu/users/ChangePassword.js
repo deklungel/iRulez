@@ -14,6 +14,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { withStyles } from '@material-ui/core/styles';
 
 
+
 const styles = theme => ({
     textField: {
       marginLeft: theme.spacing.unit,
@@ -21,13 +22,10 @@ const styles = theme => ({
     }
   });
 
-class NewUser extends Component {
+class ChangePassword extends Component {
 
     state = {
-        email: '',
         password: '',
-        role: 'user',
-        showPassword: false,
     };
 
     handleClickShowPassword = () => {
@@ -38,24 +36,28 @@ class NewUser extends Component {
         this.setState({
             [name]: event.target.value,
         });
-    };
+    }
 
-    addUser = () => {
-        this.closeForm();
-        var options = {
-          'method': 'POST',
-          'body' : JSON.stringify({email: this.state.email, password: this.state.password, role: this.state.role})
+    changePassword = () => {
+        if (this.state.password !== ''){
+            var options = {
+                'method': 'POST',
+                'body': JSON.stringify({id: this.props.id, password: this.state.password})
+            }
+            this.props.Auth.fetch('http://localhost:4002/api/user/changepassword', options).then(
+                function (result) {
+                    this.closeForm();
+                    this.props.notification("Password has been changed", 'info')
+                }.bind(this)
+            )
+        }else{
+            this.closeForm();
         }
-        this.props.Auth.fetch('http://localhost:4002/api/user/add',options).then(
-          function(result) {
-            this.props.getUsersFromBackend();
-            this.props.notification("User has been added", 'success')
-          }.bind(this)
-        )
+        
     
       }
     closeForm = () => {
-        this.props.handleFormClose("newForm");
+        this.props.handleFormClose("changePassword");
     }
 
     render() {
@@ -67,18 +69,8 @@ class NewUser extends Component {
                 onClose={this.closeForm}
                 aria-labelledby="form-dialog-title"
             >
-                <DialogTitle id="form-dialog-title">New User</DialogTitle>
+                <DialogTitle id="form-dialog-title">Change Password</DialogTitle>
                 <DialogContent>
-                    <TextField
-                        autoFocus
-                        className={classNames(classes.margin, classes.textField)}
-                        id="email"
-                        value={this.state.user}
-                        onChange={this.handleChange('email')}
-                        label="Email Address"
-                        type="email"
-                        fullWidth
-                    />
                     <TextField
                         id="password"
                         className={classNames(classes.margin, classes.textField)}
@@ -99,38 +91,13 @@ class NewUser extends Component {
                             ),
                         }}
                     />
-
-                    <TextField
-                        id="outlined-select-currency-native"
-                        select
-                        label="Role"
-                        className={classes.textField}
-                        value={this.state.role}
-                        onChange={this.handleChange('role')}
-                        SelectProps={{
-                            native: true,
-                            MenuProps: {
-                                className: classes.menu,
-                            },
-                        }}
-                        margin="dense"
-                        fullWidth
-                    >
-
-                        <option key="user" value="user">
-                            User
-                        </option>
-                        <option key="admin" value="admin">
-                            Administrator
-                        </option>
-                    </TextField>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={this.closeForm} color="primary">
                         Cancel
             </Button>
-                    <Button onClick={this.addUser} color="primary">
-                        Add
+                    <Button onClick={this.changePassword} color="primary">
+                        Change Password
             </Button>
                 </DialogActions>
             </Dialog>
@@ -139,4 +106,4 @@ class NewUser extends Component {
 
 }
 
-export default withStyles(styles)(NewUser);
+export default withStyles(styles)(ChangePassword);

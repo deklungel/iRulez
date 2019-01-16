@@ -5,7 +5,7 @@ const expressJwt = require('express-jwt');
 var fs = require("fs");
 var bodyParser = require('body-parser');
 var mysql = require('mysql');
-
+var md5 = require('md5');
 
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -58,6 +58,9 @@ app.post('/api/user/*', checkIfAuthenticated,
       case "/api/user/edit":
         user_edit(req, res);
         break;
+      case "/api/user/changepassword":
+        user_changePassword(req, res);
+        break;
       default:
         console.log("response 501");
         res.sendStatus(501);
@@ -79,7 +82,7 @@ app.post('/api/user/*', checkIfAuthenticated,
 
 function user_add(req, res) {
   try {
-    var sql = "INSERT INTO tbl_users (email, role, password) VALUES ('" + req.body.email + "', '" + req.body.role + "','" + req.body.password + "')";
+    var sql = "INSERT INTO tbl_users (email, role, password) VALUES ('" + req.body.email + "', '" + req.body.role + "','" + md5(req.body.password) + "')";
     processRequest(req, res, sql)
   }
   catch (err) {
@@ -98,6 +101,7 @@ function user_delete(req, res) {
     res.sendStatus(405);
   }
 }
+
 function user_edit(req, res) {
   try {
     var values = [];
@@ -115,6 +119,18 @@ function user_edit(req, res) {
     res.sendStatus(405);
   }
 }
+
+function user_changePassword(req, res) {
+  try {
+    var sql = "UPDATE tbl_users SET password='" + md5(req.body.password) + "' WHERE id = " + req.body.id;
+    processRequest(req, res, sql)
+  }
+  catch (err) {
+    console.log(err) // bar
+    res.sendStatus(405);
+  }
+}
+
 
 function processRequest(req, res, sql) {
   console.log(req.url);

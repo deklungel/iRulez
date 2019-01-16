@@ -9,11 +9,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { withStyles } from '@material-ui/core/styles';
 
-import md5 from 'md5';
-
-import AuthService from '../../AuthService';
-
-const Auth = new AuthService();
+import ChangePassword from './ChangePassword';
 
 const styles = theme => ({
     textField: {
@@ -33,7 +29,9 @@ class EditUser extends Component {
         email: '',
         role: '',
         changed_email: false,
-        changed_role: false,
+        changed_role: false, 
+        changePasswordForm: false,
+
     };
 
 
@@ -55,29 +53,42 @@ class EditUser extends Component {
     EditUser = () => {
         if (this.state.changed_email || this.state.changed_role) {
             var json = {}
-            json.id = this.state.id 
-            if(this.state.changed_email){
+            json.id = this.state.id
+            if (this.state.changed_email) {
                 json.email = this.state.email
             }
-            if(this.state.changed_role){
+            if (this.state.changed_role) {
                 json.role = this.state.role
             }
             var options = {
                 'method': 'POST',
                 'body': JSON.stringify(json)
             }
-            Auth.fetch('http://localhost:4002/api/user/edit', options).then(
+            this.props.Auth.fetch('http://localhost:4002/api/user/edit', options).then(
                 function (result) {
                     this.closeForm();
                     this.props.getUsersFromBackend();
+                    this.props.notification("User has been changed", 'info')
                 }.bind(this)
             )
+        }else{
+            this.closeForm();
+            this.props.notification("User not changed", 'info')
         }
-
+        
     }
     closeForm = () => {
         this.props.handleFormClose("EditForm");
     }
+
+    openChangePasswordForm = () => {
+        this.setState({changePasswordForm : true})
+    }
+    
+    closeChangePasswordForm = () => {
+        this.setState({changePasswordForm : false})
+    }
+    
 
     render() {
         const { classes } = this.props;
@@ -129,11 +140,20 @@ class EditUser extends Component {
                 <DialogActions>
                     <Button onClick={this.closeForm} color="primary">
                         Cancel
-            </Button>
+                    </Button>
+                    <Button onClick={this.openChangePasswordForm} color="primary">
+                        Change Password
+                    </Button>
                     <Button onClick={this.EditUser} color="primary">
                         Edit
-            </Button>
+                    </Button>
                 </DialogActions>
+                <ChangePassword 
+                id={this.state.id} 
+                Auth={this.props.Auth} 
+                open={this.state.changePasswordForm} 
+                handleFormClose={this.closeChangePasswordForm}
+                notification = {this.props.notification}/>
             </Dialog>
         )
     }

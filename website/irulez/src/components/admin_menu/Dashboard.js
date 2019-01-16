@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import './Dashboard.css';
 
+import SideBar from '../SideBar';
 
 
 import AuthService from '../AuthService';
-import withMenuList from '../withMenuList';
 import withAuth from '../withAuth';
 
 const Auth = new AuthService();
@@ -14,30 +14,29 @@ class Admin extends Component {
         super(props);
         this.handleLogout = this.handleLogout.bind(this);
     }
-    componentWillMount(){
-        if (this.props.user.role !=="admin"){
-         this.props.history.replace('/');
+    componentWillMount() {
+        if (this.props.user.role !== "admin") {
+            this.props.history.replace('/');
         }
-     }
-     handleLogout(){
+    }
+    handleLogout() {
         Auth.logout()
         this.props.history.replace('/login');
-     }
+    }
 
-  render() {
-      return(
-        <div className="Admin">
-            <div className="App-header">
-                <h2>Welcome Admin {this.props.user.username}</h2>
-                {/* <Users></Users> */}
-            </div>
-            <p className="App-intro">
-                <button type="button" className="form-submit" onClick={this.handleLogout.bind(this)}>Logout</button>
-            </p>
-            </div>
-    )
-    ;
-  }
+    render() {
+        return (
+            <SideBar Auth={this.props.Auth} >
+                <div className="Admin">
+                    <div className="App-header">
+                        <h2>Welcome Admin {this.props.user.username}</h2>
+                        {/* <Users></Users> */}
+                    </div>
+                </div>
+            </SideBar>
+        )
+            ;
+    }
 }
 
- export default withAuth(withMenuList(Admin));
+export default withAuth(Admin);

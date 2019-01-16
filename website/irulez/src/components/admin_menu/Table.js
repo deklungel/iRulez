@@ -71,7 +71,7 @@ class EnhancedTableHead extends React.Component {
             return (
               <TableCell
                 key={row.id}
-                numeric={row.numeric}
+                align={row.align}
                 padding={row.disablePadding ? 'none' : 'default'}
                 sortDirection={orderBy === row.id ? order : false}
               >
@@ -192,7 +192,7 @@ EnhancedTableToolbar = withStyles(toolbarStyles)(EnhancedTableToolbar);
 const styles = theme => ({
   root: {
     width: '100%',
-    marginTop: theme.spacing.unit * 3,
+    //marginTop: theme.spacing.unit * 3,
   },
   table: {
     minWidth: 1020,
@@ -325,11 +325,11 @@ class EnhancedTable extends React.Component {
                       {fields.map(field => {
                         if (field.id === 'id'){
                           return (
-                            <TableCell component="th" scope="row" padding="none">{n[field.id]}</TableCell>
+                            <TableCell key={field.id} component="th" scope="row" padding="none">{n[field.id]}</TableCell>
                           )
                         }else{
                           return (
-                            <TableCell>{n[field.id]}</TableCell>
+                            <TableCell key={field.id}>{n[field.id]}</TableCell>
                           )
                         }
                         

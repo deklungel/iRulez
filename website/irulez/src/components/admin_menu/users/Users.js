@@ -6,14 +6,16 @@ import EditUser from './EditUser';
 
 import EnhancedTable from '../Table'
 
-import AuthService from '../../AuthService';
 import withAuth from '../../withAuth';
-import withMenuList from '../../withMenuList';
 
+import PropTypes from 'prop-types';
+import { SnackbarProvider, withSnackbar } from 'notistack';
 
-const Auth = new AuthService();
+import SideBar from '../../SideBar';
 
 class Users extends Component {
+
+  Auth = this.props.Auth;
 
   state = {
     newForm: false,
@@ -28,7 +30,7 @@ class Users extends Component {
   }
 
   getUsersFromBackend = () => {
-    Auth.fetch('http://localhost:4002/api/users').then(
+    this.Auth.fetch('http://localhost:4002/api/users').then(
       function (result) {
         this.setState({ data: result.users })
       }.bind(this)
@@ -41,9 +43,10 @@ class Users extends Component {
       'method': 'POST',
       'body': JSON.stringify({ id: this.state.selected })
     }
-    Auth.fetch('http://localhost:4002/api/user/delete', options).then(
+    this.Auth.fetch('http://localhost:4002/api/user/delete', options).then(
       function (result) {
         this.getUsersFromBackend();
+        this.handleNotification("User has been deleted", 'warning')
       }.bind(this)
     )
 
@@ -66,17 +69,20 @@ class Users extends Component {
       this.setState({ selectedUser: row[value] });
     }   
   }
-
+  handleNotification = (message, variant) => {
+    // variant could be success, error, warning or info
+    this.props.enqueueSnackbar(message, { variant });
+  };
 
   render() {
     const fields = [
-      { id: 'id', numeric: false, disablePadding: true, label: 'ID' },
-      { id: 'email', numeric: false, disablePadding: false, label: 'Username' },
-      { id: 'role', numeric: false, disablePadding: false, label: 'Role' },
+      { id: 'id', align: 'left', disablePadding: true, label: 'ID' },
+      { id: 'email', align: 'left', disablePadding: false, label: 'Username' },
+      { id: 'role', align: 'left', disablePadding: false, label: 'Role' },
     ];
 
     return (
-      <div>
+      <SideBar Auth={this.Auth} open="users">
         <EnhancedTable
           data={this.state.data}
           fields={fields}
@@ -87,17 +93,35 @@ class Users extends Component {
         />
         <NewUser
           open={this.state.newForm}
+          Auth={this.Auth}
           handleFormClose={this.handleFormClose}
-          getUsersFromBackend={this.getUsersFromBackend} />
+          getUsersFromBackend={this.getUsersFromBackend} 
+          notification = {this.handleNotification}
+        />
         <EditUser
           open={this.state.EditForm}
+          Auth={this.Auth}
           handleFormClose={this.handleFormClose}
           user = {this.state.selectedUser}
-          getUsersFromBackend={this.getUsersFromBackend} />
-      </div>
+          getUsersFromBackend={this.getUsersFromBackend}
+          notification = {this.handleNotification} />
+      </SideBar>
 
     )
   }
 }
+Users.propTypes = {
+  enqueueSnackbar: PropTypes.func.isRequired,
+};
 
-export default withMenuList(withAuth(Users));
+const MyApp = withAuth(withSnackbar(Users));
+
+function IntegrationNotistack() {
+  return (
+    <SnackbarProvider maxSnack={3}>
+      <MyApp />
+    </SnackbarProvider>
+  );
+}
+
+export default IntegrationNotistack;

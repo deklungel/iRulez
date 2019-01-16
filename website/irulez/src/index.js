@@ -7,9 +7,11 @@ import Login from './components/Login'
 import Admin from './components/admin_menu/Dashboard'
 import EnhancedTable from './components/admin_menu/users/Users'
 
+import history from './history'
+
 import * as serviceWorker from './serviceWorker';
 
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { Router, Route } from 'react-router-dom';
 
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import grey from '@material-ui/core/colors/grey';
@@ -18,10 +20,13 @@ const theme = createMuiTheme({
     palette: {
     primary: grey,
     },
+    typography: {
+        useNextVariants: true,
+      },
 });
 
 ReactDOM.render(
-    <Router>
+    <Router history={history}>
         <MuiThemeProvider theme={theme}>
           <Route exact path='/' component={App} />
           <Route exact path="/login" component={Login} />

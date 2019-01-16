@@ -14,7 +14,7 @@ const exjwt = require('express-jwt');
 var fs = require("fs");
 var randtoken = require('rand-token');
 var mysql = require('mysql');
-
+var md5 = require('md5');
 
 var pool  = mysql.createPool({
     connectionLimit : 10,
@@ -49,7 +49,7 @@ var refreshTokens = {}
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
     console.log("before validation")
-    validateEmailAndPassword({email:username, password:password},
+    validateEmailAndPassword({email:username, password:md5(password)},
     function(returnValue){
         console.log(returnValue)
         if (returnValue != null) {

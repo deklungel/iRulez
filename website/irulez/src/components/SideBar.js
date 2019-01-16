@@ -20,11 +20,13 @@ import SendIcon from "@material-ui/icons/Send";
 import PeopleIcon from "@material-ui/icons/People";
 import PersonIcon from "@material-ui/icons/Person";
 import WallIcon from 'mdi-react/WallIcon';
+import LogoutIcon from 'mdi-react/LogoutIcon';
 import LightbulbOnOutlineIcon from 'mdi-react/LightbulbOnOutlineIcon'
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import Collapse from "@material-ui/core/Collapse";
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom'
+import { withRouter } from 'react-router-dom';
 
 const drawerWidth = 240;
 
@@ -86,33 +88,49 @@ const styles = theme => ({
     nested: {
         paddingLeft: theme.spacing.unit * 4,
     },
+    active:{
+        backgroundColor: "rgba(0, 0, 0, 0.14)",
+    }
 });
 
 function ListItemLink(props) {
-    const { primary, to, icon, className } = props;
+    const { primary, to, icon, className, classes } = props;
     return (
-      <li>
-        <ListItem button className={className} component={Link} to={to}>
-            <ListItemIcon>{icon}</ListItemIcon>
-          <ListItemText primary={primary} />
-        </ListItem>
-      </li>
+        <li>
+            <ListItem button className={className} activeClassName={classes.active} component={NavLink} exact to={to}>
+                <ListItemIcon>{icon}</ListItemIcon>
+                <ListItemText inset primary={primary} />
+            </ListItem>
+        </li>
     );
-  }
-  
-  ListItemLink.propTypes = {
+}
+
+ListItemLink.propTypes = {
     primary: PropTypes.node.isRequired,
     to: PropTypes.string.isRequired,
-  };
+};
 
-class PersistentDrawerLeft extends React.Component {
+class SideBar extends React.Component {
+    constructor(props) {
+        super(props);
+        this.handleLogout = this.handleLogout.bind(this);
+     
+    }
+
+    componentWillReceiveProps = props => {
+        this.setState({
+            [props.open]: true,
+        });
+}
+
     state = {
         open: true,
-        subopen: false
+        subopen: false,
+        users: false,
     };
 
-    handleClick = () => {
-        this.setState(state => ({ subopen: !state.subopen }));
+    handleClick = (menu) => {
+        this.setState(state => ({ [menu]: !state[menu] }));
     };
 
     handleDrawerOpen = () => {
@@ -123,107 +141,115 @@ class PersistentDrawerLeft extends React.Component {
         this.setState({ open: false });
     };
 
+    handleLogout() {
+        this.props.Auth.logout()
+        this.props.history.replace('/login');
+        // history.push('/login')
+    }
+
     render() {
         const { classes, theme } = this.props;
         const { open } = this.state;
 
         return (
-                <div className={classes.root}>
-                    <CssBaseline />
-                    <AppBar
-                        position="fixed"
-                        className={classNames(classes.appBar, {
-                            [classes.appBarShift]: open
-                        })}
-                    >
-                        <Toolbar disableGutters={!open}>
-                            <IconButton
-                                color="inherit"
-                                aria-label="Open drawer"
-                                onClick={this.handleDrawerOpen}
-                                className={classNames(classes.menuButton, open && classes.hide)}
-                            >
-                                <MenuIcon />
-                            </IconButton>
-                            <Typography variant="h6" color="inherit" noWrap>
-                                iRulez Administration
-                        </Typography>
-                        </Toolbar>
-                    </AppBar>
-                    <Drawer
-                        className={classes.drawer}
-                        variant="persistent"
-                        anchor="left"
-                        open={open}
-                        classes={{
-                            paper: classes.drawerPaper
-                        }}
-                    >
-                        <div className={classes.drawerHeader}>
-                            <IconButton onClick={this.handleDrawerClose}>
-                                {theme.direction === "ltr" ? (
-                                    <ChevronLeftIcon />
-                                ) : (
-                                        <ChevronRightIcon />
-                                    )}
-                            </IconButton>
-                        </div>
-                        <Divider />
-                        <List
-                            component="nav"
-                            
+            <div className={classes.root}>
+                <CssBaseline />
+                <AppBar
+                    position="fixed"
+                    className={classNames(classes.appBar, {
+                        [classes.appBarShift]: open
+                    })}
+                >
+                    <Toolbar disableGutters={!open}>
+                        <IconButton
+                            color="inherit"
+                            aria-label="Open drawer"
+                            onClick={this.handleDrawerOpen}
+                            className={classNames(classes.menuButton, open && classes.hide)}
                         >
-                            <ListItem button>
-                                <ListItemIcon>
-                                    <SendIcon />
-                                </ListItemIcon>
-                                <ListItemText inset primary="Actions" />
-                            </ListItem>
-                            <ListItem button>
-                                <ListItemIcon>
-                                    <LightbulbOnOutlineIcon />
-                                </ListItemIcon>
-                                <ListItemText inset primary="vButtons" />
-                            </ListItem>
-                            <ListItem button onClick={this.handleClick}>
-                                <ListItemIcon>
-                                    <PeopleIcon />
-                                </ListItemIcon>
-                                <ListItemText inset primary="Users" />
-                                {this.state.subopen ? <ExpandLess /> : <ExpandMore />}
-                            </ListItem>
-                            <Collapse in={this.state.subopen} timeout="auto" unmountOnExit>
-                                <List component="div" disablePadding>
-                                    <ListItemLink to="/admin/users" className={classes.nested} primary="Add/edit" icon={<PersonIcon />} />
-                                    <ListItem button className={classes.nested}>
-                                        <ListItemIcon>
-                                            <WallIcon />
-                                        </ListItemIcon>
-                                        <ListItemText primary="User Rights" />
-                                    </ListItem>
-                                    
-                                </List>
-                            </Collapse>
-                        </List>
-                    </Drawer>
+                            <MenuIcon />
+                        </IconButton>
+                        <Typography variant="h6" color="inherit" noWrap>
+                            iRulez Administration
+                        </Typography>
+                    </Toolbar>
+                </AppBar>
+                <Drawer
+                    className={classes.drawer}
+                    variant="persistent"
+                    anchor="left"
+                    open={open}
+                    classes={{
+                        paper: classes.drawerPaper
+                    }}
+                >
+                    <div className={classes.drawerHeader}>
+                        <IconButton onClick={this.handleDrawerClose}>
+                            {theme.direction === "ltr" ? (
+                                <ChevronLeftIcon />
+                            ) : (
+                                    <ChevronRightIcon />
+                                )}
+                        </IconButton>
+                    </div>
+
+                    <Divider />
+                    <List
+                        component="nav"
+
+                    >
+
+                        <ListItemLink to="/admin" classes={classes} button primary="Actions" icon={<SendIcon />} />
+                        <ListItem button>
+                            <ListItemIcon>
+                                <LightbulbOnOutlineIcon />
+                            </ListItemIcon>
+                            <ListItemText inset primary="vButtons" />
+                        </ListItem>
+                        <ListItem button onClick={() => {this.handleClick("users")}}>
+                            <ListItemIcon>
+                                <PeopleIcon />
+                            </ListItemIcon>
+                            <ListItemText inset primary="Users" />
+                            {this.state.users ? <ExpandLess /> : <ExpandMore />}
+                        </ListItem>
+                        <Collapse in={this.state.users} timeout="auto" unmountOnExit>
+                            <List component="div" disablePadding>
+                                <ListItemLink to="/admin/users" className={classes.nested} classes={classes} primary="Add/edit" icon={<PersonIcon />} />
+                                <ListItem button className={classes.nested}>
+                                    <ListItemIcon>
+                                        <WallIcon />
+                                    </ListItemIcon>
+                                    <ListItemText primary="User Rights" />
+                                </ListItem>
+                            </List>
+
+                        </Collapse>
+                        <Divider />
+                        <ListItem button onClick={this.handleLogout}>
+                            <ListItemIcon>
+                                <LogoutIcon />
+                            </ListItemIcon> 
+                            <ListItemText primary="Logout" />        
+                        </ListItem>
+                    </List>
+                </Drawer>
                     <main
                         className={classNames(classes.content, {
                             [classes.contentShift]: open
                         })}
                     >
                         <div className={classes.drawerHeader} />
-
-                        <this.props.maindata history={this.props.history}/>
-
+                        {this.props.children}
                     </main>
-                </div>
-        );
-    }
-}
-
-PersistentDrawerLeft.propTypes = {
-    classes: PropTypes.object.isRequired,
-    theme: PropTypes.object.isRequired
-};
-
-export default withStyles(styles, { withTheme: true })(PersistentDrawerLeft);
+            </div>
+                );
+            }
+        }
+        
+SideBar.propTypes = {
+                    classes: PropTypes.object.isRequired,
+                theme: PropTypes.object.isRequired
+            };
+            
+export default withStyles(styles, {withTheme: true })(withRouter(SideBar));
