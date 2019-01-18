@@ -44,7 +44,7 @@ class ChangePassword extends Component {
                 'method': 'PUT',
                 'body': JSON.stringify({id: this.props.id, password: this.state.password})
             }
-            this.props.Auth.fetch(window.USER_CHANGE_PASSWORD, options).then(
+            this.Auth.fetch(window.USER_CHANGE_PASSWORD, options).then(
                 function (result) {
                     this.closeForm();
                     this.props.notification("Password has been changed", 'info')

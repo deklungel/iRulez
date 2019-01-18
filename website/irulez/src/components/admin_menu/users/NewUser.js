@@ -17,6 +17,9 @@ const styles = theme => ({
     textField: {
         marginLeft: theme.spacing.unit,
         marginRight: theme.spacing.unit,
+    },
+    content:{
+        overflowY: "visible"
     }
 });
 
@@ -43,6 +46,8 @@ class NewUser extends Component {
         this.setState({[error] : false});
     };
 
+
+
     addUser = () => {
         if (this.validateInput()) {
             this.closeForm();
@@ -55,7 +60,10 @@ class NewUser extends Component {
                     this.props.getUsersFromBackend();
                     this.props.notification("User has been added", 'success')
                 }.bind(this)
-            )
+            ).catch(err =>{
+                var error =  String(err).replace(/Error:/g,'');
+                this.props.notification(String(error), 'error')
+            })
         }
     }
     validateInput(){
@@ -75,7 +83,7 @@ class NewUser extends Component {
         
     }
     validateEmail(email){
-        if (/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(email)) { 
+        if (/^[a-zA-Z0-9.]+@[a-zA-Z0-9.]+\.[A-Za-z]+$/.test(email)) { 
             return true
         }
         return false
@@ -94,7 +102,7 @@ class NewUser extends Component {
                 aria-labelledby="form-dialog-title"
             >
                 <DialogTitle id="form-dialog-title">New User</DialogTitle>
-                <DialogContent>
+                <DialogContent  className={classes.content}>
                     <TextField
                         error={this.state.emailError}
                         required

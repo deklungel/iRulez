@@ -1,0 +1,10 @@
+{
+    "database": {
+        "server": "10.0.50.50",
+        "user": "root",
+        "password": "irulez4database",
+        "database": "iRulez"
+    },
+    "port" : 8080,
+    "key": "./private.key"
+}

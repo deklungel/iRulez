@@ -6,13 +6,14 @@ var fs = require("fs");
 var bodyParser = require('body-parser');
 var mysql = require('mysql');
 var md5 = require('md5');
+const config = require('./config.json');
 
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
 
-const RSA_PUBLIC_KEY = fs.readFileSync('./public.key');
+const RSA_PUBLIC_KEY = fs.readFileSync(config.key);
 
 const checkIfAuthenticated = expressJwt({
   secret: RSA_PUBLIC_KEY
@@ -20,11 +21,12 @@ const checkIfAuthenticated = expressJwt({
 
 var pool = mysql.createPool({
   connectionLimit: 10,
-  host: "10.0.50.50",
-  user: "root",
-  password: "irulez4database",
-  database: "iRulez"
+  host: config.database.server,
+  user: config.database.user,
+  password: config.database.password,
+  database: config.database.database
 });
+
 
 
 app.use(function (req, res, next) {
@@ -151,21 +153,46 @@ function user_changePassword(req, res) {
 
 
 function processRequest(req, res, sql) {
-  console.log(req.url);
-  var token = fromHeaderOrQuerystring(req);
-  var decoded = jwt.decode(token, RSA_PUBLIC_KEY);
-  console.log(sql)
-  executeQuery(sql, function (result) {
-    res.json(result)
-    console.log(result)
-  })
+  try {
+    console.log(req.url);
+    var token = fromHeaderOrQuerystring(req);
+    var decoded = jwt.decode(token, RSA_PUBLIC_KEY);
+    console.log(sql)
+    executeQuery(sql,
+      function (result) {
+        res.json(result)
+        console.log("result: " + result)
+      },
+      function (errorMessage) {
+        console.log("errorMessage " + errorMessage)
+        res.statusMessage = errorMessage;
+        res.status(400).send();
+      })
+  }
+  catch (ex) {
+    console.log("error " + ex)
+
+  }
 }
-function executeQuery(sql, callback) {
+function executeQuery(sql, onSuccess, onFailure ) {
+
   pool.query(sql, function (err, result) {
-    if (err) throw err;
-    callback({ response: result });
-  })
+    if (err) {
+      if (err.code === 'ER_DUP_ENTRY'){
+        onFailure(new Error('Duplicate User'));
+      }
+      else{
+        onFailure(new Error('something bad happened'));
+      }
+      
+    }
+    else {
+      onSuccess({ response: result });
+    }
+  }
+  )
 }
+
 
 
 function fromHeaderOrQuerystring(req) {
@@ -178,6 +205,7 @@ function fromHeaderOrQuerystring(req) {
 }
 
 
-port = 4002
-app.listen(port);
-console.log('Server running... port ' + port);
+const PORT = config.port
+app.listen(PORT, () => {
+  console.log(`Webservice running on port ${PORT}`);
+});

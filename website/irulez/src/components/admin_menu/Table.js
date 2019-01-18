@@ -131,7 +131,7 @@ const toolbarStyles = theme => ({
 });
 
 let EnhancedTableToolbar = props => {
-  const { numSelected, classes, open, remove, title } = props;
+  const { numSelected, classes, open, title } = props;
 
   return (
     <Toolbar
@@ -159,13 +159,13 @@ let EnhancedTableToolbar = props => {
                 <EditIcon />
               </IconButton>
             </Tooltip>
-              <Tooltip title="Delete" onClick={remove}>
+              <Tooltip title="Delete" onClick={() => open("DeleteForm")}>
                 <IconButton aria-label="Delete">
                   <DeleteIcon />
                 </IconButton>
               </Tooltip></div>
           ) :
-            <Tooltip title="Delete" onClick={remove}>
+            <Tooltip title="Delete" onClick={() => open("DeleteForm")}>
               <IconButton aria-label="Delete">
                 <DeleteIcon />
               </IconButton>
@@ -217,6 +217,7 @@ class EnhancedTable extends React.Component {
     page: 0,
     selected: [],
     SelectedRow: [],
+    rowsPerPage:0,
   };
 
 
