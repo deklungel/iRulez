@@ -131,7 +131,7 @@ const toolbarStyles = theme => ({
 });
 
 let EnhancedTableToolbar = props => {
-  const { numSelected, classes, open, remove } = props;
+  const { numSelected, classes, open, remove, title } = props;
 
   return (
     <Toolbar
@@ -146,7 +146,7 @@ let EnhancedTableToolbar = props => {
             </Typography>
         ) : (
             <Typography variant="h6" id="tableTitle">
-              User Administration
+              {title}
             </Typography>
           )}
       </div>
@@ -154,7 +154,7 @@ let EnhancedTableToolbar = props => {
       <div className={classes.actions}>
         {numSelected > 0 ? (
           numSelected === 1 ? (
-            <div><Tooltip title="Edit"  onClick={()=>open("EditForm")}>
+            <div><Tooltip title="Edit" onClick={() => open("EditForm")}>
               <IconButton aria-label="Edit">
                 <EditIcon />
               </IconButton>
@@ -171,7 +171,7 @@ let EnhancedTableToolbar = props => {
               </IconButton>
             </Tooltip>
         ) : (
-            <Tooltip title="Add User" onClick={()=>open("newForm")}>
+            <Tooltip title="Add User" onClick={() => open("newForm")}>
               <IconButton aria-label="Add User">
                 <AddCircle />
               </IconButton>
@@ -205,8 +205,11 @@ const styles = theme => ({
 
 class EnhancedTable extends React.Component {
   componentWillReceiveProps(newProps) {
-    this.setState({selected: newProps.selected});
-}
+    this.setState({
+      selected: newProps.selected,
+      rowsPerPage: newProps.rowsPerPage
+    });
+  }
 
   state = {
     order: 'asc',
@@ -214,14 +217,13 @@ class EnhancedTable extends React.Component {
     page: 0,
     selected: [],
     SelectedRow: [],
-    rowsPerPage: 10,
   };
 
 
 
- 
 
- 
+
+
 
   handleRequestSort = (event, property) => {
     const orderBy = property;
@@ -275,7 +277,7 @@ class EnhancedTable extends React.Component {
   };
 
 
-  
+
 
 
 
@@ -283,16 +285,17 @@ class EnhancedTable extends React.Component {
 
 
   render() {
-    const { classes, data, fields } = this.props;
+    const { classes, data, fields, title } = this.props;
     const { order, orderBy, selected, rowsPerPage, page } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
     return (
       <Paper className={classes.root}>
-        <EnhancedTableToolbar 
-        numSelected={selected.length} 
-        open={this.props.handleFormOpen} 
-        remove={this.props.handleDelete} />
+        <EnhancedTableToolbar
+          numSelected={selected.length}
+          open={this.props.handleFormOpen}
+          remove={this.props.handleDelete}
+          title={title} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -323,16 +326,16 @@ class EnhancedTable extends React.Component {
                         <Checkbox checked={isSelected} />
                       </TableCell>
                       {fields.map(field => {
-                        if (field.id === 'id'){
+                        if (field.id === 'id') {
                           return (
                             <TableCell key={field.id} component="th" scope="row" padding="none">{n[field.id]}</TableCell>
                           )
-                        }else{
+                        } else {
                           return (
                             <TableCell key={field.id}>{n[field.id]}</TableCell>
                           )
                         }
-                        
+
                       })}
                     </TableRow>
                   );

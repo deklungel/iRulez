@@ -29,18 +29,19 @@ class EditUser extends Component {
         email: '',
         role: '',
         changed_email: false,
-        changed_role: false, 
+        changed_role: false,
         changePasswordForm: false,
-
+        emailError: false,
     };
 
 
     handleChange = name => event => {
         let changed = "changed_" + name
-
+        let error = name + "Error" 
         this.setState({
             [name]: event.target.value,
             [changed]: true,
+            [error]: false,
         });
         if (event.target.value === this.props.user[name]) {
             this.setState({
@@ -51,44 +52,63 @@ class EditUser extends Component {
     };
 
     EditUser = () => {
-        if (this.state.changed_email || this.state.changed_role) {
-            var json = {}
-            json.id = this.state.id
-            if (this.state.changed_email) {
-                json.email = this.state.email
+        if (this.validateInput()) {
+            if (this.state.changed_email || this.state.changed_role) {
+                var json = {}
+                json.id = this.state.id
+                if (this.state.changed_email) {
+                    json.email = this.state.email
+                }
+                if (this.state.changed_role) {
+                    json.role = this.state.role
+                }
+                var options = {
+                    'method': 'PUT',
+                    'body': JSON.stringify(json)
+                }
+                this.props.Auth.fetch(window.USER_EDIT, options).then(
+                    function (result) {
+                        this.closeForm();
+                        this.props.getUsersFromBackend();
+                        this.props.notification("User has been changed", 'info')
+                    }.bind(this)
+                )
+            } else {
+                this.closeForm();
             }
-            if (this.state.changed_role) {
-                json.role = this.state.role
-            }
-            var options = {
-                'method': 'POST',
-                'body': JSON.stringify(json)
-            }
-            this.props.Auth.fetch('http://localhost:4002/api/user/edit', options).then(
-                function (result) {
-                    this.closeForm();
-                    this.props.getUsersFromBackend();
-                    this.props.notification("User has been changed", 'info')
-                }.bind(this)
-            )
-        }else{
-            this.closeForm();
-            this.props.notification("User not changed", 'info')
+
         }
-        
     }
+
+    validateInput() {
+        if (this.state.email !== '' && this.validateEmail(this.state.email)) {
+            return true
+        }
+        this.setState({ emailError: true })
+        return false
+
+    }
+    validateEmail(email) {
+        if (/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(email)) {
+            return true
+        }
+        return false
+    }
+
     closeForm = () => {
         this.props.handleFormClose("EditForm");
+        this.setState({emailError: false,})
     }
 
     openChangePasswordForm = () => {
-        this.setState({changePasswordForm : true})
+        this.setState({ changePasswordForm: true })
+        
     }
-    
+
     closeChangePasswordForm = () => {
-        this.setState({changePasswordForm : false})
+        this.setState({ changePasswordForm: false })
     }
-    
+
 
     render() {
         const { classes } = this.props;
@@ -103,6 +123,7 @@ class EditUser extends Component {
                 <DialogContent>
                     <TextField
                         autoFocus
+                        error={this.state.emailError}
                         className={classNames(classes.margin, classes.textField)}
                         id="email"
                         value={this.state.email}
@@ -148,12 +169,12 @@ class EditUser extends Component {
                         Edit
                     </Button>
                 </DialogActions>
-                <ChangePassword 
-                id={this.state.id} 
-                Auth={this.props.Auth} 
-                open={this.state.changePasswordForm} 
-                handleFormClose={this.closeChangePasswordForm}
-                notification = {this.props.notification}/>
+                <ChangePassword
+                    id={this.state.id}
+                    Auth={this.props.Auth}
+                    open={this.state.changePasswordForm}
+                    handleFormClose={this.closeChangePasswordForm}
+                    notification={this.props.notification} />
             </Dialog>
         )
     }

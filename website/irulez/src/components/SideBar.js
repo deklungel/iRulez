@@ -16,17 +16,19 @@ import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import SendIcon from "@material-ui/icons/Send";
-import PeopleIcon from "@material-ui/icons/People";
-import PersonIcon from "@material-ui/icons/Person";
-import WallIcon from 'mdi-react/WallIcon';
-import LogoutIcon from 'mdi-react/LogoutIcon';
-import LightbulbOnOutlineIcon from 'mdi-react/LightbulbOnOutlineIcon'
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import Collapse from "@material-ui/core/Collapse";
 import { NavLink } from 'react-router-dom'
 import { withRouter } from 'react-router-dom';
+
+import SendIcon from "@material-ui/icons/Send";
+import PeopleIcon from "@material-ui/icons/People";
+import PersonIcon from "@material-ui/icons/Person";
+import WallIcon from 'mdi-react/WallIcon';
+import LogoutIcon from 'mdi-react/LogoutIcon';
+import ChipIcon from 'mdi-react/ChipIcon';
+import LightbulbOnOutlineIcon from 'mdi-react/LightbulbOnOutlineIcon'
 
 const drawerWidth = 240;
 
@@ -69,26 +71,10 @@ const styles = theme => ({
         ...theme.mixins.toolbar,
         justifyContent: "flex-end"
     },
-    content: {
-        flexGrow: 1,
-        //padding: theme.spacing.unit * 3,
-        transition: theme.transitions.create("margin", {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen
-        }),
-        marginLeft: -drawerWidth
-    },
-    contentShift: {
-        transition: theme.transitions.create("margin", {
-            easing: theme.transitions.easing.easeOut,
-            duration: theme.transitions.duration.enteringScreen
-        }),
-        marginLeft: 0
-    },
     nested: {
         paddingLeft: theme.spacing.unit * 4,
     },
-    active:{
+    active: {
         backgroundColor: "rgba(0, 0, 0, 0.14)",
     }
 });
@@ -114,31 +100,32 @@ class SideBar extends React.Component {
     constructor(props) {
         super(props);
         this.handleLogout = this.handleLogout.bind(this);
-     
+
     }
 
     componentWillReceiveProps = props => {
         this.setState({
             [props.open]: true,
         });
-}
+    }
 
     state = {
         open: true,
         subopen: false,
-        users: false,
     };
 
     handleClick = (menu) => {
-        this.setState(state => ({ [menu]: !state[menu] }));
+        this.props.ToggleCollapse(menu)
     };
 
     handleDrawerOpen = () => {
         this.setState({ open: true });
+        this.props.sidebarToggle(true);
     };
 
     handleDrawerClose = () => {
         this.setState({ open: false });
+        this.props.sidebarToggle(false);
     };
 
     handleLogout() {
@@ -199,23 +186,24 @@ class SideBar extends React.Component {
 
                     >
 
-                        <ListItemLink to="/admin" classes={classes} button primary="Actions" icon={<SendIcon />} />
+                        <ListItemLink to="/administrator" classes={classes} button primary="Actions" icon={<SendIcon />} />
+                        <ListItemLink to="/administrator/devices" classes={classes} button primary="Devices" icon={<ChipIcon />} />
                         <ListItem button>
                             <ListItemIcon>
                                 <LightbulbOnOutlineIcon />
                             </ListItemIcon>
                             <ListItemText inset primary="vButtons" />
                         </ListItem>
-                        <ListItem button onClick={() => {this.handleClick("users")}}>
+                        <ListItem button onClick={() => { this.handleClick("users") }}>
                             <ListItemIcon>
                                 <PeopleIcon />
                             </ListItemIcon>
                             <ListItemText inset primary="Users" />
                             {this.state.users ? <ExpandLess /> : <ExpandMore />}
                         </ListItem>
-                        <Collapse in={this.state.users} timeout="auto" unmountOnExit>
+                        <Collapse in={this.props.MenuOpen === "users"} timeout="auto" unmountOnExit>
                             <List component="div" disablePadding>
-                                <ListItemLink to="/admin/users" className={classes.nested} classes={classes} primary="Add/edit" icon={<PersonIcon />} />
+                                <ListItemLink to="/administrator/users" className={classes.nested} classes={classes} primary="Add/edit" icon={<PersonIcon />} />
                                 <ListItem button className={classes.nested}>
                                     <ListItemIcon>
                                         <WallIcon />
@@ -229,27 +217,19 @@ class SideBar extends React.Component {
                         <ListItem button onClick={this.handleLogout}>
                             <ListItemIcon>
                                 <LogoutIcon />
-                            </ListItemIcon> 
-                            <ListItemText primary="Logout" />        
+                            </ListItemIcon>
+                            <ListItemText primary="Logout" />
                         </ListItem>
                     </List>
                 </Drawer>
-                    <main
-                        className={classNames(classes.content, {
-                            [classes.contentShift]: open
-                        })}
-                    >
-                        <div className={classes.drawerHeader} />
-                        {this.props.children}
-                    </main>
             </div>
-                );
-            }
-        }
-        
+        );
+    }
+}
+
 SideBar.propTypes = {
-                    classes: PropTypes.object.isRequired,
-                theme: PropTypes.object.isRequired
-            };
-            
-export default withStyles(styles, {withTheme: true })(withRouter(SideBar));
+    classes: PropTypes.object.isRequired,
+    theme: PropTypes.object.isRequired
+};
+
+export default withStyles(styles, { withTheme: true })(withRouter(SideBar));

@@ -64,13 +64,9 @@ app.post('/login', (req, res) => {
         }
         else{
             console.log("Validation failed");    
-            res.status(401).json({
-                    sucess: false,
-                    token: null,
-                    err: 'Username or password is incorrect'
-                });
+            res.statusMessage = "Username or password is incorrect";
+            res.status(401).send();
             }
-        console.log('after else');
     }
     )
 

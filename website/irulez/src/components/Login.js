@@ -22,13 +22,15 @@ class Login extends Component {
                     <h1>Login</h1>
                     <form onSubmit={this.handleFormSubmit}>
                         <input
+                            required 
                             className="form-item"
                             placeholder="Username goes here..."
                             name="username"
-                            type="text"
+                            type="email"
                             onChange={this.handleChange}
                         />
                         <input
+                            required
                             className="form-item"
                             placeholder="Password goes here..."
                             name="password"
@@ -54,13 +56,11 @@ class Login extends Component {
         )
     };
     handleFormSubmit(e){
-        console.log("Test")
         e.preventDefault();
-        console.log("Test")
         this.Auth.login(this.state.username,this.state.password)
             .then(res =>{
                 if (this.Auth.getProfile().role=== 'admin'){
-                    this.props.history.replace('/admin');
+                    this.props.history.replace('/administrator');
                 }
                 else{
                     this.props.history.replace('/');

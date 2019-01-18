@@ -1,19 +1,17 @@
 import React, { Component } from 'react';
-import NewUser from './NewUser';
-import EditUser from './EditUser';
+import NewUser from '../users/NewUser';
+import EditUser from '../users/EditUser';
 import EnhancedTable from '../Table'
 import PropTypes from 'prop-types';
-import { withSnackbar } from 'notistack';
+import {withSnackbar } from 'notistack';
 import AuthService from '../../AuthService';
 
-class Users extends Component {
-  Auth = new AuthService();
-
+class Devices extends Component {
   constructor(props) {
     super(props);
-    this.props.Collapse("users")
-    
-  }
+    this.props.Collapse("devices")
+}
+Auth = new AuthService();
 
   state = {
     newForm: false,
@@ -28,29 +26,25 @@ class Users extends Component {
   }
 
   getUsersFromBackend = () => {
-    this.Auth.fetch(window.USER_GET).then(
+    this.Auth.fetch('http://localhost:4002/api/users').then(
       function (result) {
         this.setState({ data: result.response })
       }.bind(this)
-    ).catch(err => {
-      alert(err);
-    })
+    )
     this.setState({ selected: [] });
   }
 
   handleDelete = () => {
     var options = {
-      'method': 'DELETE',
+      'method': 'POST',
       'body': JSON.stringify({ id: this.state.selected })
     }
-    this.Auth.fetch(window.USER_DELETE, options).then(
+    this.Auth.fetch('http://localhost:4002/api/user/delete', options).then(
       function (result) {
         this.getUsersFromBackend();
         this.handleNotification("User has been deleted", 'warning')
       }.bind(this)
-    ).catch(err => {
-      alert(err);
-    })
+    )
 
   }
 
@@ -67,9 +61,9 @@ class Users extends Component {
   };
   updatedSelected = (value, row) => {
     this.setState({ selected: value });
-    if (value.length === 1) {
+    if (value.length === 1){
       this.setState({ selectedUser: row[value] });
-    }
+    }   
   }
   handleNotification = (message, variant) => {
     // variant could be success, error, warning or info
@@ -92,30 +86,30 @@ class Users extends Component {
           handleFormOpen={this.handleFormOpen}
           handleDelete={this.handleDelete}
           updatedSelected={this.updatedSelected}
-          title="User Administration"
-          rowsPerPage={5}
+          title="Devices"
+          rowsPerPage={10}
         />
         <NewUser
           open={this.state.newForm}
           Auth={this.Auth}
           handleFormClose={this.handleFormClose}
-          getUsersFromBackend={this.getUsersFromBackend}
-          notification={this.handleNotification}
+          getUsersFromBackend={this.getUsersFromBackend} 
+          notification = {this.handleNotification}
         />
         <EditUser
           open={this.state.EditForm}
           Auth={this.Auth}
           handleFormClose={this.handleFormClose}
-          user={this.state.selectedUser}
+          user = {this.state.selectedUser}
           getUsersFromBackend={this.getUsersFromBackend}
-          notification={this.handleNotification} />
+          notification = {this.handleNotification} />
       </div>
 
     )
   }
 }
-Users.propTypes = {
+Devices.propTypes = {
   enqueueSnackbar: PropTypes.func.isRequired,
 };
 
-export default withSnackbar(Users);
+export default withSnackbar(Devices);

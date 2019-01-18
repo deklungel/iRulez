@@ -2,8 +2,7 @@ import decode from 'jwt-decode';
 
 export default class AuthService {
     // Initializing important variables
-    constructor(domain) {
-        this.domain = domain || 'http://localhost:8080' // API server domain
+    constructor() {
         this.fetch = this.fetch.bind(this) // React binding stuff
         this.login = this.login.bind(this)
         this.getProfile = this.getProfile.bind(this)
@@ -11,7 +10,7 @@ export default class AuthService {
 
     login(username, password) {
         // Get a token from api server using the fetch api
-        return this.fetch(`${this.domain}/login`, {
+        return this.fetch(window.AUTHENTICATION_SERVER, {
             method: 'POST',
             body: JSON.stringify({
                 username: username,
@@ -85,6 +84,7 @@ export default class AuthService {
     }
 
     _checkStatus(response) {
+        console.log(response)
         // raises an error in case response status is not a success
         if (response.status >= 200 && response.status < 300) { // Success status lies between 200 to 300
             return response

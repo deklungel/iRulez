@@ -13,13 +13,12 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import IconButton from '@material-ui/core/IconButton';
 import { withStyles } from '@material-ui/core/styles';
 
-
 const styles = theme => ({
     textField: {
-      marginLeft: theme.spacing.unit,
-      marginRight: theme.spacing.unit,
+        marginLeft: theme.spacing.unit,
+        marginRight: theme.spacing.unit,
     }
-  });
+});
 
 class NewUser extends Component {
 
@@ -28,6 +27,8 @@ class NewUser extends Component {
         password: '',
         role: 'user',
         showPassword: false,
+        emailError: false,
+        passwordError: false,
     };
 
     handleClickShowPassword = () => {
@@ -38,22 +39,47 @@ class NewUser extends Component {
         this.setState({
             [name]: event.target.value,
         });
+        let error = name+'Error'
+        this.setState({[error] : false});
     };
 
     addUser = () => {
-        this.closeForm();
-        var options = {
-          'method': 'POST',
-          'body' : JSON.stringify({email: this.state.email, password: this.state.password, role: this.state.role})
+        if (this.validateInput()) {
+            this.closeForm();
+            var options = {
+                'method': 'POST',
+                'body': JSON.stringify({ email: this.state.email, password: this.state.password, role: this.state.role })
+            }
+            this.props.Auth.fetch(window.USER_ADD, options).then(
+                function (result) {
+                    this.props.getUsersFromBackend();
+                    this.props.notification("User has been added", 'success')
+                }.bind(this)
+            )
         }
-        this.props.Auth.fetch('http://localhost:4002/api/user/add',options).then(
-          function(result) {
-            this.props.getUsersFromBackend();
-            this.props.notification("User has been added", 'success')
-          }.bind(this)
-        )
-    
-      }
+    }
+    validateInput(){
+
+        if(this.state.email !== '' && this.validateEmail(this.state.email) && this.state.password !=='' ){
+            return true
+        }
+        if(this.state.email === '' || !this.validateEmail(this.state.email)){
+            this.setState({emailError: true})
+        }
+        if(this.state.password === ''){
+            this.setState({passwordError: true})
+        }
+           
+        
+        return false
+        
+    }
+    validateEmail(email){
+        if (/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/.test(email)) { 
+            return true
+        }
+        return false
+    }
     closeForm = () => {
         this.props.handleFormClose("newForm");
     }
@@ -70,6 +96,8 @@ class NewUser extends Component {
                 <DialogTitle id="form-dialog-title">New User</DialogTitle>
                 <DialogContent>
                     <TextField
+                        error={this.state.emailError}
+                        required
                         autoFocus
                         className={classNames(classes.margin, classes.textField)}
                         id="email"
@@ -80,6 +108,8 @@ class NewUser extends Component {
                         fullWidth
                     />
                     <TextField
+                        required
+                        error={this.state.passwordError}
                         id="password"
                         className={classNames(classes.margin, classes.textField)}
                         type={this.state.showPassword ? 'text' : 'password'}
@@ -99,7 +129,6 @@ class NewUser extends Component {
                             ),
                         }}
                     />
-
                     <TextField
                         id="outlined-select-currency-native"
                         select

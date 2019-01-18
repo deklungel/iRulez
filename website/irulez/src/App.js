@@ -8,10 +8,10 @@ const Auth = new AuthService();
 
 
 class App extends Component {
-
+    user = Auth.getProfile();
     componentWillMount(){
-       if (this.props.user.role ==="admin"){
-        this.props.history.replace('/admin/');
+       if (this.user.role ==="admin"){
+        this.props.history.replace('/administrator/');
        }
     }
   render() {
@@ -19,7 +19,7 @@ class App extends Component {
         <div className="App">
             <div className="App-header">
                 <img src={logo} className="App-logo" alt="logo" />
-                <h2>Welcome {this.props.user.username}</h2>
+                <h2>Welcome {this.user.username}</h2>
             </div>
             <p className="App-intro">
                 <button type="button" className="form-submit" onClick={this.handleLogout.bind(this)}>Logout</button>

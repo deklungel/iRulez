@@ -41,16 +41,17 @@ class ChangePassword extends Component {
     changePassword = () => {
         if (this.state.password !== ''){
             var options = {
-                'method': 'POST',
+                'method': 'PUT',
                 'body': JSON.stringify({id: this.props.id, password: this.state.password})
             }
-            this.props.Auth.fetch('http://localhost:4002/api/user/changepassword', options).then(
+            this.props.Auth.fetch(window.USER_CHANGE_PASSWORD, options).then(
                 function (result) {
                     this.closeForm();
                     this.props.notification("Password has been changed", 'info')
                 }.bind(this)
             )
         }else{
+            this.props.notification("Password not changed", 'info')
             this.closeForm();
         }
         

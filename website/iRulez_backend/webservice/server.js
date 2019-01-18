@@ -38,23 +38,29 @@ app.get('/api/*', checkIfAuthenticated,
   function (req, res) {
     switch (req.url) {
       case '/api/users':
-        get_user(req,res);
+        get_user(req, res);
         break;
       default:
-        console.log("response 501");
-        res.sendStatus(501);
+        console.log("response 404");
+        res.sendStatus(404);
     }
   })
 
-app.post('/api/user/*', checkIfAuthenticated,
+app.delete('/api/*', checkIfAuthenticated,
   function (req, res) {
     switch (req.url) {
-      case "/api/user/add":
-        user_add(req, res);
-        break;
       case "/api/user/delete":
         user_delete(req, res);
         break;
+      default:
+        console.log("response 404");
+        res.sendStatus(404);
+    }
+  }
+)
+app.put('/api/*', checkIfAuthenticated,
+  function (req, res) {
+    switch (req.url) {
       case "/api/user/edit":
         user_edit(req, res);
         break;
@@ -62,23 +68,35 @@ app.post('/api/user/*', checkIfAuthenticated,
         user_changePassword(req, res);
         break;
       default:
-        console.log("response 501");
-        res.sendStatus(501);
+        console.log("response 404");
+        res.sendStatus(404);
+    }
+  }
+)
+app.post('/api/*', checkIfAuthenticated,
+  function (req, res) {
+    switch (req.url) {
+      case "/api/user/add":
+        user_add(req, res);
+        break;
+      default:
+        console.log("response 404");
+        res.sendStatus(404);
     }
 
   });
 
-  function get_user(req,res){
-    console.log(req.url);
-    try {
-      sql = "SELECT id, email, role FROM tbl_users";
-      processRequest(req, res, sql)
-    }
-    catch (err) {
-      console.log(err) // bar
-      res.sendStatus(401);
-    }
+function get_user(req, res) {
+  console.log(req.url);
+  try {
+    sql = "SELECT id, email, role FROM tbl_users";
+    processRequest(req, res, sql)
   }
+  catch (err) {
+    console.log(err) // bar
+    res.sendStatus(500);
+  }
+}
 
 function user_add(req, res) {
   try {
@@ -87,7 +105,7 @@ function user_add(req, res) {
   }
   catch (err) {
     console.log(err) // bar
-    res.sendStatus(405);
+    res.sendStatus(500);
   }
 }
 
@@ -98,7 +116,7 @@ function user_delete(req, res) {
   }
   catch (err) {
     console.log(err) // bar
-    res.sendStatus(405);
+    res.sendStatus(500);
   }
 }
 
@@ -116,7 +134,7 @@ function user_edit(req, res) {
   }
   catch (err) {
     console.log(err) // bar
-    res.sendStatus(405);
+    res.sendStatus(500);
   }
 }
 
@@ -127,7 +145,7 @@ function user_changePassword(req, res) {
   }
   catch (err) {
     console.log(err) // bar
-    res.sendStatus(405);
+    res.sendStatus(500);
   }
 }
 
@@ -137,15 +155,15 @@ function processRequest(req, res, sql) {
   var token = fromHeaderOrQuerystring(req);
   var decoded = jwt.decode(token, RSA_PUBLIC_KEY);
   console.log(sql)
-  executeQuery(sql,function (result) {
-    res.json( result )
-    console.log (result)
+  executeQuery(sql, function (result) {
+    res.json(result)
+    console.log(result)
   })
 }
 function executeQuery(sql, callback) {
   pool.query(sql, function (err, result) {
     if (err) throw err;
-    callback({users: result});
+    callback({ response: result });
   })
 }
 
