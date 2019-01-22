@@ -12,6 +12,7 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import IconButton from '@material-ui/core/IconButton';
 import { withStyles } from '@material-ui/core/styles';
+import AuthService from '../../AuthService';
 
 const styles = theme => ({
     textField: {
@@ -24,7 +25,7 @@ const styles = theme => ({
 });
 
 class NewUser extends Component {
-
+    Auth = new AuthService();
     state = {
         email: '',
         password: '',
@@ -55,7 +56,7 @@ class NewUser extends Component {
                 'method': 'POST',
                 'body': JSON.stringify({ email: this.state.email, password: this.state.password, role: this.state.role })
             }
-            this.props.Auth.fetch(window.USER_ADD, options).then(
+            this.Auth.fetch(window.USER_ADD, options).then(
                 function (result) {
                     this.props.getUsersFromBackend();
                     this.props.notification("User has been added", 'success')

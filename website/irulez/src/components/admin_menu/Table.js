@@ -20,6 +20,8 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import AddCircle from '@material-ui/icons/AddCircle';
 import { lighten } from '@material-ui/core/styles/colorManipulator';
+import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
+import ErrorOutline from '@material-ui/icons/ErrorOutline';
 
 
 function desc(a, b, orderBy) {
@@ -154,18 +156,18 @@ let EnhancedTableToolbar = props => {
       <div className={classes.actions}>
         {numSelected > 0 ? (
           numSelected === 1 ? (
-            <div><Tooltip title="Edit" onClick={() => open("EditForm")}>
+            <div><Tooltip title="Edit" onClick={() => open("editForm")}>
               <IconButton aria-label="Edit">
                 <EditIcon />
               </IconButton>
             </Tooltip>
-              <Tooltip title="Delete" onClick={() => open("DeleteForm")}>
+              <Tooltip title="Delete" onClick={() => open("deleteForm")}>
                 <IconButton aria-label="Delete">
                   <DeleteIcon />
                 </IconButton>
               </Tooltip></div>
           ) :
-            <Tooltip title="Delete" onClick={() => open("DeleteForm")}>
+            <Tooltip title="Delete" onClick={() => open("deleteForm")}>
               <IconButton aria-label="Delete">
                 <DeleteIcon />
               </IconButton>
@@ -200,6 +202,12 @@ const styles = theme => ({
   tableWrapper: {
     overflowX: 'auto',
   },
+  checkFail:{
+    color: 'red',
+  },
+  checkPass:{
+    color: 'green',
+  }
 });
 
 
@@ -217,7 +225,7 @@ class EnhancedTable extends React.Component {
     page: 0,
     selected: [],
     SelectedRow: [],
-    rowsPerPage:0,
+    rowsPerPage: 0,
   };
 
 
@@ -333,7 +341,9 @@ class EnhancedTable extends React.Component {
                           )
                         } else {
                           return (
-                            <TableCell key={field.id}>{n[field.id]}</TableCell>
+                            <TableCell key={field.id}>
+                              {field.type === 'ErrorCheck' ? (n[field.id] === 1 ? <CheckCircleOutline className={classes.checkPass}/> : <ErrorOutline className={classes.checkFail}/>) : n[field.id]}
+                            </TableCell>
                           )
                         }
 

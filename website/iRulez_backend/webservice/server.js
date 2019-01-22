@@ -42,6 +42,9 @@ app.get('/api/*', checkIfAuthenticated,
       case '/api/users':
         get_user(req, res);
         break;
+      case '/api/devices':
+        get_devices(req, res);
+        break;
       default:
         console.log("response 404");
         res.sendStatus(404);
@@ -54,6 +57,9 @@ app.delete('/api/*', checkIfAuthenticated,
       case "/api/user/delete":
         user_delete(req, res);
         break;
+      case "/api/device/delete":
+        device_delete(req, res);
+        break;
       default:
         console.log("response 404");
         res.sendStatus(404);
@@ -65,6 +71,9 @@ app.put('/api/*', checkIfAuthenticated,
     switch (req.url) {
       case "/api/user/edit":
         user_edit(req, res);
+        break;
+        case "/api/device/edit":
+        device_edit(req, res);
         break;
       case "/api/user/changepassword":
         user_changePassword(req, res);
@@ -80,6 +89,9 @@ app.post('/api/*', checkIfAuthenticated,
     switch (req.url) {
       case "/api/user/add":
         user_add(req, res);
+        break;
+      case "/api/device/add":
+        device_add(req, res);
         break;
       default:
         console.log("response 404");
@@ -152,6 +164,59 @@ function user_changePassword(req, res) {
 }
 
 
+function get_devices(req, res) {
+  console.log(req.url);
+  try {
+    sql = "SELECT id, name, mac, sn, version, ping, mqtt FROM tbl_Arduino";
+    processRequest(req, res, sql)
+  }
+  catch (err) {
+    console.log(err) // bar
+    res.sendStatus(500);
+  }
+}
+function device_add(req, res) {
+  try {
+    var sql = "INSERT INTO tbl_Arduino (name, mac, sn) VALUES ('" + req.body.name + "', '" + req.body.mac + "','" + req.body.sn + "')";
+    processRequest(req, res, sql)
+  }
+  catch (err) {
+    console.log(err) // bar
+    res.sendStatus(500);
+  }
+}
+function device_delete(req, res) {
+  try {
+    var sql = "DELETE FROM tbl_Arduino WHERE id IN ('" + req.body.id.join("','") + "')";
+    processRequest(req, res, sql)
+  }
+  catch (err) {
+    console.log(err) // bar
+    res.sendStatus(500);
+  }
+}
+function device_edit(req, res) {
+  try {
+    var values = [];
+    if (req.body.name) {
+      values.push("name='" + req.body.name)
+    }
+    if (req.body.mac) {
+      values.push("mac='" + req.body.mac)
+    }
+    if (req.body.sn || req.body.sn === '') {
+      values.push("sn='" + req.body.sn)
+    }
+    var sql = "UPDATE tbl_Arduino SET " + values.join("', ") + "' WHERE id = " + req.body.id;
+    processRequest(req, res, sql)
+  }
+  catch (err) {
+    console.log(err) // bar
+    res.sendStatus(500);
+  }
+}
+
+
 function processRequest(req, res, sql) {
   try {
     console.log(req.url);
@@ -174,17 +239,17 @@ function processRequest(req, res, sql) {
 
   }
 }
-function executeQuery(sql, onSuccess, onFailure ) {
+function executeQuery(sql, onSuccess, onFailure) {
 
   pool.query(sql, function (err, result) {
     if (err) {
-      if (err.code === 'ER_DUP_ENTRY'){
+      if (err.code === 'ER_DUP_ENTRY') {
         onFailure(new Error('Duplicate User'));
       }
-      else{
+      else {
         onFailure(new Error('something bad happened'));
       }
-      
+
     }
     else {
       onSuccess({ response: result });

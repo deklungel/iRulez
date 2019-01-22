@@ -7,6 +7,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { withStyles } from '@material-ui/core/styles';
+import AuthService from '../../AuthService';
 
 const styles = theme => ({
     textField: {
@@ -19,13 +20,13 @@ const styles = theme => ({
 });
 
 class DeleteUser extends Component {
-
+    Auth = new AuthService();
     DeleteUser = () => {
         var options = {
           'method': 'DELETE',
           'body': JSON.stringify({ id: this.props.selected })
         }
-        this.prop.Auth.fetch(window.USER_DELETE, options).then(
+        this.Auth.fetch(window.USER_DELETE, options).then(
           function (result) {
             this.props.getUsersFromBackend();
             this.props.notification("User has been deleted", 'warning')

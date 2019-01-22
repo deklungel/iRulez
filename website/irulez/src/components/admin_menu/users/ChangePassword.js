@@ -12,7 +12,7 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import IconButton from '@material-ui/core/IconButton';
 import { withStyles } from '@material-ui/core/styles';
-
+import AuthService from '../../AuthService';
 
 
 const styles = theme => ({
@@ -23,7 +23,7 @@ const styles = theme => ({
   });
 
 class ChangePassword extends Component {
-
+    Auth = new AuthService();
     state = {
         password: '',
     };

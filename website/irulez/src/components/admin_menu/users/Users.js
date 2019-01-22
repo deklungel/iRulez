@@ -83,21 +83,18 @@ class Users extends Component {
         />
         <NewUser
           open={this.state.newForm}
-          Auth={this.Auth}
           handleFormClose={this.handleFormClose}
           getUsersFromBackend={this.getUsersFromBackend}
           notification={this.handleNotification}
         />
         <EditUser
           open={this.state.EditForm}
-          Auth={this.Auth}
           handleFormClose={this.handleFormClose}
           user={this.state.selectedUser}
           getUsersFromBackend={this.getUsersFromBackend}
           notification={this.handleNotification} />
         <DeleteUser
           open={this.state.DeleteForm}
-          Auth={this.Auth}
           handleFormClose={this.handleFormClose}
           selected={this.state.selected}
           getUsersFromBackend={this.getUsersFromBackend}

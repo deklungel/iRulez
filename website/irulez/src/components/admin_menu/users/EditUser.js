@@ -9,6 +9,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { withStyles } from '@material-ui/core/styles';
 import ChangePassword from './ChangePassword';
+import AuthService from '../../AuthService';
 
 const styles = theme => ({
     textField: {
@@ -18,6 +19,8 @@ const styles = theme => ({
 });
 
 class EditUser extends Component {
+    Auth = new AuthService();
+
     componentWillReceiveProps(newProps) {
         this.setState({ email: newProps.user.email });
         this.setState({ role: newProps.user.role });
@@ -65,7 +68,7 @@ class EditUser extends Component {
                     'method': 'PUT',
                     'body': JSON.stringify(json)
                 }
-                this.props.Auth.fetch(window.USER_EDIT, options).then(
+                this.Auth.fetch(window.USER_EDIT, options).then(
                     function (result) {
                         this.closeForm();
                         this.props.getUsersFromBackend();
