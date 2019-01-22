@@ -36,20 +36,12 @@ class Devices extends Component {
     selected: [],
     lastSelectedRow: [],
     originalValueRow: [],
-    editRowValue: [],
-    name: '',
-    mac: '',
-    sn: '',
-    name_changed: false,
-    sn_changed: false,
-    mac_changed: false,
-    name_error: false,
-    mac_error: false,
   };
 
 
   componentDidMount() {
     this.getDataFromBackend();
+    this.resetValues();
   }
 
   handleClickShowPassword = () => {
@@ -84,6 +76,7 @@ class Devices extends Component {
     this.setState({
       [form]: false,
     });
+    this.resetValues();
   };
 
   resetValues = () => {
@@ -113,14 +106,6 @@ class Devices extends Component {
     this.props.enqueueSnackbar(message, { variant });
   };
 
-  // handleChange = name => event => {
-  //   this.setState({
-  //     [name]: event.target.value,
-  //   });
-  //   let error = name + 'Error'
-  //   this.setState({ [error]: false });
-  // };
-
   handleChange = name => event => {
     let changed = name + "_changed"
     let error = name + "_error"
@@ -139,11 +124,11 @@ class Devices extends Component {
 
   add = () => {
     if (this.validateInput()) {
-      this.handleFormClose("newForm");
       var options = {
         'method': 'POST',
         'body': JSON.stringify({ name: this.state.name, mac: this.state.mac, sn: this.state.sn })
       }
+      this.handleFormClose("newForm");
       this.Auth.fetch(window.DEVICE_ADD, options).then(
         function (result) {
           this.getDataFromBackend();
@@ -207,6 +192,8 @@ class Devices extends Component {
 
   validateInput() {
     if (this.state.mac !== '' && this.state.name !== '') {
+      console.log(this.state.mac);
+      console.log(this.state.name);
       return true
     }
     if (this.state.name === '') {
@@ -225,9 +212,9 @@ class Devices extends Component {
 
     const fields = [
       { id: 'id', align: 'left', disablePadding: true, label: 'ID' },
-      { id: 'name', align: 'left', disablePadding: false, label: 'Name' },
-      { id: 'mac', align: 'left', disablePadding: false, label: 'MAC' },
-      { id: 'sn', align: 'left', disablePadding: false, label: 'Serial Number' },
+      { id: 'name', align: 'left', disablePadding: true, label: 'Name', addForm: true, required: true, add_autoFocus: true },
+      { id: 'mac', align: 'left', disablePadding: false, label: 'MAC', addForm: true, editForm: true, required: true, edit_autofocus: true },
+      { id: 'sn', align: 'left', disablePadding: false, label: 'Serial Number', addForm: true, editForm: true, required: false },
       { id: 'version', align: 'left', disablePadding: false, label: 'Version' },
       { id: 'ping', align: 'left', disablePadding: false, label: 'PING', type: 'ErrorCheck' },
       { id: 'mqtt', align: 'left', disablePadding: false, label: 'MQTT', type: 'ErrorCheck' },
@@ -243,6 +230,9 @@ class Devices extends Component {
           handleDelete={this.handleFormOpen}
           updatedSelected={this.updatedSelected}
           title="Devices"
+          addIconTooltip="Add device"
+          editIconTooltip="Edit device"
+          deleteIconTooltip="Delete device"
           rowsPerPage={5}
         />
         <DialogMenu
@@ -252,38 +242,23 @@ class Devices extends Component {
           title="New Device"
           acceptLabel="New"
         >
-          <TextField
-            error={this.state.name_Error}
-            required
-            autoFocus
-            className={classNames(classes.margin, classes.textField)}
-            id="name"
-            value={this.state.name}
-            onChange={this.handleChange('name')}
-            label="Name"
-            type="string"
-            fullWidth
-          />
-          <TextField
-            error={this.state.mac_Error}
-            required
-            className={classNames(classes.margin, classes.textField)}
-            id="mac"
-            value={this.state.mac}
-            onChange={this.handleChange('mac')}
-            label="MAC"
-            type="string"
-            fullWidth
-          />
-          <TextField
-            className={classNames(classes.margin, classes.textField)}
-            id="sn"
-            value={this.state.sn}
-            onChange={this.handleChange('sn')}
-            label="Serial Number"
-            type="string"
-            fullWidth
-          />
+          {fields.filter(form => { return form.addForm }).map(field => {
+            return (
+              <TextField
+                key={field.id}
+                error={this.state[field.id + "_error"]}
+                required={field.required}
+                autoFocus={field.add_autoFocus}
+                className={classNames(classes.margin, classes.textField)}
+                id="name"
+                value={this.state[field.id]}
+                onChange={this.handleChange(field.id)}
+                label={field.label}
+                type="string"
+                fullWidth
+              />
+            )
+          })}
         </DialogMenu>
 
         <DialogMenu
@@ -292,38 +267,23 @@ class Devices extends Component {
           handleFormCancel={() => this.handleFormClose('editForm')}
           title="Edit Device"
           acceptLabel="Edit">
-          <TextField
-            error={this.state.name_error}
-            required
-            autoFocus
-            className={classNames(classes.margin, classes.textField)}
-            id="name"
-            value={this.state.name}
-            onChange={this.handleChange('name')}
-            label="Name"
-            type="string"
-            fullWidth
-          />
-          <TextField
-            error={this.state.mac_error}
-            required
-            className={classNames(classes.margin, classes.textField)}
-            id="mac"
-            value={this.state.mac}
-            onChange={this.handleChange('mac')}
-            label="MAC"
-            type="string"
-            fullWidth
-          />
-          <TextField
-            className={classNames(classes.margin, classes.textField)}
-            id="sn"
-            value={this.state.sn}
-            onChange={this.handleChange('sn')}
-            label="Serial Number"
-            type="string"
-            fullWidth
-          />
+          {fields.filter(form => { return form.editForm }).map(field => {
+            return (
+              <TextField
+                key={field.id}
+                error={this.state[field.id + "_error"]}
+                required={field.required}
+                autoFocus={field.edit_autoFocus}
+                className={classNames(classes.margin, classes.textField)}
+                id="name"
+                value={this.state[field.id]}
+                onChange={this.handleChange(field.id)}
+                label={field.label}
+                type="string"
+                fullWidth
+              />
+            )
+          })}
         </DialogMenu>
         <DialogMenu
           open={this.state.deleteForm}
@@ -331,7 +291,7 @@ class Devices extends Component {
           handleFormCancel={() => this.handleFormClose('deleteForm')}
           title="Delete Device"
           acceptLabel="Delete">
-          Are you sure you want to delete device {this.state.selected}
+          Are you sure you want to delete device {JSON.stringify(this.state.selected)}
         </DialogMenu>
       </div>
 

@@ -133,7 +133,7 @@ const toolbarStyles = theme => ({
 });
 
 let EnhancedTableToolbar = props => {
-  const { numSelected, classes, open, title } = props;
+  const { numSelected, classes, open, title, addIconTooltip, editIconTooltip, deleteIconTooltip } = props;
 
   return (
     <Toolbar
@@ -156,25 +156,25 @@ let EnhancedTableToolbar = props => {
       <div className={classes.actions}>
         {numSelected > 0 ? (
           numSelected === 1 ? (
-            <div><Tooltip title="Edit" onClick={() => open("editForm")}>
-              <IconButton aria-label="Edit">
+            <div><Tooltip title={editIconTooltip} onClick={() => open("editForm")}>
+              <IconButton aria-label={editIconTooltip}>
                 <EditIcon />
               </IconButton>
             </Tooltip>
-              <Tooltip title="Delete" onClick={() => open("deleteForm")}>
-                <IconButton aria-label="Delete">
+              <Tooltip title={deleteIconTooltip} onClick={() => open("deleteForm")}>
+                <IconButton aria-label={deleteIconTooltip}>
                   <DeleteIcon />
                 </IconButton>
               </Tooltip></div>
           ) :
-            <Tooltip title="Delete" onClick={() => open("deleteForm")}>
-              <IconButton aria-label="Delete">
+            <Tooltip title={deleteIconTooltip} onClick={() => open("deleteForm")}>
+              <IconButton aria-label={deleteIconTooltip}>
                 <DeleteIcon />
               </IconButton>
             </Tooltip>
         ) : (
-            <Tooltip title="Add User" onClick={() => open("newForm")}>
-              <IconButton aria-label="Add User">
+            <Tooltip title={addIconTooltip} onClick={() => open("newForm")}>
+              <IconButton aria-label={addIconTooltip}>
                 <AddCircle />
               </IconButton>
             </Tooltip>
@@ -304,7 +304,10 @@ class EnhancedTable extends React.Component {
           numSelected={selected.length}
           open={this.props.handleFormOpen}
           remove={this.props.handleDelete}
-          title={title} />
+          title={title}
+          addIconTooltip={this.props.addIconTooltip}
+          editIconTooltip={this.props.editIconTooltip}
+          deleteIconTooltip={this.props.deleteIconTooltip} />
         <div className={classes.tableWrapper}>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedTableHead
@@ -353,7 +356,7 @@ class EnhancedTable extends React.Component {
                 })}
               {emptyRows > 0 && (
                 <TableRow style={{ height: 49 * emptyRows }}>
-                  <TableCell colSpan={6} />
+                  <TableCell colSpan={fields.length +1} />
                 </TableRow>
               )}
             </TableBody>

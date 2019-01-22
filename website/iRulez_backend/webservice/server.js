@@ -177,6 +177,7 @@ function get_devices(req, res) {
 }
 function device_add(req, res) {
   try {
+    console.log(req.body)
     var sql = "INSERT INTO tbl_Arduino (name, mac, sn) VALUES ('" + req.body.name + "', '" + req.body.mac + "','" + req.body.sn + "')";
     processRequest(req, res, sql)
   }
