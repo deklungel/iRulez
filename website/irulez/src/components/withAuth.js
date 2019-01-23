@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import AuthService from './AuthService';
 
-
 export default function withAuth(AuthComponent) {
     const Auth = new AuthService();
     return class AuthWrapped extends Component {
@@ -9,38 +8,30 @@ export default function withAuth(AuthComponent) {
             super();
             this.state = {
                 user: null
-            }
+            };
         }
 
         componentWillMount() {
             if (!Auth.loggedIn()) {
-                 this.props.history.replace('/login')
-            }
-            else {
+                this.props.history.replace('/login');
+            } else {
                 try {
-                    const profile = Auth.getProfile()
+                    const profile = Auth.getProfile();
                     this.setState({
                         user: profile
-                    })
-                   
-                }
-                catch(err){
-                    Auth.logout()
-                    this.props.history.replace('/login')
+                    });
+                } catch (err) {
+                    Auth.logout();
+                    this.props.history.replace('/login');
                 }
             }
         }
         render() {
             if (this.state.user) {
-                return (
-                    <AuthComponent {...this.props} />
-                )
-            }
-            else {
-                return null
+                return <AuthComponent {...this.props} />;
+            } else {
+                return null;
             }
         }
-
-
-      }
+    };
 }

@@ -3,73 +3,64 @@ import './Login.css';
 import AuthService from './AuthService';
 
 class Login extends Component {
-    constructor(){
+    constructor() {
         super();
         this.handleChange = this.handleChange.bind(this);
         this.handleFormSubmit = this.handleFormSubmit.bind(this);
         this.Auth = new AuthService();
     }
 
-    componentWillMount(){
-        if(this.Auth.loggedIn())
-            this.props.history.replace('/');
+    componentWillMount() {
+        if (this.Auth.loggedIn()) this.props.history.replace('/');
     }
 
     render() {
         return (
-            <div className="center">
-                <div className="card">
+            <div className='center'>
+                <div className='card'>
                     <h1>Login</h1>
                     <form onSubmit={this.handleFormSubmit}>
                         <input
-                            required 
-                            className="form-item"
-                            placeholder="Username goes here..."
-                            name="username"
-                            type="email"
+                            required
+                            className='form-item'
+                            placeholder='Username goes here...'
+                            name='username'
+                            type='email'
                             onChange={this.handleChange}
                         />
                         <input
                             required
-                            className="form-item"
-                            placeholder="Password goes here..."
-                            name="password"
-                            type="password"
+                            className='form-item'
+                            placeholder='Password goes here...'
+                            name='password'
+                            type='password'
                             onChange={this.handleChange}
                         />
-                        <input
-                            className="form-submit"
-                            value="SUBMIT"
-                            type="submit"
-                        />
+                        <input className='form-submit' value='SUBMIT' type='submit' />
                     </form>
                 </div>
             </div>
         );
     }
 
-    handleChange(e){
-        this.setState(
-            {
-                [e.target.name]: e.target.value
-            }
-        )
-    };
-    handleFormSubmit(e){
+    handleChange(e) {
+        this.setState({
+            [e.target.name]: e.target.value
+        });
+    }
+    handleFormSubmit(e) {
         e.preventDefault();
-        this.Auth.login(this.state.username,this.state.password)
-            .then(res =>{
-                if (this.Auth.getProfile().role=== 'admin'){
+        this.Auth.login(this.state.username, this.state.password)
+            .then(res => {
+                if (this.Auth.getProfile().role === 'admin') {
                     this.props.history.replace('/administrator');
-                }
-                else{
+                } else {
                     this.props.history.replace('/');
                 }
-              
             })
-            .catch(err =>{
+            .catch(err => {
                 alert(err);
-            })
+            });
     }
 }
 

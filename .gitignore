@@ -104,3 +104,5 @@ ENV/
 
 # dependencies
 /node_modules
+.vscode/settings.json
+df

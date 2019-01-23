@@ -1,8 +1,17 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {}
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "prettier.jsxSingleQuote": true,
+        "prettier.printWidth": 120,
+        "prettier.tabWidth": 4,
+        "editor.formatOnSave": true,
+        "prettier.singleQuote": true
+    },
+    "extensions": {
+        "recommendations": ["esbenp.prettier-vscode"]
+    }
 }

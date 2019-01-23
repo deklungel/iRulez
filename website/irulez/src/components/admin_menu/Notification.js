@@ -4,38 +4,37 @@ import Button from '@material-ui/core/Button';
 import { SnackbarProvider, withSnackbar } from 'notistack';
 
 class App extends React.Component {
-  handleClick = () => {
-    this.props.enqueueSnackbar('I love snacks.');
-  };
+    handleClick = () => {
+        this.props.enqueueSnackbar('I love snacks.');
+    };
 
-  handleClickVariant(variant, message ) {
-    // variant could be success, error, warning or info
-    this.props.enqueueSnackbar(message, { variant });
-  };
+    handleClickVariant(variant, message) {
+        // variant could be success, error, warning or info
+        this.props.enqueueSnackbar(message, { variant });
+    }
 
-  render() {
-    return (
-      <React.Fragment>
-        <Button onClick={this.handleClick}>Show snackbar</Button>
-        <Button onClick={this.handleClickVariant('warning',"Test Message")}>Show warning snackbar</Button>
-      </React.Fragment>
-    );
-    
-  }
+    render() {
+        return (
+            <React.Fragment>
+                <Button onClick={this.handleClick}>Show snackbar</Button>
+                <Button onClick={this.handleClickVariant('warning', 'Test Message')}>Show warning snackbar</Button>
+            </React.Fragment>
+        );
+    }
 }
 
 App.propTypes = {
-  enqueueSnackbar: PropTypes.func.isRequired,
+    enqueueSnackbar: PropTypes.func.isRequired
 };
 
 const MyApp = withSnackbar(App);
 
 function IntegrationNotistack() {
-  return (
-    <SnackbarProvider maxSnack={3}>
-      <MyApp />
-    </SnackbarProvider>
-  );
+    return (
+        <SnackbarProvider maxSnack={3}>
+            <MyApp />
+        </SnackbarProvider>
+    );
 }
 
 export default IntegrationNotistack;

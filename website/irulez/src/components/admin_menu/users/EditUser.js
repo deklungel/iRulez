@@ -14,7 +14,7 @@ import AuthService from '../../AuthService';
 const styles = theme => ({
     textField: {
         marginLeft: theme.spacing.unit,
-        marginRight: theme.spacing.unit,
+        marginRight: theme.spacing.unit
     }
 });
 
@@ -33,141 +33,130 @@ class EditUser extends Component {
         changed_email: false,
         changed_role: false,
         changePasswordForm: false,
-        emailError: false,
+        emailError: false
     };
 
-
     handleChange = name => event => {
-        let changed = "changed_" + name
-        let error = name + "Error" 
+        let changed = 'changed_' + name;
+        let error = name + 'Error';
         this.setState({
             [name]: event.target.value,
             [changed]: true,
-            [error]: false,
+            [error]: false
         });
         if (event.target.value === this.props.user[name]) {
             this.setState({
-                [changed]: false,
-            })
+                [changed]: false
+            });
         }
-
     };
 
     EditUser = () => {
         if (this.validateInput()) {
             if (this.state.changed_email || this.state.changed_role) {
-                var json = {}
-                json.id = this.state.id
+                var json = {};
+                json.id = this.state.id;
                 if (this.state.changed_email) {
-                    json.email = this.state.email
+                    json.email = this.state.email;
                 }
                 if (this.state.changed_role) {
-                    json.role = this.state.role
+                    json.role = this.state.role;
                 }
                 var options = {
-                    'method': 'PUT',
-                    'body': JSON.stringify(json)
-                }
+                    method: 'PUT',
+                    body: JSON.stringify(json)
+                };
                 this.Auth.fetch(window.USER_EDIT, options).then(
-                    function (result) {
+                    function(result) {
                         this.closeForm();
                         this.props.getUsersFromBackend();
-                        this.props.notification("User has been changed", 'info')
+                        this.props.notification('User has been changed', 'info');
                     }.bind(this)
-                )
+                );
             } else {
                 this.closeForm();
             }
-
         }
-    }
+    };
 
     validateInput() {
         if (this.state.email !== '' && this.validateEmail(this.state.email)) {
-            return true
+            return true;
         }
-        this.setState({ emailError: true })
-        return false
-
+        this.setState({ emailError: true });
+        return false;
     }
     validateEmail(email) {
         if (/^[a-zA-Z0-9.]+@[a-zA-Z0-9.]+\.[A-Za-z]+$/.test(email)) {
-            return true
+            return true;
         }
-        return false
+        return false;
     }
 
     closeForm = () => {
-        this.props.handleFormClose("EditForm");
-        this.setState({emailError: false,})
-    }
+        this.props.handleFormClose('EditForm');
+        this.setState({ emailError: false });
+    };
 
     openChangePasswordForm = () => {
-        this.setState({ changePasswordForm: true })
-        
-    }
+        this.setState({ changePasswordForm: true });
+    };
 
     closeChangePasswordForm = () => {
-        this.setState({ changePasswordForm: false })
-    }
-
+        this.setState({ changePasswordForm: false });
+    };
 
     render() {
         const { classes } = this.props;
 
         return (
-            <Dialog
-                open={this.props.open}
-                onClose={this.closeForm}
-                aria-labelledby="form-dialog-title"
-            >
-                <DialogTitle id="form-dialog-title">Edit User</DialogTitle>
+            <Dialog open={this.props.open} onClose={this.closeForm} aria-labelledby='form-dialog-title'>
+                <DialogTitle id='form-dialog-title'>Edit User</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
                         error={this.state.emailError}
                         className={classNames(classes.margin, classes.textField)}
-                        id="email"
+                        id='email'
                         value={this.state.email}
                         onChange={this.handleChange('email')}
-                        label="Email Address"
-                        type="email"
+                        label='Email Address'
+                        type='email'
                         fullWidth
                     />
 
                     <TextField
-                        id="outlined-select-currency-native"
+                        id='outlined-select-currency-native'
                         select
-                        label="Role"
+                        label='Role'
                         className={classes.textField}
                         value={this.state.role}
                         onChange={this.handleChange('role')}
                         SelectProps={{
                             native: true,
                             MenuProps: {
-                                className: classes.menu,
-                            },
+                                className: classes.menu
+                            }
                         }}
-                        margin="dense"
+                        margin='dense'
                         fullWidth
                     >
-
-                        <option key="user" value="user">
+                        <option key='user' value='user'>
                             User
                         </option>
-                        <option key="admin" value="admin">
+                        <option key='admin' value='admin'>
                             Administrator
                         </option>
                     </TextField>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={this.closeForm} color="primary">
+                    <Button onClick={this.closeForm} color='primary'>
                         Cancel
                     </Button>
-                    <Button onClick={this.openChangePasswordForm} color="primary">
+                    <Button onClick={this.openChangePasswordForm} color='primary'>
                         Change Password
                     </Button>
-                    <Button onClick={this.EditUser} color="primary">
+                    <Button onClick={this.EditUser} color='primary'>
                         Edit
                     </Button>
                 </DialogActions>
@@ -176,11 +165,11 @@ class EditUser extends Component {
                     Auth={this.props.Auth}
                     open={this.state.changePasswordForm}
                     handleFormClose={this.closeChangePasswordForm}
-                    notification={this.props.notification} />
+                    notification={this.props.notification}
+                />
             </Dialog>
-        )
+        );
     }
-
 }
 
 export default withStyles(styles)(EditUser);

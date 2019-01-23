@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 import App from './App';
-import Login from './components/Login'
-import Administrator from './components/admin_menu/Administrator'
+import Login from './components/Login';
+import Administrator from './components/admin_menu/Administrator';
 
 import * as serviceWorker from './serviceWorker';
 
@@ -15,11 +15,11 @@ import grey from '@material-ui/core/colors/grey';
 
 const theme = createMuiTheme({
     palette: {
-        primary: grey,
+        primary: grey
     },
     typography: {
-        useNextVariants: true,
-    },
+        useNextVariants: true
+    }
 });
 
 ReactDOM.render(
@@ -27,11 +27,12 @@ ReactDOM.render(
     <Router>
         <MuiThemeProvider theme={theme}>
             <Route exact path='/' component={App} />
-            <Route exact path="/login" component={Login} />
-            <Route path="/administrator" component={Administrator} />
+            <Route exact path='/login' component={Login} />
+            <Route path='/administrator' component={Administrator} />
         </MuiThemeProvider>
     </Router>,
-    document.getElementById('root'))
+    document.getElementById('root')
+);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

@@ -23,369 +23,364 @@ import { lighten } from '@material-ui/core/styles/colorManipulator';
 import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
 import ErrorOutline from '@material-ui/icons/ErrorOutline';
 
-
 function desc(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
+    if (b[orderBy] < a[orderBy]) {
+        return -1;
+    }
+    if (b[orderBy] > a[orderBy]) {
+        return 1;
+    }
+    return 0;
 }
 
 function stableSort(array, cmp) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = cmp(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map(el => el[0]);
+    const stabilizedThis = array.map((el, index) => [el, index]);
+    stabilizedThis.sort((a, b) => {
+        const order = cmp(a[0], b[0]);
+        if (order !== 0) return order;
+        return a[1] - b[1];
+    });
+    return stabilizedThis.map(el => el[0]);
 }
 
 function getSorting(order, orderBy) {
-  return order === 'desc' ? (a, b) => desc(a, b, orderBy) : (a, b) => -desc(a, b, orderBy);
+    return order === 'desc' ? (a, b) => desc(a, b, orderBy) : (a, b) => -desc(a, b, orderBy);
 }
 
-
-
-
 class EnhancedTableHead extends React.Component {
-  createSortHandler = property => event => {
-    this.props.onRequestSort(event, property);
-  };
+    createSortHandler = property => event => {
+        this.props.onRequestSort(event, property);
+    };
 
-  render() {
-    const { onSelectAllClick, order, orderBy, numSelected, rowCount, rows } = this.props;
+    render() {
+        const { onSelectAllClick, order, orderBy, numSelected, rowCount, rows } = this.props;
 
-    return (
-      <TableHead>
-        <TableRow>
-          <TableCell padding="checkbox">
-            <Checkbox
-              indeterminate={numSelected > 0 && numSelected < rowCount}
-              checked={numSelected === rowCount}
-              onChange={onSelectAllClick}
-            />
-          </TableCell>
-          {rows.map(row => {
-            return (
-              <TableCell
-                key={row.id}
-                align={row.align}
-                padding={row.disablePadding ? 'none' : 'default'}
-                sortDirection={orderBy === row.id ? order : false}
-              >
-                <Tooltip
-                  title="Sort"
-                  placement={row.numeric ? 'bottom-end' : 'bottom-start'}
-                  enterDelay={300}
-                >
-                  <TableSortLabel
-                    active={orderBy === row.id}
-                    direction={order}
-                    onClick={this.createSortHandler(row.id)}
-                  >
-                    {row.label}
-                  </TableSortLabel>
-                </Tooltip>
-              </TableCell>
-            );
-          }, this)}
-        </TableRow>
-      </TableHead>
-    );
-  }
+        return (
+            <TableHead>
+                <TableRow>
+                    <TableCell padding='checkbox'>
+                        <Checkbox
+                            indeterminate={numSelected > 0 && numSelected < rowCount}
+                            checked={numSelected === rowCount}
+                            onChange={onSelectAllClick}
+                        />
+                    </TableCell>
+                    {rows.map(row => {
+                        return (
+                            <TableCell
+                                key={row.id}
+                                align={row.align}
+                                padding={row.disablePadding ? 'none' : 'default'}
+                                sortDirection={orderBy === row.id ? order : false}
+                            >
+                                <Tooltip
+                                    title='Sort'
+                                    placement={row.numeric ? 'bottom-end' : 'bottom-start'}
+                                    enterDelay={300}
+                                >
+                                    <TableSortLabel
+                                        active={orderBy === row.id}
+                                        direction={order}
+                                        onClick={this.createSortHandler(row.id)}
+                                    >
+                                        {row.label}
+                                    </TableSortLabel>
+                                </Tooltip>
+                            </TableCell>
+                        );
+                    }, this)}
+                </TableRow>
+            </TableHead>
+        );
+    }
 }
 
 EnhancedTableHead.propTypes = {
-  numSelected: PropTypes.number.isRequired,
-  onRequestSort: PropTypes.func.isRequired,
-  onSelectAllClick: PropTypes.func.isRequired,
-  order: PropTypes.string.isRequired,
-  orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
+    numSelected: PropTypes.number.isRequired,
+    onRequestSort: PropTypes.func.isRequired,
+    onSelectAllClick: PropTypes.func.isRequired,
+    order: PropTypes.string.isRequired,
+    orderBy: PropTypes.string.isRequired,
+    rowCount: PropTypes.number.isRequired
 };
 const toolbarStyles = theme => ({
-  root: {
-    paddingRight: theme.spacing.unit,
-  },
-  highlight:
-    theme.palette.type === 'light'
-      ? {
-        color: theme.palette.secondary.main,
-        backgroundColor: lighten(theme.palette.secondary.light, 0.85),
-      }
-      : {
-        color: theme.palette.text.primary,
-        backgroundColor: theme.palette.secondary.dark,
-      },
-  spacer: {
-    flex: '1 1 75%',
-  },
-  actions: {
-    color: theme.palette.text.secondary,
-  },
-  title: {
-    flex: '0 0 auto',
-  },
+    root: {
+        paddingRight: theme.spacing.unit
+    },
+    highlight:
+        theme.palette.type === 'light'
+            ? {
+                  color: theme.palette.secondary.main,
+                  backgroundColor: lighten(theme.palette.secondary.light, 0.85)
+              }
+            : {
+                  color: theme.palette.text.primary,
+                  backgroundColor: theme.palette.secondary.dark
+              },
+    spacer: {
+        flex: '1 1 75%'
+    },
+    actions: {
+        color: theme.palette.text.secondary
+    },
+    title: {
+        flex: '0 0 auto'
+    }
 });
 
 let EnhancedTableToolbar = props => {
-  const { numSelected, classes, open, title, addIconTooltip, editIconTooltip, deleteIconTooltip } = props;
+    const { numSelected, classes, open, title, addIconTooltip, editIconTooltip, deleteIconTooltip } = props;
 
-  return (
-    <Toolbar
-      className={classNames(classes.root, {
-        [classes.highlight]: numSelected > 0,
-      })}
-    >
-      <div className={classes.title}>
-        {numSelected > 0 ? (
-          <Typography color="inherit" variant="subtitle1">
-            {numSelected} selected
-            </Typography>
-        ) : (
-            <Typography variant="h6" id="tableTitle">
-              {title}
-            </Typography>
-          )}
-      </div>
-      <div className={classes.spacer} />
-      <div className={classes.actions}>
-        {numSelected > 0 ? (
-          numSelected === 1 ? (
-            <div><Tooltip title={editIconTooltip} onClick={() => open("editForm")}>
-              <IconButton aria-label={editIconTooltip}>
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-              <Tooltip title={deleteIconTooltip} onClick={() => open("deleteForm")}>
-                <IconButton aria-label={deleteIconTooltip}>
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip></div>
-          ) :
-            <Tooltip title={deleteIconTooltip} onClick={() => open("deleteForm")}>
-              <IconButton aria-label={deleteIconTooltip}>
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
-        ) : (
-            <Tooltip title={addIconTooltip} onClick={() => open("newForm")}>
-              <IconButton aria-label={addIconTooltip}>
-                <AddCircle />
-              </IconButton>
-            </Tooltip>
-          )}
-      </div>
-    </Toolbar>
-  );
+    return (
+        <Toolbar
+            className={classNames(classes.root, {
+                [classes.highlight]: numSelected > 0
+            })}
+        >
+            <div className={classes.title}>
+                {numSelected > 0 ? (
+                    <Typography color='inherit' variant='subtitle1'>
+                        {numSelected} selected
+                    </Typography>
+                ) : (
+                    <Typography variant='h6' id='tableTitle'>
+                        {title}
+                    </Typography>
+                )}
+            </div>
+            <div className={classes.spacer} />
+            <div className={classes.actions}>
+                {numSelected > 0 ? (
+                    numSelected === 1 ? (
+                        <div>
+                            <Tooltip title={editIconTooltip} onClick={() => open('editForm')}>
+                                <IconButton aria-label={editIconTooltip}>
+                                    <EditIcon />
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title={deleteIconTooltip} onClick={() => open('deleteForm')}>
+                                <IconButton aria-label={deleteIconTooltip}>
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Tooltip>
+                        </div>
+                    ) : (
+                        <Tooltip title={deleteIconTooltip} onClick={() => open('deleteForm')}>
+                            <IconButton aria-label={deleteIconTooltip}>
+                                <DeleteIcon />
+                            </IconButton>
+                        </Tooltip>
+                    )
+                ) : (
+                    <Tooltip title={addIconTooltip} onClick={() => open('newForm')}>
+                        <IconButton aria-label={addIconTooltip}>
+                            <AddCircle />
+                        </IconButton>
+                    </Tooltip>
+                )}
+            </div>
+        </Toolbar>
+    );
 };
 
 EnhancedTableToolbar.propTypes = {
-  classes: PropTypes.object.isRequired,
-  numSelected: PropTypes.number.isRequired,
+    classes: PropTypes.object.isRequired,
+    numSelected: PropTypes.number.isRequired
 };
 
 EnhancedTableToolbar = withStyles(toolbarStyles)(EnhancedTableToolbar);
 
 const styles = theme => ({
-  root: {
-    width: '100%',
-    //marginTop: theme.spacing.unit * 3,
-  },
-  table: {
-    minWidth: 1020,
-  },
-  tableWrapper: {
-    overflowX: 'auto',
-  },
-  checkFail:{
-    color: 'red',
-  },
-  checkPass:{
-    color: 'green',
-  }
+    root: {
+        width: '100%'
+        //marginTop: theme.spacing.unit * 3,
+    },
+    table: {
+        minWidth: 1020
+    },
+    tableWrapper: {
+        overflowX: 'auto'
+    },
+    checkFail: {
+        color: 'red'
+    },
+    checkPass: {
+        color: 'green'
+    }
 });
 
-
 class EnhancedTable extends React.Component {
-  componentWillReceiveProps(newProps) {
-    this.setState({
-      selected: newProps.selected,
-      rowsPerPage: newProps.rowsPerPage
-    });
-  }
-
-  state = {
-    order: 'asc',
-    orderBy: 'id',
-    page: 0,
-    selected: [],
-    SelectedRow: [],
-    rowsPerPage: 0,
-  };
-
-
-
-
-
-
-
-  handleRequestSort = (event, property) => {
-    const orderBy = property;
-    let order = 'desc';
-
-    if (this.state.orderBy === property && this.state.order === 'desc') {
-      order = 'asc';
+    componentWillReceiveProps(newProps) {
+        this.setState({
+            selected: newProps.selected,
+            rowsPerPage: newProps.rowsPerPage
+        });
     }
 
-    this.setState({ order, orderBy });
-  };
+    state = {
+        order: 'asc',
+        orderBy: 'id',
+        page: 0,
+        selected: [],
+        SelectedRow: [],
+        rowsPerPage: 0
+    };
 
-  handleSelectAllClick = event => {
-    if (event.target.checked) {
-      this.setState(state => ({ selected: this.props.data.map(n => n.id) }));
-      return;
+    handleRequestSort = (event, property) => {
+        const orderBy = property;
+        let order = 'desc';
+
+        if (this.state.orderBy === property && this.state.order === 'desc') {
+            order = 'asc';
+        }
+
+        this.setState({ order, orderBy });
+    };
+
+    handleSelectAllClick = event => {
+        if (event.target.checked) {
+            this.setState(state => ({ selected: this.props.data.map(n => n.id) }));
+            return;
+        }
+        this.setState({ selected: [] });
+    };
+
+    handleClick = (event, row) => {
+        const { selected, SelectedRow } = this.state;
+        const selectedIndex = selected.indexOf(row.id);
+        let newSelected = [];
+
+        if (selectedIndex === -1) {
+            newSelected = newSelected.concat(selected, row.id);
+            SelectedRow[row.id] = row;
+        } else if (selectedIndex === 0) {
+            newSelected = newSelected.concat(selected.slice(1));
+        } else if (selectedIndex === selected.length - 1) {
+            newSelected = newSelected.concat(selected.slice(0, -1));
+        } else if (selectedIndex > 0) {
+            newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
+        }
+
+        this.setState({ selected: newSelected });
+        this.props.updatedSelected(newSelected, SelectedRow);
+    };
+
+    handleChangePage = (event, page) => {
+        this.setState({ page });
+    };
+
+    handleChangeRowsPerPage = event => {
+        this.setState({ rowsPerPage: event.target.value });
+    };
+
+    isSelected = id => this.state.selected.indexOf(id) !== -1;
+
+    render() {
+        const { classes, data, fields, title } = this.props;
+        const { order, orderBy, selected, rowsPerPage, page } = this.state;
+        const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+
+        return (
+            <Paper className={classes.root}>
+                <EnhancedTableToolbar
+                    numSelected={selected.length}
+                    open={this.props.handleFormOpen}
+                    remove={this.props.handleDelete}
+                    title={title}
+                    addIconTooltip={this.props.addIconTooltip}
+                    editIconTooltip={this.props.editIconTooltip}
+                    deleteIconTooltip={this.props.deleteIconTooltip}
+                />
+                <div className={classes.tableWrapper}>
+                    <Table className={classes.table} aria-labelledby='tableTitle'>
+                        <EnhancedTableHead
+                            numSelected={selected.length}
+                            order={order}
+                            orderBy={orderBy}
+                            onSelectAllClick={this.handleSelectAllClick}
+                            onRequestSort={this.handleRequestSort}
+                            rowCount={data.length}
+                            rows={fields}
+                        />
+                        <TableBody>
+                            {stableSort(data, getSorting(order, orderBy))
+                                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                .map(n => {
+                                    const isSelected = this.isSelected(n.id);
+                                    return (
+                                        <TableRow
+                                            hover
+                                            onClick={event => this.handleClick(event, n)}
+                                            role='checkbox'
+                                            aria-checked={isSelected}
+                                            tabIndex={-1}
+                                            key={n.id}
+                                            selected={isSelected}
+                                        >
+                                            <TableCell padding='checkbox'>
+                                                <Checkbox checked={isSelected} />
+                                            </TableCell>
+                                            {fields.map(field => {
+                                                if (field.id === 'id') {
+                                                    return (
+                                                        <TableCell
+                                                            key={field.id}
+                                                            component='th'
+                                                            scope='row'
+                                                            padding='none'
+                                                        >
+                                                            {n[field.id]}
+                                                        </TableCell>
+                                                    );
+                                                } else {
+                                                    return (
+                                                        <TableCell key={field.id}>
+                                                            {field.type === 'ErrorCheck' ? (
+                                                                n[field.id] === 1 ? (
+                                                                    <CheckCircleOutline className={classes.checkPass} />
+                                                                ) : (
+                                                                    <ErrorOutline className={classes.checkFail} />
+                                                                )
+                                                            ) : (
+                                                                n[field.id]
+                                                            )}
+                                                        </TableCell>
+                                                    );
+                                                }
+                                            })}
+                                        </TableRow>
+                                    );
+                                })}
+                            {emptyRows > 0 && (
+                                <TableRow style={{ height: 49 * emptyRows }}>
+                                    <TableCell colSpan={fields.length + 1} />
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+                <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component='div'
+                    count={data.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    backIconButtonProps={{
+                        'aria-label': 'Previous Page'
+                    }}
+                    nextIconButtonProps={{
+                        'aria-label': 'Next Page'
+                    }}
+                    onChangePage={this.handleChangePage}
+                    onChangeRowsPerPage={this.handleChangeRowsPerPage}
+                />
+            </Paper>
+        );
     }
-    this.setState({ selected: [] });
-  };
-
-  handleClick = (event, row) => {
-    const { selected, SelectedRow } = this.state;
-    const selectedIndex = selected.indexOf(row.id);
-    let newSelected = [];
-
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, row.id);
-      SelectedRow[row.id] = row;
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      );
-    }
-
-    this.setState({ selected: newSelected });
-    this.props.updatedSelected(newSelected, SelectedRow);
-  };
-
-  handleChangePage = (event, page) => {
-    this.setState({ page });
-  };
-
-  handleChangeRowsPerPage = event => {
-    this.setState({ rowsPerPage: event.target.value });
-  };
-
-
-
-
-
-
-  isSelected = id => this.state.selected.indexOf(id) !== -1;
-
-
-  render() {
-    const { classes, data, fields, title } = this.props;
-    const { order, orderBy, selected, rowsPerPage, page } = this.state;
-    const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
-
-    return (
-      <Paper className={classes.root}>
-        <EnhancedTableToolbar
-          numSelected={selected.length}
-          open={this.props.handleFormOpen}
-          remove={this.props.handleDelete}
-          title={title}
-          addIconTooltip={this.props.addIconTooltip}
-          editIconTooltip={this.props.editIconTooltip}
-          deleteIconTooltip={this.props.deleteIconTooltip} />
-        <div className={classes.tableWrapper}>
-          <Table className={classes.table} aria-labelledby="tableTitle">
-            <EnhancedTableHead
-              numSelected={selected.length}
-              order={order}
-              orderBy={orderBy}
-              onSelectAllClick={this.handleSelectAllClick}
-              onRequestSort={this.handleRequestSort}
-              rowCount={data.length}
-              rows={fields}
-            />
-            <TableBody>
-              {stableSort(data, getSorting(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map(n => {
-                  const isSelected = this.isSelected(n.id);
-                  return (
-                    <TableRow
-                      hover
-                      onClick={event => this.handleClick(event, n)}
-                      role="checkbox"
-                      aria-checked={isSelected}
-                      tabIndex={-1}
-                      key={n.id}
-                      selected={isSelected}
-                    >
-                      <TableCell padding="checkbox">
-                        <Checkbox checked={isSelected} />
-                      </TableCell>
-                      {fields.map(field => {
-                        if (field.id === 'id') {
-                          return (
-                            <TableCell key={field.id} component="th" scope="row" padding="none">{n[field.id]}</TableCell>
-                          )
-                        } else {
-                          return (
-                            <TableCell key={field.id}>
-                              {field.type === 'ErrorCheck' ? (n[field.id] === 1 ? <CheckCircleOutline className={classes.checkPass}/> : <ErrorOutline className={classes.checkFail}/>) : n[field.id]}
-                            </TableCell>
-                          )
-                        }
-
-                      })}
-                    </TableRow>
-                  );
-                })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 49 * emptyRows }}>
-                  <TableCell colSpan={fields.length +1} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={data.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          backIconButtonProps={{
-            'aria-label': 'Previous Page',
-          }}
-          nextIconButtonProps={{
-            'aria-label': 'Next Page',
-          }}
-          onChangePage={this.handleChangePage}
-          onChangeRowsPerPage={this.handleChangeRowsPerPage}
-        />
-
-
-      </Paper>
-    );
-  }
 }
 
 EnhancedTable.propTypes = {
-  classes: PropTypes.object.isRequired,
+    classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(EnhancedTable);
