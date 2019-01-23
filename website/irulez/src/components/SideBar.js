@@ -1,30 +1,30 @@
-import React from "react";
-import PropTypes from "prop-types";
-import classNames from "classnames";
-import { withStyles } from "@material-ui/core/styles";
-import Drawer from "@material-ui/core/Drawer";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import List from "@material-ui/core/List";
-import Typography from "@material-ui/core/Typography";
-import Divider from "@material-ui/core/Divider";
-import IconButton from "@material-ui/core/IconButton";
-import MenuIcon from "@material-ui/icons/Menu";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import ExpandLess from "@material-ui/icons/ExpandLess";
-import ExpandMore from "@material-ui/icons/ExpandMore";
-import Collapse from "@material-ui/core/Collapse";
-import { NavLink } from 'react-router-dom'
+import React from 'react';
+import PropTypes from 'prop-types';
+import classNames from 'classnames';
+import { withStyles } from '@material-ui/core/styles';
+import Drawer from '@material-ui/core/Drawer';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import List from '@material-ui/core/List';
+import Typography from '@material-ui/core/Typography';
+import Divider from '@material-ui/core/Divider';
+import IconButton from '@material-ui/core/IconButton';
+import MenuIcon from '@material-ui/icons/Menu';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import ExpandLess from '@material-ui/icons/ExpandLess';
+import ExpandMore from '@material-ui/icons/ExpandMore';
+import Collapse from '@material-ui/core/Collapse';
+import { NavLink } from 'react-router-dom';
 import { withRouter } from 'react-router-dom';
 
-import SendIcon from "@material-ui/icons/Send";
-import PeopleIcon from "@material-ui/icons/People";
-import PersonIcon from "@material-ui/icons/Person";
+import SendIcon from '@material-ui/icons/Send';
+import PeopleIcon from '@material-ui/icons/People';
+import PersonIcon from '@material-ui/icons/Person';
 import WallIcon from 'mdi-react/WallIcon';
 import LogoutIcon from 'mdi-react/LogoutIcon';
 import ChipIcon from 'mdi-react/ChipIcon';
@@ -36,10 +36,10 @@ const drawerWidth = 240;
 
 const styles = theme => ({
     root: {
-        display: "flex"
+        display: 'flex'
     },
     appBar: {
-        transition: theme.transitions.create(["margin", "width"], {
+        transition: theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen
         })
@@ -47,7 +47,7 @@ const styles = theme => ({
     appBarShift: {
         width: `calc(100% - ${drawerWidth}px)`,
         marginLeft: drawerWidth,
-        transition: theme.transitions.create(["margin", "width"], {
+        transition: theme.transitions.create(['margin', 'width'], {
             easing: theme.transitions.easing.easeOut,
             duration: theme.transitions.duration.enteringScreen
         })
@@ -57,7 +57,7 @@ const styles = theme => ({
         marginRight: 20
     },
     hide: {
-        display: "none"
+        display: 'none'
     },
     drawer: {
         width: drawerWidth,
@@ -67,17 +67,17 @@ const styles = theme => ({
         width: drawerWidth
     },
     drawerHeader: {
-        display: "flex",
-        alignItems: "center",
-        padding: "0 8px",
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 8px',
         ...theme.mixins.toolbar,
-        justifyContent: "flex-end"
+        justifyContent: 'flex-end'
     },
     nested: {
-        paddingLeft: theme.spacing.unit * 4,
+        paddingLeft: theme.spacing.unit * 4
     },
     active: {
-        backgroundColor: "rgba(0, 0, 0, 0.14)",
+        backgroundColor: 'rgba(0, 0, 0, 0.14)'
     }
 });
 
@@ -95,29 +95,28 @@ function ListItemLink(props) {
 
 ListItemLink.propTypes = {
     primary: PropTypes.node.isRequired,
-    to: PropTypes.string.isRequired,
+    to: PropTypes.string.isRequired
 };
 
 class SideBar extends React.Component {
     constructor(props) {
         super(props);
         this.handleLogout = this.handleLogout.bind(this);
-
     }
 
     componentWillReceiveProps = props => {
         this.setState({
-            [props.open]: true,
+            [props.open]: true
         });
-    }
+    };
 
     state = {
         open: true,
-        subopen: false,
+        subopen: false
     };
 
-    handleClick = (menu) => {
-        this.props.ToggleCollapse(menu)
+    handleClick = menu => {
+        this.props.ToggleCollapse(menu);
     };
 
     handleDrawerOpen = () => {
@@ -131,7 +130,7 @@ class SideBar extends React.Component {
     };
 
     handleLogout() {
-        this.props.Auth.logout()
+        this.props.Auth.logout();
         this.props.history.replace('/login');
         // history.push('/login')
     }
@@ -144,29 +143,29 @@ class SideBar extends React.Component {
             <div className={classes.root}>
                 <CssBaseline />
                 <AppBar
-                    position="fixed"
+                    position='fixed'
                     className={classNames(classes.appBar, {
                         [classes.appBarShift]: open
                     })}
                 >
                     <Toolbar disableGutters={!open}>
                         <IconButton
-                            color="inherit"
-                            aria-label="Open drawer"
+                            color='inherit'
+                            aria-label='Open drawer'
                             onClick={this.handleDrawerOpen}
                             className={classNames(classes.menuButton, open && classes.hide)}
                         >
                             <MenuIcon />
                         </IconButton>
-                        <Typography variant="h6" color="inherit" noWrap>
+                        <Typography variant='h6' color='inherit' noWrap>
                             iRulez Administration
                         </Typography>
                     </Toolbar>
                 </AppBar>
                 <Drawer
                     className={classes.drawer}
-                    variant="persistent"
-                    anchor="left"
+                    variant='persistent'
+                    anchor='left'
                     open={open}
                     classes={{
                         paper: classes.drawerPaper
@@ -174,11 +173,7 @@ class SideBar extends React.Component {
                 >
                     <div className={classes.drawerHeader}>
                         <IconButton onClick={this.handleDrawerClose}>
-                            {theme.direction === "ltr" ? (
-                                <ChevronLeftIcon />
-                            ) : (
-                                    <ChevronRightIcon />
-                                )}
+                            {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                         </IconButton>
                     </div>
 
@@ -188,40 +183,50 @@ class SideBar extends React.Component {
 
                     >
 
-                        <ListItemLink to="/administrator" classes={classes} button primary="Dashboard" icon={<GaugeIcon  />} />
+                        <ListItemLink to="/administrator" classes={classes} button primary="Dashboard" icon={<GaugeIcon />} />
                         <ListItemLink to="/administrator/actions" classes={classes} button primary="Actions" icon={<CogsIcon />} />
                         <ListItemLink to="/administrator/devices" classes={classes} button primary="Devices" icon={<ChipIcon />} />
                         <ListItem button>
                             <ListItemIcon>
                                 <LightbulbOnOutlineIcon />
                             </ListItemIcon>
-                            <ListItemText inset primary="vButtons" />
+                            <ListItemText inset primary='vButtons' />
                         </ListItem>
-                        <ListItem button onClick={() => { this.handleClick("users") }}>
+                        <ListItem
+                            button
+                            onClick={() => {
+                                this.handleClick('users');
+                            }}
+                        >
                             <ListItemIcon>
                                 <PeopleIcon />
                             </ListItemIcon>
-                            <ListItemText inset primary="Users" />
+                            <ListItemText inset primary='Users' />
                             {this.state.users ? <ExpandLess /> : <ExpandMore />}
                         </ListItem>
-                        <Collapse in={this.props.MenuOpen === "users"} timeout="auto" unmountOnExit>
-                            <List component="div" disablePadding>
-                                <ListItemLink to="/administrator/users" className={classes.nested} classes={classes} primary="Add/edit" icon={<PersonIcon />} />
+                        <Collapse in={this.props.MenuOpen === 'users'} timeout='auto' unmountOnExit>
+                            <List component='div' disablePadding>
+                                <ListItemLink
+                                    to='/administrator/users'
+                                    className={classes.nested}
+                                    classes={classes}
+                                    primary='Add/edit'
+                                    icon={<PersonIcon />}
+                                />
                                 <ListItem button className={classes.nested}>
                                     <ListItemIcon>
                                         <WallIcon />
                                     </ListItemIcon>
-                                    <ListItemText primary="User Rights" />
+                                    <ListItemText primary='User Rights' />
                                 </ListItem>
                             </List>
-
                         </Collapse>
                         <Divider />
                         <ListItem button onClick={this.handleLogout}>
                             <ListItemIcon>
                                 <LogoutIcon />
                             </ListItemIcon>
-                            <ListItemText primary="Logout" />
+                            <ListItemText primary='Logout' />
                         </ListItem>
                     </List>
                 </Drawer>

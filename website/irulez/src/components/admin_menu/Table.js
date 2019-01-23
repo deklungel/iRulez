@@ -48,9 +48,6 @@ function getSorting(order, orderBy) {
   return order === 'desc' ? (a, b) => desc(a, b, orderBy) : (a, b) => -desc(a, b, orderBy);
 }
 
-
-
-
 class EnhancedTableHead extends React.Component {
   createSortHandler = property => event => {
     this.props.onRequestSort(event, property);
@@ -62,7 +59,7 @@ class EnhancedTableHead extends React.Component {
     return (
       <TableHead>
         <TableRow>
-          <TableCell padding="checkbox">
+          <TableCell padding='checkbox'>
             <Checkbox
               indeterminate={numSelected > 0 && numSelected < rowCount}
               checked={numSelected === rowCount}
@@ -78,7 +75,7 @@ class EnhancedTableHead extends React.Component {
                 sortDirection={orderBy === row.id ? order : false}
               >
                 <Tooltip
-                  title="Sort"
+                  title='Sort'
                   placement={row.numeric ? 'bottom-end' : 'bottom-start'}
                   enterDelay={300}
                 >
@@ -105,31 +102,31 @@ EnhancedTableHead.propTypes = {
   onSelectAllClick: PropTypes.func.isRequired,
   order: PropTypes.string.isRequired,
   orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
+  rowCount: PropTypes.number.isRequired
 };
 const toolbarStyles = theme => ({
   root: {
-    paddingRight: theme.spacing.unit,
+    paddingRight: theme.spacing.unit
   },
   highlight:
     theme.palette.type === 'light'
       ? {
         color: theme.palette.secondary.main,
-        backgroundColor: lighten(theme.palette.secondary.light, 0.85),
+        backgroundColor: lighten(theme.palette.secondary.light, 0.85)
       }
       : {
         color: theme.palette.text.primary,
-        backgroundColor: theme.palette.secondary.dark,
+        backgroundColor: theme.palette.secondary.dark
       },
   spacer: {
-    flex: '1 1 75%',
+    flex: '1 1 75%'
   },
   actions: {
-    color: theme.palette.text.secondary,
+    color: theme.palette.text.secondary
   },
   title: {
-    flex: '0 0 auto',
-  },
+    flex: '0 0 auto'
+  }
 });
 
 let EnhancedTableToolbar = props => {
@@ -138,16 +135,16 @@ let EnhancedTableToolbar = props => {
   return (
     <Toolbar
       className={classNames(classes.root, {
-        [classes.highlight]: numSelected > 0,
+        [classes.highlight]: numSelected > 0
       })}
     >
       <div className={classes.title}>
         {numSelected > 0 ? (
-          <Typography color="inherit" variant="subtitle1">
+          <Typography color='inherit' variant='subtitle1'>
             {numSelected} selected
-            </Typography>
+                    </Typography>
         ) : (
-            <Typography variant="h6" id="tableTitle">
+            <Typography variant='h6' id='tableTitle'>
               {title}
             </Typography>
           )}
@@ -156,24 +153,27 @@ let EnhancedTableToolbar = props => {
       <div className={classes.actions}>
         {numSelected > 0 ? (
           numSelected === 1 ? (
-            <div><Tooltip title={editIconTooltip} onClick={() => open("editForm")}>
-              <IconButton aria-label={editIconTooltip}>
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-              <Tooltip title={deleteIconTooltip} onClick={() => open("deleteForm")}>
+            <div>
+              <Tooltip title={editIconTooltip} onClick={() => open('editForm')}>
+                <IconButton aria-label={editIconTooltip}>
+                  <EditIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={deleteIconTooltip} onClick={() => open('deleteForm')}>
                 <IconButton aria-label={deleteIconTooltip}>
                   <DeleteIcon />
                 </IconButton>
-              </Tooltip></div>
-          ) :
-            <Tooltip title={deleteIconTooltip} onClick={() => open("deleteForm")}>
-              <IconButton aria-label={deleteIconTooltip}>
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
+              </Tooltip>
+            </div>
+          ) : (
+              <Tooltip title={deleteIconTooltip} onClick={() => open('deleteForm')}>
+                <IconButton aria-label={deleteIconTooltip}>
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            )
         ) : (
-            <Tooltip title={addIconTooltip} onClick={() => open("newForm")}>
+            <Tooltip title={addIconTooltip} onClick={() => open('newForm')}>
               <IconButton aria-label={addIconTooltip}>
                 <AddCircle />
               </IconButton>
@@ -186,7 +186,7 @@ let EnhancedTableToolbar = props => {
 
 EnhancedTableToolbar.propTypes = {
   classes: PropTypes.object.isRequired,
-  numSelected: PropTypes.number.isRequired,
+  numSelected: PropTypes.number.isRequired
 };
 
 EnhancedTableToolbar = withStyles(toolbarStyles)(EnhancedTableToolbar);
@@ -213,7 +213,6 @@ const styles = theme => ({
   },
 });
 
-
 class EnhancedTable extends React.Component {
   componentWillReceiveProps(newProps) {
     this.setState({
@@ -228,14 +227,8 @@ class EnhancedTable extends React.Component {
     page: 0,
     selected: [],
     SelectedRow: [],
-    rowsPerPage: 0,
+    rowsPerPage: 0
   };
-
-
-
-
-
-
 
   handleRequestSort = (event, property) => {
     const orderBy = property;
@@ -261,7 +254,6 @@ class EnhancedTable extends React.Component {
     const selectedIndex = selected.indexOf(row.id);
     let newSelected = [];
 
-
     if (selectedIndex === -1) {
       newSelected = newSelected.concat(selected, row.id);
       SelectedRow[row.id] = row;
@@ -270,10 +262,7 @@ class EnhancedTable extends React.Component {
     } else if (selectedIndex === selected.length - 1) {
       newSelected = newSelected.concat(selected.slice(0, -1));
     } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1),
-      );
+      newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
     }
 
     this.setState({ selected: newSelected });
@@ -288,32 +277,7 @@ class EnhancedTable extends React.Component {
     this.setState({ rowsPerPage: event.target.value });
   };
 
-
-
-
-  switchField = (n, field, classes) => {
-    switch (field.type) {
-      case 'ErrorCheck':
-        return n[field.id] === 1 ? <CheckCircleOutline className={classes.checkPass} /> : <ErrorOutline className={classes.checkFail} />;
-        break
-      case 'Chip':
-        var tmp = []
-        if (n[field.id]) {
-          n[field.id].split(",").map(
-            chip => {
-              tmp.push(<Chip label={chip} className={classes.chip} />)
-            })
-        }
-        return tmp
-        break
-      default:
-        return n[field.id]
-    }
-  }
-
-
   isSelected = id => this.state.selected.indexOf(id) !== -1;
-
 
   render() {
     const { classes, data, fields, title } = this.props;
@@ -329,9 +293,10 @@ class EnhancedTable extends React.Component {
           title={title}
           addIconTooltip={this.props.addIconTooltip}
           editIconTooltip={this.props.editIconTooltip}
-          deleteIconTooltip={this.props.deleteIconTooltip} />
+          deleteIconTooltip={this.props.deleteIconTooltip}
+        />
         <div className={classes.tableWrapper}>
-          <Table className={classes.table} aria-labelledby="tableTitle">
+          <Table className={classes.table} aria-labelledby='tableTitle'>
             <EnhancedTableHead
               numSelected={selected.length}
               order={order}
@@ -350,28 +315,42 @@ class EnhancedTable extends React.Component {
                     <TableRow
                       hover
                       onClick={event => this.handleClick(event, n)}
-                      role="checkbox"
+                      role='checkbox'
                       aria-checked={isSelected}
                       tabIndex={-1}
                       key={n.id}
                       selected={isSelected}
                     >
-                      <TableCell padding="checkbox">
+                      <TableCell padding='checkbox'>
                         <Checkbox checked={isSelected} />
                       </TableCell>
                       {fields.map(field => {
                         if (field.id === 'id') {
                           return (
-                            <TableCell key={field.id} component="th" scope="row" padding="none">{n[field.id]}</TableCell>
-                          )
+                            <TableCell
+                              key={field.id}
+                              component='th'
+                              scope='row'
+                              padding='none'
+                            >
+                              {n[field.id]}
+                            </TableCell>
+                          );
                         } else {
                           return (
                             <TableCell key={field.id}>
-                              {this.switchField(n, field, classes)}
+                              {field.type === 'ErrorCheck' ? (
+                                n[field.id] === 1 ? (
+                                  <CheckCircleOutline className={classes.checkPass} />
+                                ) : (
+                                    <ErrorOutline className={classes.checkFail} />
+                                  )
+                              ) : (
+                                  n[field.id]
+                                )}
                             </TableCell>
-                          )
+                          );
                         }
-
                       })}
                     </TableRow>
                   );
@@ -386,28 +365,27 @@ class EnhancedTable extends React.Component {
         </div>
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
-          component="div"
+          component='div'
           count={data.length}
           rowsPerPage={rowsPerPage}
           page={page}
           backIconButtonProps={{
-            'aria-label': 'Previous Page',
+            'aria-label': 'Previous Page'
           }}
           nextIconButtonProps={{
-            'aria-label': 'Next Page',
+            'aria-label': 'Next Page'
           }}
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}
         />
-
-
       </Paper>
     );
   }
+
 }
 
 EnhancedTable.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired
 };
 
 export default withStyles(styles)(EnhancedTable);

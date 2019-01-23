@@ -11,7 +11,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const exjwt = require('express-jwt');
-var fs = require("fs");
+var fs = require('fs');
 var randtoken = require('rand-token');
 var mysql = require('mysql');
 var md5 = require('md5');
@@ -25,13 +25,10 @@ var pool = mysql.createPool({
     database: config.database.database
 });
 
-
-
 const RSA_PRIVATE_KEY = fs.readFileSync(config.key);
 
 // Instantiating the express app
 const app = express();
-
 
 // See the react auth blog in which cors is required for access
 app.use((req, res, next) => {
@@ -44,78 +41,83 @@ app.use((req, res, next) => {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-var refreshTokens = {}
+var refreshTokens = {};
 
 // LOGIN ROUTE
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
-    console.log("before validation")
-    validateEmailAndPassword({ email: username, password: md5(password) },
-        function (returnValue) {
-            console.log(returnValue)
-            if (returnValue != null) {
-                console.log("Validation passed")
-                // 60sec * 60min * 24u * 7d 
-                const exp = 604800;
-                var refreshToken = randtoken.uid(256)
-                const jwtBearerToken = createToken(returnValue, exp)
-                console.log("token " + jwtBearerToken);
-                refreshTokens[refreshToken] = returnValue.email
-                res.status(200).json({ token: jwtBearerToken, expiresIn: exp, username: returnValue.email, refreshToken: refreshToken });
-            }
-            else {
-                console.log("Validation failed");
-                res.statusMessage = "Username or password is incorrect";
-                res.status(401).send();
-            }
+    console.log('before validation');
+    validateEmailAndPassword({ email: username, password: md5(password) }, function(returnValue) {
+        console.log(returnValue);
+        if (returnValue != null) {
+            console.log('Validation passed');
+            // 60sec * 60min * 24u * 7d
+            const exp = 604800;
+            var refreshToken = randtoken.uid(256);
+            const jwtBearerToken = createToken(returnValue, exp);
+            console.log('token ' + jwtBearerToken);
+            refreshTokens[refreshToken] = returnValue.email;
+            res.status(200).json({
+                token: jwtBearerToken,
+                expiresIn: exp,
+                username: returnValue.email,
+                refreshToken: refreshToken
+            });
+        } else {
+            console.log('Validation failed');
+            res.statusMessage = 'Username or password is incorrect';
+            res.status(401).send();
         }
-    )
-
-
+    });
 });
 
-
 function createToken(returnValue, exp) {
-    return jwtBearerToken = jwt.sign({
-        algorithm: 'RS256',
-        expiresIn: exp,
-        username: returnValue.email,
-        userid: returnValue.email,
-        role: returnValue.role
-    },
-        RSA_PRIVATE_KEY, { expiresIn: exp, algorithm: 'RS256' });
+    return (jwtBearerToken = jwt.sign(
+        {
+            algorithm: 'RS256',
+            expiresIn: exp,
+            username: returnValue.email,
+            userid: returnValue.email,
+            role: returnValue.role
+        },
+        RSA_PRIVATE_KEY,
+        { expiresIn: exp, algorithm: 'RS256' }
+    ));
 }
 
 function validateEmailAndPassword(credentials, callback) {
-    sql = "SELECT * FROM tbl_users where LOWER(email)='" + credentials.email.toLowerCase() + "' and password='" + credentials.password + "'";
+    sql =
+        "SELECT * FROM tbl_users where LOWER(email)='" +
+        credentials.email.toLowerCase() +
+        "' and password='" +
+        credentials.password +
+        "'";
     console.log(sql);
-    pool.query(sql, function (err, result, fields) {
+    pool.query(sql, function(err, result, fields) {
         if (err) throw err;
         if (result.length == 0) {
-            console.log("return false");
+            console.log('return false');
             callback(null);
-        }
-        else {
+        } else {
             console.log(result[0].id);
             console.log('return true');
             callback({ email: result[0].email, role: result[0].role });
         }
     });
-
 }
 
-// Error handling 
-app.use(function (err, req, res, next) {
-    if (err.name === 'UnauthorizedError') { // Send the error rather than to show it on the console
+// Error handling
+app.use(function(err, req, res, next) {
+    if (err.name === 'UnauthorizedError') {
+        // Send the error rather than to show it on the console
         res.status(401).send(err);
-    }
-    else {
+    } else {
         next(err);
     }
 });
 
 // Starting the app on PORT 3000
-const PORT = config.port
+const PORT = config.port;
 app.listen(PORT, () => {
     console.log(`AuthService running on port ${PORT}`);
 });

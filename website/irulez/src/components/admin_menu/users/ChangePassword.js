@@ -14,18 +14,17 @@ import IconButton from '@material-ui/core/IconButton';
 import { withStyles } from '@material-ui/core/styles';
 import AuthService from '../../AuthService';
 
-
 const styles = theme => ({
     textField: {
-      marginLeft: theme.spacing.unit,
-      marginRight: theme.spacing.unit,
+        marginLeft: theme.spacing.unit,
+        marginRight: theme.spacing.unit
     }
-  });
+});
 
 class ChangePassword extends Component {
     Auth = new AuthService();
     state = {
-        password: '',
+        password: ''
     };
 
     handleClickShowPassword = () => {
@@ -34,77 +33,70 @@ class ChangePassword extends Component {
 
     handleChange = name => event => {
         this.setState({
-            [name]: event.target.value,
+            [name]: event.target.value
         });
-    }
+    };
 
     changePassword = () => {
-        if (this.state.password !== ''){
+        if (this.state.password !== '') {
             var options = {
-                'method': 'PUT',
-                'body': JSON.stringify({id: this.props.id, password: this.state.password})
-            }
+                method: 'PUT',
+                body: JSON.stringify({ id: this.props.id, password: this.state.password })
+            };
             this.Auth.fetch(window.USER_CHANGE_PASSWORD, options).then(
-                function (result) {
+                function(result) {
                     this.closeForm();
-                    this.props.notification("Password has been changed", 'info')
+                    this.props.notification('Password has been changed', 'info');
                 }.bind(this)
-            )
-        }else{
-            this.props.notification("Password not changed", 'info')
+            );
+        } else {
+            this.props.notification('Password not changed', 'info');
             this.closeForm();
         }
-        
-    
-      }
+    };
     closeForm = () => {
-        this.props.handleFormClose("changePassword");
-    }
+        this.props.handleFormClose('changePassword');
+    };
 
     render() {
         const { classes } = this.props;
 
         return (
-            <Dialog
-                open={this.props.open}
-                onClose={this.closeForm}
-                aria-labelledby="form-dialog-title"
-            >
-                <DialogTitle id="form-dialog-title">Change Password</DialogTitle>
+            <Dialog open={this.props.open} onClose={this.closeForm} aria-labelledby='form-dialog-title'>
+                <DialogTitle id='form-dialog-title'>Change Password</DialogTitle>
                 <DialogContent>
                     <TextField
-                        id="password"
+                        id='password'
                         className={classNames(classes.margin, classes.textField)}
                         type={this.state.showPassword ? 'text' : 'password'}
-                        label="Password"
+                        label='Password'
                         onChange={this.handleChange('password')}
                         fullWidth
                         InputProps={{
                             endAdornment: (
-                                <InputAdornment position="end">
+                                <InputAdornment position='end'>
                                     <IconButton
-                                        aria-label="Toggle password visibility"
+                                        aria-label='Toggle password visibility'
                                         onClick={this.handleClickShowPassword}
                                     >
                                         {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
                                     </IconButton>
                                 </InputAdornment>
-                            ),
+                            )
                         }}
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={this.closeForm} color="primary">
+                    <Button onClick={this.closeForm} color='primary'>
                         Cancel
-            </Button>
-                    <Button onClick={this.changePassword} color="primary">
+                    </Button>
+                    <Button onClick={this.changePassword} color='primary'>
                         Change Password
-            </Button>
+                    </Button>
                 </DialogActions>
             </Dialog>
-        )
+        );
     }
-
 }
 
 export default withStyles(styles)(ChangePassword);
