@@ -36,17 +36,11 @@ class Devices extends Component {
         lastSelectedRow: [],
         originalValueRow: []
     };
+    componentDidMount() {
+        this.getDataFromBackend();
 
-    getDataFromBackend = () => {
-        this.Auth.fetch(window.DEVICE_GET).then(
-            function (result) {
-                this.setState({ data: result.response })
-            }.bind(this)
-        ).catch(err => {
-            alert(err);
-        })
-        this.setState({ selected: [] });
     }
+
 
     getDataFromBackend = () => {
         this.Auth.fetch(window.DEVICE_GET)
