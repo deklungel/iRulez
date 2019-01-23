@@ -9,9 +9,10 @@ import { withStyles } from "@material-ui/core/styles";
 import withAuth from './../withAuth';
 import { SnackbarProvider } from 'notistack';
 
-import Admin from './Dashboard'
-import Users from './users/Users'
-import Devices from './devices/Devices'
+import Admin from './Dashboard';
+import Users from './users/Users';
+import Devices from './devices/Devices';
+import Actions from './actions/Actions';
 
 const Auth = new AuthService();
 
@@ -89,6 +90,11 @@ class Administrator extends Component {
                             exact
                             path='/administrator'
                             render={(props) => <Admin {...props} Collapse={this.SetCollapse} />}
+                        />
+                        <Route
+                            exact
+                            path='/administrator/actions'
+                            render={(props) => <Actions {...props} Collapse={this.SetCollapse} />}
                         />
                         <Route
                             exact

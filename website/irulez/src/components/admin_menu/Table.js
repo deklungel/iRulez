@@ -22,7 +22,7 @@ import AddCircle from '@material-ui/icons/AddCircle';
 import { lighten } from '@material-ui/core/styles/colorManipulator';
 import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
 import ErrorOutline from '@material-ui/icons/ErrorOutline';
-
+import Chip from '@material-ui/core/Chip';
 
 function desc(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -202,12 +202,15 @@ const styles = theme => ({
   tableWrapper: {
     overflowX: 'auto',
   },
-  checkFail:{
+  checkFail: {
     color: 'red',
   },
-  checkPass:{
+  checkPass: {
     color: 'green',
-  }
+  },
+  chip: {
+    margin: theme.spacing.unit,
+  },
 });
 
 
@@ -288,6 +291,25 @@ class EnhancedTable extends React.Component {
 
 
 
+  switchField = (n, field, classes) => {
+    switch (field.type) {
+      case 'ErrorCheck':
+        return n[field.id] === 1 ? <CheckCircleOutline className={classes.checkPass} /> : <ErrorOutline className={classes.checkFail} />;
+        break
+      case 'Chip':
+        var tmp = []
+        if (n[field.id]) {
+          n[field.id].split(",").map(
+            chip => {
+              tmp.push(<Chip label={chip} className={classes.chip} />)
+            })
+        }
+        return tmp
+        break
+      default:
+        return n[field.id]
+    }
+  }
 
 
   isSelected = id => this.state.selected.indexOf(id) !== -1;
@@ -345,7 +367,7 @@ class EnhancedTable extends React.Component {
                         } else {
                           return (
                             <TableCell key={field.id}>
-                              {field.type === 'ErrorCheck' ? (n[field.id] === 1 ? <CheckCircleOutline className={classes.checkPass}/> : <ErrorOutline className={classes.checkFail}/>) : n[field.id]}
+                              {this.switchField(n, field, classes)}
                             </TableCell>
                           )
                         }
@@ -356,7 +378,7 @@ class EnhancedTable extends React.Component {
                 })}
               {emptyRows > 0 && (
                 <TableRow style={{ height: 49 * emptyRows }}>
-                  <TableCell colSpan={fields.length +1} />
+                  <TableCell colSpan={fields.length + 1} />
                 </TableRow>
               )}
             </TableBody>

@@ -18,13 +18,13 @@ const styles = theme => ({
   }
 });
 
-class Devices extends Component {
+class Actions extends Component {
   Auth = new AuthService();
   originalValueRow = [];
 
   constructor(props) {
     super(props);
-    this.props.Collapse("devices")
+    this.props.Collapse("actions")
 
   };
 
@@ -38,14 +38,26 @@ class Devices extends Component {
     originalValueRow: [],
   };
 
-
   componentDidMount() {
     this.getDataFromBackend();
     this.resetValues();
   }
 
+  resetValues = () => {
+    this.setState({
+      name: '',
+      mac: '',
+      sn: '',
+      name_changed: false,
+      sn_changed: false,
+      mac_changed: false,
+      name_error: false,
+      mac_error: false,
+    })
+  }
+
   getDataFromBackend = () => {
-    this.Auth.fetch(window.DEVICE_GET).then(
+    this.Auth.fetch(window.ACTIONS_GET).then(
       function (result) {
         this.setState({ data: result.response })
       }.bind(this)
@@ -75,18 +87,6 @@ class Devices extends Component {
     this.resetValues();
   };
 
-  resetValues = () => {
-    this.setState({
-      name: '',
-      mac: '',
-      sn: '',
-      name_changed: false,
-      sn_changed: false,
-      mac_changed: false,
-      name_error: false,
-      mac_error: false,
-    })
-  }
 
   updatedSelected = (value, row) => {
     this.setState({ selected: value });
@@ -207,12 +207,22 @@ class Devices extends Component {
     const { classes } = this.props;
 
     const fields = [
+      { id: 'id', align: 'left', disablePadding: true, label: 'ID' },
       { id: 'name', align: 'left', disablePadding: true, label: 'Name', addForm: true, required: true, add_autoFocus: true },
-      { id: 'mac', align: 'left', disablePadding: false, label: 'MAC', addForm: true, editForm: true, required: true, edit_autofocus: true },
-      { id: 'sn', align: 'left', disablePadding: false, label: 'Serial Number', addForm: true, editForm: true, required: false },
-      { id: 'version', align: 'left', disablePadding: false, label: 'Version' },
-      { id: 'ping', align: 'left', disablePadding: false, label: 'PING', type: 'ErrorCheck' },
-      { id: 'mqtt', align: 'left', disablePadding: false, label: 'MQTT', type: 'ErrorCheck' },
+      { id: 'type', align: 'left', disablePadding: true, label: 'Type', addForm: true, required: true},
+      { id: 'seconds_down', align: 'left', disablePadding: true, label: 'Seconds Down'},
+      { id: 'tigger_type', align: 'left', disablePadding: true, label: 'Trigger Type'},
+      { id: 'delay', align: 'left', disablePadding: true, label: 'Delay', addForm: true, required: true },
+      { id: 'timer', align: 'left', disablePadding: true, label: 'Timer', addForm: true, required: true },
+      { id: 'master', align: 'left', disablePadding: false, label: 'Master', addForm: true, required: true },
+      { id: 'dimmer', align: 'left', disablePadding: false, label: 'Dimmer', addForm: true, required: true },
+      { id: 'condition', align: 'left', disablePadding: true, label: 'Condition', addForm: true, required: true },
+      { id: 'click_number', align: 'left', disablePadding: true, label: 'Click Number', addForm: true, required: true },
+      { id: 'dimmer_speed', align: 'left', disablePadding: true, label: 'Dimmer Speed', addForm: true, required: true },
+      { id: 'dimmer_light_value', align: 'left', disablePadding: true, label: 'Dimmer Light', addForm: true, required: true },
+      { id: 'cancel_on_button_release', align: 'left', disablePadding: true, label: 'Cancel', addForm: true, required: true },
+      { id: 'outputs', align: 'left', disablePadding: true, label: 'Outputs', addForm: true, required: true, type:"Chip" },
+      { id: 'notifications', align: 'left', disablePadding: true, label: 'Notifications', addForm: true, type:"Chip" },
     ];
 
     return (
@@ -228,7 +238,7 @@ class Devices extends Component {
           addIconTooltip="Add device"
           editIconTooltip="Edit device"
           deleteIconTooltip="Delete device"
-          rowsPerPage={5}
+          rowsPerPage={10}
         />
         <DialogMenu
           open={this.state.newForm}
@@ -293,8 +303,8 @@ class Devices extends Component {
     )
   }
 }
-Devices.propTypes = {
+Actions.propTypes = {
   enqueueSnackbar: PropTypes.func.isRequired,
 };
 
-export default withStyles(styles)(withSnackbar(Devices));
+export default withStyles(styles)(withSnackbar(Actions));

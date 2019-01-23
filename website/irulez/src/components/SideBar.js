@@ -28,6 +28,8 @@ import PersonIcon from "@material-ui/icons/Person";
 import WallIcon from 'mdi-react/WallIcon';
 import LogoutIcon from 'mdi-react/LogoutIcon';
 import ChipIcon from 'mdi-react/ChipIcon';
+import CogsIcon from "mdi-react/CogsIcon";
+import GaugeIcon from "mdi-react/GaugeIcon";
 import LightbulbOnOutlineIcon from 'mdi-react/LightbulbOnOutlineIcon'
 
 const drawerWidth = 240;
@@ -186,7 +188,8 @@ class SideBar extends React.Component {
 
                     >
 
-                        <ListItemLink to="/administrator" classes={classes} button primary="Actions" icon={<SendIcon />} />
+                        <ListItemLink to="/administrator" classes={classes} button primary="Dashboard" icon={<GaugeIcon  />} />
+                        <ListItemLink to="/administrator/actions" classes={classes} button primary="Actions" icon={<CogsIcon />} />
                         <ListItemLink to="/administrator/devices" classes={classes} button primary="Devices" icon={<ChipIcon />} />
                         <ListItem button>
                             <ListItemIcon>
