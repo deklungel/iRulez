@@ -5,7 +5,7 @@ import TriggerField from './TriggerField';
 import ActionTypeField from './ActionTypeField';
 import NumberField from './NumberField';
 import TimerField from './TimerField';
-import OutputField from './OutputField';
+import MasterField from './MasterField';
 import SecondsField from './SecondsField';
 import ConditionField from './ConditionField';
 import MailField from './MailField';
@@ -21,7 +21,7 @@ export const components = {
     ActionTypeField: ActionTypeField,
     NumberField: NumberField,
     TimerField: TimerField,
-    OutputField: OutputField,
+    MasterField: MasterField,
     SecondsField: SecondsField,
     ConditionField: ConditionField,
     MailField: MailField,

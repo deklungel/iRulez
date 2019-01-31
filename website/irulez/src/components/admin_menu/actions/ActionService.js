@@ -30,7 +30,6 @@ export default class ActionService {
         });
     }
     addAction(name, action_type, trigger, timer, delay, master, condition, click_number, outputs_id, notifications_id) {
-        console.log(action_type);
         return new Promise((resolve, reject) => {
             var options = {
                 method: 'POST',
@@ -67,7 +66,7 @@ export default class ActionService {
                 });
         });
     }
-    editAction2(state, fields) {
+    editAction(state, fields) {
         var json = {};
         json.id = state.lastSelectedRow.id;
 
@@ -80,89 +79,22 @@ export default class ActionService {
                 if (state[changed]) {
                     json[field.id] = state[field.id];
                 }
+                return json;
             });
-        console.log(json);
-    }
-
-    editAction(
-        id,
-        name,
-        name_changed,
-        action_type_name,
-        action_type_name_changed,
-        trigger_name,
-        trigger_name_changed,
-        timer,
-        timer_changed,
-        delay,
-        delay_changed,
-        master,
-        master_changed,
-        condition,
-        condition_changed,
-        click_number,
-        click_number_changed,
-        outputs_id,
-        outputs_id_changed,
-        notifications_id,
-        notifications_id_changed
-    ) {
         return new Promise((resolve, reject) => {
-            if (
-                name_changed ||
-                action_type_name_changed ||
-                trigger_name_changed ||
-                timer_changed ||
-                delay_changed ||
-                master_changed ||
-                condition_changed ||
-                click_number_changed ||
-                outputs_id_changed ||
-                notifications_id_changed
-            ) {
-                var json = {};
-                json.id = id;
-                if (name_changed) {
-                    json.name = name;
-                }
-                if (action_type_name_changed) {
-                    json.action_type_name = action_type_name;
-                }
-                if (trigger_name_changed) {
-                    json.trigger_name = trigger_name;
-                }
-                if (timer_changed) {
-                    json.timer = timer;
-                }
-                if (delay_changed) {
-                    json.delay = delay;
-                }
-                if (master_changed) {
-                    json.master = master;
-                }
-                if (condition_changed) {
-                    json.condition = condition;
-                }
-                if (click_number_changed) {
-                    json.click_number = click_number;
-                }
-                if (outputs_id_changed) {
-                    json.outputs_id = outputs_id;
-                }
-                if (notifications_id_changed) {
-                    json.notifications_id = notifications_id;
-                }
+            if (Object.keys(json).length > 1) {
+                console.log(json);
                 var options = {
                     method: 'PUT',
                     body: JSON.stringify(json)
                 };
-                this.Auth.fetch(window.DEVICE_EDIT, options)
+                this.Auth.fetch(window.ACTION_EDIT, options)
                     .then(result => resolve(result.response))
                     .catch(err => {
                         reject(String(err).replace(/Error:/g, ''));
                     });
             } else {
-                reject('User not changed');
+                reject('Action not changed');
             }
         });
     }

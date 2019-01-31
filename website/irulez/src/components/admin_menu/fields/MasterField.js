@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import SelectionField from './SelectionField';
-import ValueService from './../ValueService';
+import ValueService from '../ValueService';
 
-class OutputField extends Component {
+class MasterField extends Component {
     valueService = new ValueService();
     state = { options: [] };
 
@@ -33,4 +33,4 @@ class OutputField extends Component {
     }
 }
 
-export default OutputField;
+export default MasterField;

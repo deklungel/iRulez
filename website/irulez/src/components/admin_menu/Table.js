@@ -310,7 +310,7 @@ class EnhancedTable extends React.Component {
                             </Button>
                         );
                     }
-
+                    break;
                 default:
                     return n[field.id];
             }

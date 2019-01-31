@@ -63,7 +63,7 @@ class MultipleSelectionField extends Component {
                             {selected.map(value => (
                                 <Chip
                                     key={value}
-                                    label={options.length === 0 ? labelField.split('')[value] : options[value].label}
+                                    label={options.length === 0 ? labelField.split(',')[value] : options[value].label}
                                     className={classes.chip}
                                 />
                             ))}

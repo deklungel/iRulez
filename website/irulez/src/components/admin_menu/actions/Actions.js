@@ -4,7 +4,6 @@ import EnhancedTable from '../Table';
 import PropTypes from 'prop-types';
 import { withSnackbar } from 'notistack';
 import AuthService from '../../AuthService';
-import { withStyles } from '@material-ui/core/styles';
 import ActionService from './ActionService';
 import { components } from '../fields/iRulezFields';
 
@@ -60,25 +59,41 @@ class Actions extends Component {
             [form]: true
         });
         if (form === 'editForm') {
-            this.fields.map(field => {
-                if (field.array) {
-                    if (this.state.lastSelectedRow[field.mapping]) {
-                        var row = this.state.lastSelectedRow;
-                        var tmp = this.state.lastSelectedRow[field.mapping].split(',').map(value => {
-                            return parseInt(value);
-                        });
-                        row[field.mapping] = tmp;
+            this.fields
+                .filter(field => {
+                    return field.editForm || field.forLabel;
+                })
+                .map(field => {
+                    if (field.array) {
+                        if (this.state.lastSelectedRow[field.id]) {
+                            if (!Array.isArray(this.state.lastSelectedRow[field.id])) {
+                                var row = this.state.lastSelectedRow;
+                                var tmp = this.state.lastSelectedRow[field.id].split(',').map(value => {
+                                    return parseInt(value);
+                                });
+                                row[field.id] = tmp;
+
+                                this.setState({
+                                    lastSelectedRow: row
+                                });
+                            }
+                            return this.setState({
+                                [field.id]: this.state.lastSelectedRow[field.id]
+                            });
+                        } else {
+                            return this.setState({
+                                [field.id]: []
+                            });
+                        }
+                    } else {
                         return this.setState({
-                            lastSelectedRow: row,
-                            [field.id]: this.state.lastSelectedRow[field.mapping]
+                            [field.id]:
+                                this.state.lastSelectedRow[field.id] === null
+                                    ? ''
+                                    : this.state.lastSelectedRow[field.id]
                         });
                     }
-                } else {
-                    return this.setState({
-                        [field.id]: this.state.lastSelectedRow[field.mapping]
-                    });
-                }
-            });
+                });
         }
     };
 
@@ -105,7 +120,6 @@ class Actions extends Component {
 
     handleChange = (name, value) => {
         let changed = name + '_changed';
-
         this.setState({
             [name]: value,
             [changed]: true
@@ -126,7 +140,10 @@ class Actions extends Component {
                 this.setState({ selected: [] });
                 this.setState({ isActive: false });
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                console.log(err);
+                this.handleNotification(String(err), 'error');
+            });
     };
 
     add = () => {
@@ -136,8 +153,8 @@ class Actions extends Component {
             this.state.trigger,
             this.state.timer,
             this.state.delay,
-            this.state.master,
-            this.state.condition,
+            this.state.master_id,
+            this.state.condition_id,
             this.state.click_number,
             this.state.outputs_id,
             this.state.notifications_id
@@ -160,10 +177,22 @@ class Actions extends Component {
                 this.handleNotification('Action has been deleted', 'warning');
                 this.getData();
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                console.log(err);
+                this.handleNotification(String(err), 'error');
+            });
     };
     edit = () => {
-        this.Action.editAction2(this.state, this.fields);
+        this.Action.editAction(this.state, this.fields)
+            .then(() => {
+                this.handleFormClose('editForm');
+                this.handleNotification('Action has been changed', 'info');
+                this.getData();
+            })
+            .catch(err => {
+                console.log(err);
+                this.handleNotification(String(err), 'error');
+            });
     };
 
     edit2 = () => {
@@ -217,11 +246,10 @@ class Actions extends Component {
         },
         {
             id: 'action_type_name',
-            label: 'Type'
+            label: 'Types'
         },
         {
             id: 'action_type',
-            mapping: 'action_type',
             align: 'left',
             Component: 'ActionTypeField',
             required: true,
@@ -239,7 +267,6 @@ class Actions extends Component {
         },
         {
             id: 'trigger',
-            mapping: 'trigger',
             align: 'left',
             disablePadding: true,
             label: 'Trigger',
@@ -253,7 +280,6 @@ class Actions extends Component {
         },
         {
             id: 'delay',
-            mapping: 'delay',
             align: 'left',
             disablePadding: true,
             label: 'Delay',
@@ -263,7 +289,6 @@ class Actions extends Component {
         },
         {
             id: 'timer',
-            mapping: 'timer',
             align: 'left',
             disablePadding: true,
             label: 'Timer',
@@ -274,28 +299,38 @@ class Actions extends Component {
         },
         {
             id: 'master',
+            align: 'left',
+            disablePadding: false,
+            label: 'Master'
+        },
+        {
+            id: 'master_id',
             mapping: 'master_id',
             align: 'left',
             disablePadding: false,
             label: 'Master',
-            Component: 'OutputField',
+            Component: 'MasterField',
             addForm: true,
             editForm: true,
-            dependency: 'action_type'
+            dependency: 'action_type',
+            hideInTable: true
         },
         {
             id: 'condition',
-            mapping: 'condition_id',
             align: 'left',
             disablePadding: true,
+            label: 'Condition'
+        },
+        {
+            id: 'condition_id',
             label: 'Condition',
             Component: 'ConditionField',
             addForm: true,
-            editForm: true
+            editForm: true,
+            hideInTable: true
         },
         {
             id: 'click_number',
-            mapping: 'click_number',
             align: 'left',
             disablePadding: true,
             label: 'Click Number',
@@ -307,15 +342,14 @@ class Actions extends Component {
         },
         {
             id: 'outputs',
-            mapping: 'outputs',
             align: 'left',
             disablePadding: true,
             label: 'Outputs',
-            type: 'Chip'
+            type: 'Chip',
+            forLabel: true
         },
         {
             id: 'outputs_id',
-            mapping: 'outputs_id',
             align: 'left',
             disablePadding: true,
             label: 'Outputs',
@@ -328,15 +362,14 @@ class Actions extends Component {
         },
         {
             id: 'notifications',
-            mapping: 'notifications',
             align: 'left',
             disablePadding: true,
             label: 'Notifications',
-            type: 'Chip'
+            type: 'Chip',
+            forLabel: true
         },
         {
             id: 'notifications_id',
-            mapping: 'notifications_id',
             align: 'left',
             disablePadding: true,
             label: 'Notifications',

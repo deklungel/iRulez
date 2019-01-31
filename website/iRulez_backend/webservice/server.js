@@ -27,7 +27,8 @@ var pool = mysql.createPool({
     host: config.database.server,
     user: config.database.user,
     password: config.database.password,
-    database: config.database.database
+    database: config.database.database,
+    multipleStatements: true
 });
 
 app.use(function(req, res, next) {
@@ -101,6 +102,9 @@ app.put('/api/*', checkIfAuthenticated, function(req, res) {
             break;
         case '/api/device/edit':
             device_edit(req, res);
+            break;
+        case '/api/action/edit':
+            action_edit(req, res);
             break;
         // case '/api/user/changepassword':
         //     user_changePassword(req, res);
@@ -304,47 +308,34 @@ function action_add(req, res) {
             "', '" +
             req.body.delay +
             "', '" +
-            req.body.timer +
+            (req.body.action_type !== '1' ? req.body.timer : null) +
             "', " +
-            (req.body.master === '' ? null : "'" + req.body.master + "'") +
+            (req.body.master === '' ? null : req.body.action_type === '1' ? req.body.master : null) +
             ', ' +
             (req.body.condition === '' ? null : "'" + req.body.condition + "'") +
             ", '" +
             req.body.click_number +
             "')";
         processRequest_withReturn(req, res, sql, function(result) {
-            var sql_output = '';
-            var sql_notification = '';
-            console.log(req.body.outputs_id.length);
+            var sql_action = '';
             if (req.body.outputs_id.length > 0) {
-                sql_output = 'INSERT INTO `tbl_Action_OutputPin` (`Action_ID`, `OutputPin_ID`) VALUES ';
+                sql_action = sql_action + 'INSERT INTO `tbl_Action_OutputPin` (`Action_ID`, `OutputPin_ID`) VALUES ';
                 req.body.outputs_id.map(id => {
-                    sql_output = sql_output + '(' + parseInt(result.response.insertId) + ',' + parseInt(id) + '),';
+                    sql_action = sql_action + '(' + parseInt(result.response.insertId) + ',' + parseInt(id) + '),';
                 });
-                sql_output = sql_output.replace(/.$/, ';');
-            }
-            console.log(req.body.notifications_id.length);
-            if (req.body.notifications_id.length > 0) {
-                sql_notification = 'INSERT INTO `tbl_Action_Notification` (`Action_ID`, `Notification_id`) VALUES ';
-                req.body.notifications_id.map(id => {
-                    sql_notification =
-                        sql_notification + '(' + parseInt(result.response.insertId) + ',' + parseInt(id) + '),';
-                });
-                sql_notification = sql_notification.replace(/.$/, ';');
+                sql_action = sql_action.replace(/.$/, ';');
             }
 
-            if (sql_output !== '') {
-                console.log(sql_output + sql_notification);
-                processRequest_withReturn(req, res, sql_output, function(result) {
-                    if (sql_notification !== '') {
-                        processRequest(req, res, sql_notification);
-                    } else {
-                        res.json(result);
-                    }
+            if (req.body.notifications_id.length > 0) {
+                sql_action =
+                    sql_action + 'INSERT INTO `tbl_Action_Notification` (`Action_ID`, `Notification_id`) VALUES ';
+                req.body.notifications_id.map(id => {
+                    sql_action = sql_action + '(' + parseInt(result.response.insertId) + ',' + parseInt(id) + '),';
                 });
-            } else {
-                res.json(result);
+                sql_action = sql_action.replace(/.$/, ';');
             }
+
+            processRequest(req, res, sql_action);
         });
     } catch (err) {
         console.log(err); // bar
@@ -356,6 +347,67 @@ function action_delete(req, res) {
     try {
         var sql = "DELETE FROM tbl_Action WHERE id IN ('" + req.body.id.join("','") + "')";
         processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+function action_edit(req, res) {
+    try {
+        var values = [];
+        if (req.body.name) {
+            values.push("name='" + req.body.name);
+        }
+        if (req.body.action_type) {
+            values.push("action_type='" + req.body.action_type);
+        }
+        if (req.body.trigger_id) {
+            values.push("trigger_id='" + req.body.trigger_id);
+        }
+        if (req.body.delay) {
+            values.push("delay='" + req.body.delay);
+        }
+        if (req.body.timer) {
+            values.push("timer='" + req.body.timer);
+        }
+        if (req.body.master_id) {
+            values.push("master_id='" + req.body.master_id);
+        }
+        if (req.body.condition_id) {
+            values.push("condition_id='" + req.body.condition_id);
+        }
+        if (req.body.click_number) {
+            values.push("click_number='" + req.body.click_number);
+        }
+        if (req.body.click_number) {
+            values.push("click_number='" + req.body.click_number);
+        }
+        var sql_action = '';
+        if (values.length > 0) {
+            sql_action = 'UPDATE tbl_Action SET ' + values.join("', ") + "' WHERE id = " + req.body.id + ';';
+        }
+        if (req.body.outputs_id) {
+            sql_action = sql_action + 'DELETE FROM `tbl_Action_OutputPin` WHERE  Action_ID = ' + req.body.id + ';';
+            if (req.body.outputs_id.length > 0) {
+                sql_action = sql_action + 'INSERT INTO `tbl_Action_OutputPin` (`Action_ID`, `OutputPin_ID`) VALUES ';
+                req.body.outputs_id.map(id => {
+                    sql_action = sql_action + '(' + parseInt(req.body.id) + ',' + parseInt(id) + '),';
+                });
+                sql_action = sql_action.replace(/.$/, ';');
+            }
+        }
+        if (req.body.notifications_id) {
+            sql_action = sql_action + 'DELETE FROM `tbl_Action_Notification` WHERE  Action_ID = ' + req.body.id + ';';
+            if (req.body.notifications_id.length > 0) {
+                sql_action =
+                    sql_action + 'INSERT INTO `tbl_Action_Notification` (`Action_ID`, `Notification_id`) VALUES ';
+                req.body.notifications_id.map(id => {
+                    sql_action = sql_action + '(' + parseInt(req.body.id) + ',' + parseInt(id) + '),';
+                });
+                sql_action = sql_action.replace(/.$/, ';');
+            }
+        }
+        processRequest(req, res, sql_action);
     } catch (err) {
         console.log(err); // bar
         res.sendStatus(500);
