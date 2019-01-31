@@ -1,310 +1,447 @@
 import React, { Component } from 'react';
 import DialogMenu from '../DialogMenu';
-import EnhancedTable from '../Table'
+import EnhancedTable from '../Table';
 import PropTypes from 'prop-types';
 import { withSnackbar } from 'notistack';
 import AuthService from '../../AuthService';
-import TextField from '@material-ui/core/TextField';
-import classNames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
+import ActionService from './ActionService';
+import { components } from '../fields/iRulezFields';
 
-const styles = theme => ({
-  textField: {
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
-  },
-  content: {
-    overflowY: "visible"
-  }
-});
+import LoadingOverlay from 'react-loading-overlay';
+import CircleLoader from 'react-spinners/CircleLoader';
 
 class Actions extends Component {
-  Auth = new AuthService();
-  originalValueRow = [];
+    Auth = new AuthService();
+    Action = new ActionService();
 
-  constructor(props) {
-    super(props);
-    this.props.Collapse("actions")
-
-  };
-
-  state = {
-    newForm: false,
-    editForm: false,
-    deleteForm: false,
-    data: [],
-    selected: [],
-    lastSelectedRow: [],
-    originalValueRow: [],
-  };
-
-  componentDidMount() {
-    this.getDataFromBackend();
-    this.resetValues();
-  }
-
-  resetValues = () => {
-    this.setState({
-      name: '',
-      mac: '',
-      sn: '',
-      name_changed: false,
-      sn_changed: false,
-      mac_changed: false,
-      name_error: false,
-      mac_error: false,
-    })
-  }
-
-  getDataFromBackend = () => {
-    this.Auth.fetch(window.ACTIONS_GET).then(
-      function (result) {
-        this.setState({ data: result.response })
-      }.bind(this)
-    ).catch(err => {
-      alert(err);
-    })
-    this.setState({ selected: [] });
-  }
-
-  handleFormOpen = form => {
-    this.setState({
-      [form]: true,
-    });
-    if (form === "editForm") {
-      this.setState({
-        name: this.state.lastSelectedRow.name,
-        mac: this.state.lastSelectedRow.mac,
-        sn: this.state.lastSelectedRow.sn
-      })
-    }
-  };
-
-  handleFormClose = form => {
-    this.setState({
-      [form]: false,
-    });
-    this.resetValues();
-  };
-
-
-  updatedSelected = (value, row) => {
-    this.setState({ selected: value });
-    if (value.length === 1) {
-      this.setState({
-        lastSelectedRow: row[value],
-      });
-    }
-  };
-
-  handleNotification = (message, variant) => {
-    // variant could be success, error, warning or info
-    this.props.enqueueSnackbar(message, { variant });
-  };
-
-  handleChange = name => event => {
-    let changed = name + "_changed"
-    let error = name + "_error"
-    this.setState({
-      [name]: event.target.value,
-      [changed]: true,
-      [error]: false,
-    });
-    if (event.target.value === this.state.lastSelectedRow[name]) {
-      this.setState({
-        [changed]: false,
-      })
+    constructor(props) {
+        super(props);
+        this.props.Collapse('actions');
     }
 
-  };
+    state = {
+        newForm: false,
+        editForm: false,
+        deleteForm: false,
+        data: [],
+        selected: [],
+        lastSelectedRow: [],
+        isActive: true,
+        rowsPerPage: 10
+    };
 
-  add = () => {
-    if (this.validateInput()) {
-      var options = {
-        'method': 'POST',
-        'body': JSON.stringify({ name: this.state.name, mac: this.state.mac, sn: this.state.sn })
-      }
-      this.handleFormClose("newForm");
-      this.Auth.fetch(window.DEVICE_ADD, options).then(
-        function (result) {
-          this.getDataFromBackend();
-          this.handleNotification("Device has been added", 'success')
-        }.bind(this)
-      ).catch(err => {
-        var error = String(err).replace(/Error:/g, '');
-        this.handleNotification(String(error), 'error')
-      })
+    componentDidMount() {
+        this.getData();
+        this.resetValues();
     }
-  };
+    updateRowsPerPage = rows => {
+        this.setState({
+            rowsPerPage: rows
+        });
+    };
 
-  delete = () => {
-    var options = {
-      'method': 'DELETE',
-      'body': JSON.stringify({ id: this.state.selected })
-    }
-    this.Auth.fetch(window.DEVICE_DELETE, options).then(
-      function (result) {
-        this.getDataFromBackend();
-        this.handleNotification("Device has been deleted", 'warning')
-        this.handleFormClose("deleteForm")
-      }.bind(this)
-    ).catch(err => {
-      alert(err);
-    })
-  };
+    resetValues = () => {
+        this.fields
+            .filter(field => {
+                return field.editForm;
+            })
+            .map(field => {
+                let changed = field.id + '_changed';
+                return this.setState({
+                    [field.id]: field.array ? [] : field.default ? field.default : '',
+                    [changed]: ''
+                });
+            });
+    };
 
-  edit = () => {
-    if (this.validateInput()) {
-      if (this.state.name_changed || this.state.mac_changed || this.state.sn_changed) {
-        var json = {}
-        json.id = this.state.lastSelectedRow.id
-        if (this.state.name_changed) {
-          json.name = this.state.name
+    handleFormOpen = form => {
+        this.setState({
+            [form]: true
+        });
+        if (form === 'editForm') {
+            this.fields.map(field => {
+                if (field.array) {
+                    if (this.state.lastSelectedRow[field.mapping]) {
+                        var row = this.state.lastSelectedRow;
+                        var tmp = this.state.lastSelectedRow[field.mapping].split(',').map(value => {
+                            return parseInt(value);
+                        });
+                        row[field.mapping] = tmp;
+                        return this.setState({
+                            lastSelectedRow: row,
+                            [field.id]: this.state.lastSelectedRow[field.mapping]
+                        });
+                    }
+                } else {
+                    return this.setState({
+                        [field.id]: this.state.lastSelectedRow[field.mapping]
+                    });
+                }
+            });
         }
-        if (this.state.mac_changed) {
-          json.mac = this.state.mac
+    };
+
+    handleFormClose = form => {
+        this.setState({
+            [form]: false
+        });
+        this.resetValues();
+    };
+
+    updatedSelected = (value, row) => {
+        this.setState({ selected: value });
+        if (value.length === 1) {
+            this.setState({
+                lastSelectedRow: row[value]
+            });
         }
-        if (this.state.sn_changed) {
-          json.sn = this.state.sn
+    };
+
+    handleNotification = (message, variant) => {
+        // variant could be success, error, warning or info
+        this.props.enqueueSnackbar(message, { variant });
+    };
+
+    handleChange = (name, value) => {
+        let changed = name + '_changed';
+
+        this.setState({
+            [name]: value,
+            [changed]: true
+        });
+
+        if (value.toString() === String(this.state.lastSelectedRow[name])) {
+            this.setState({
+                [changed]: false
+            });
         }
-        console.log(json)
-        var options = {
-          'method': 'PUT',
-          'body': JSON.stringify(json)
-        }
-        this.Auth.fetch(window.DEVICE_EDIT, options).then(
-          function (result) {
-            this.handleFormClose("editForm");
-            this.getDataFromBackend();
-            this.handleNotification("Device has been changed", 'info')
-          }.bind(this)
+    };
+
+    getData = () => {
+        this.setState({ isActive: true });
+        this.Action.getDataWithTimeOut()
+            .then(response => {
+                this.setState({ data: response });
+                this.setState({ selected: [] });
+                this.setState({ isActive: false });
+            })
+            .catch(err => console.log(err));
+    };
+
+    add = () => {
+        this.Action.addAction(
+            this.state.name,
+            this.state.action_type,
+            this.state.trigger,
+            this.state.timer,
+            this.state.delay,
+            this.state.master,
+            this.state.condition,
+            this.state.click_number,
+            this.state.outputs_id,
+            this.state.notifications_id
         )
-      } else {
-        this.handleFormClose("editForm");
-      }
+            .then(() => {
+                this.handleFormClose('newForm');
+                this.handleNotification('Action has been added', 'success');
+                this.getData();
+            })
+            .catch(err => {
+                console.log(err);
+                this.handleNotification(String(err), 'error');
+            });
+    };
 
-    }
-  }
+    delete = () => {
+        this.Action.deleteAction(this.state.selected)
+            .then(() => {
+                this.handleFormClose('deleteForm');
+                this.handleNotification('Action has been deleted', 'warning');
+                this.getData();
+            })
+            .catch(err => console.log(err));
+    };
+    edit = () => {
+        this.Action.editAction2(this.state, this.fields);
+    };
 
-  validateInput() {
-    if (this.state.mac !== '' && this.state.name !== '') {
-      console.log(this.state.mac);
-      console.log(this.state.name);
-      return true
-    }
-    if (this.state.name === '') {
-      this.setState({ name_error: true })
-    }
-    if (this.state.mac === '') {
-      this.setState({ mac_error: true })
-    }
+    edit2 = () => {
+        this.Action.editAction(
+            this.state.id,
+            this.state.name,
+            this.state.name_changed,
+            this.state.action_type_name,
+            this.state.action_type_name_changed,
+            this.state.trigger_name,
+            this.state.trigger_name_changed,
+            this.state.timer,
+            this.state.timer_changed,
+            this.state.delay,
+            this.state.delay_changed,
+            this.state.master,
+            this.state.master_changed,
+            this.state.condition,
+            this.state.condition_changed,
+            this.state.click_number,
+            this.state.click_number_changed,
+            this.state.outputs_id,
+            this.state.outputs_id_changed,
+            this.state.notifications_id,
+            this.state.notifications_id_changed
+        )
+            .then(() => {
+                this.handleFormClose('newForm');
+                this.handleNotification('Action has been added', 'success');
+                this.getData();
+            })
+            .catch(err => {
+                console.log(err);
+                this.handleNotification(String(err), 'error');
+            });
+    };
 
-  }
-
-
-
-  render() {
-    const { classes } = this.props;
-
-    const fields = [
-      { id: 'id', align: 'left', disablePadding: true, label: 'ID' },
-      { id: 'name', align: 'left', disablePadding: true, label: 'Name', addForm: true, required: true, add_autoFocus: true },
-      { id: 'type', align: 'left', disablePadding: true, label: 'Type', addForm: true, required: true},
-      { id: 'seconds_down', align: 'left', disablePadding: true, label: 'Seconds Down'},
-      { id: 'tigger_type', align: 'left', disablePadding: true, label: 'Trigger Type'},
-      { id: 'delay', align: 'left', disablePadding: true, label: 'Delay', addForm: true, required: true },
-      { id: 'timer', align: 'left', disablePadding: true, label: 'Timer', addForm: true, required: true },
-      { id: 'master', align: 'left', disablePadding: false, label: 'Master', addForm: true, required: true },
-      { id: 'dimmer', align: 'left', disablePadding: false, label: 'Dimmer', addForm: true, required: true },
-      { id: 'condition', align: 'left', disablePadding: true, label: 'Condition', addForm: true, required: true },
-      { id: 'click_number', align: 'left', disablePadding: true, label: 'Click Number', addForm: true, required: true },
-      { id: 'dimmer_speed', align: 'left', disablePadding: true, label: 'Dimmer Speed', addForm: true, required: true },
-      { id: 'dimmer_light_value', align: 'left', disablePadding: true, label: 'Dimmer Light', addForm: true, required: true },
-      { id: 'cancel_on_button_release', align: 'left', disablePadding: true, label: 'Cancel', addForm: true, required: true },
-      { id: 'outputs', align: 'left', disablePadding: true, label: 'Outputs', addForm: true, required: true, type:"Chip" },
-      { id: 'notifications', align: 'left', disablePadding: true, label: 'Notifications', addForm: true, type:"Chip" },
+    fields = [
+        //{ id: 'id', align: 'left', disablePadding: true, label: 'ID' },
+        {
+            id: 'name',
+            mapping: 'name',
+            align: 'left',
+            disablePadding: true,
+            label: 'Name',
+            Component: 'NameField',
+            addForm: true,
+            editForm: true,
+            required: true,
+            autoFocus: true
+        },
+        {
+            id: 'action_type_name',
+            label: 'Type'
+        },
+        {
+            id: 'action_type',
+            mapping: 'action_type',
+            align: 'left',
+            Component: 'ActionTypeField',
+            required: true,
+            disablePadding: true,
+            label: 'Type',
+            addForm: true,
+            editForm: true,
+            autoFocus: false,
+            default: 1,
+            hideInTable: true
+        },
+        {
+            id: 'trigger_name',
+            label: 'Trigger'
+        },
+        {
+            id: 'trigger',
+            mapping: 'trigger',
+            align: 'left',
+            disablePadding: true,
+            label: 'Trigger',
+            Component: 'TriggerField',
+            required: true,
+            addForm: true,
+            editForm: true,
+            autoFocus: false,
+            hideInTable: true,
+            default: 1
+        },
+        {
+            id: 'delay',
+            mapping: 'delay',
+            align: 'left',
+            disablePadding: true,
+            label: 'Delay',
+            Component: 'SecondsField',
+            addForm: true,
+            editForm: true
+        },
+        {
+            id: 'timer',
+            mapping: 'timer',
+            align: 'left',
+            disablePadding: true,
+            label: 'Timer',
+            Component: 'TimerField',
+            addForm: true,
+            editForm: true,
+            dependency: 'action_type'
+        },
+        {
+            id: 'master',
+            mapping: 'master_id',
+            align: 'left',
+            disablePadding: false,
+            label: 'Master',
+            Component: 'OutputField',
+            addForm: true,
+            editForm: true,
+            dependency: 'action_type'
+        },
+        {
+            id: 'condition',
+            mapping: 'condition_id',
+            align: 'left',
+            disablePadding: true,
+            label: 'Condition',
+            Component: 'ConditionField',
+            addForm: true,
+            editForm: true
+        },
+        {
+            id: 'click_number',
+            mapping: 'click_number',
+            align: 'left',
+            disablePadding: true,
+            label: 'Click Number',
+            Component: 'NumberField',
+            addForm: true,
+            editForm: true,
+            required: true,
+            default: 1
+        },
+        {
+            id: 'outputs',
+            mapping: 'outputs',
+            align: 'left',
+            disablePadding: true,
+            label: 'Outputs',
+            type: 'Chip'
+        },
+        {
+            id: 'outputs_id',
+            mapping: 'outputs_id',
+            align: 'left',
+            disablePadding: true,
+            label: 'Outputs',
+            Component: 'MultipleOutputField',
+            labelField: 'outputs',
+            addForm: true,
+            editForm: true,
+            array: true,
+            hideInTable: true
+        },
+        {
+            id: 'notifications',
+            mapping: 'notifications',
+            align: 'left',
+            disablePadding: true,
+            label: 'Notifications',
+            type: 'Chip'
+        },
+        {
+            id: 'notifications_id',
+            mapping: 'notifications_id',
+            align: 'left',
+            disablePadding: true,
+            label: 'Notifications',
+            Component: 'MultipleNotificationField',
+            labelField: 'notifications',
+            addForm: true,
+            editForm: true,
+            array: true,
+            hideInTable: true
+        }
     ];
 
-    return (
-      <div>
-        <EnhancedTable
-          data={this.state.data}
-          fields={fields}
-          selected={this.state.selected}
-          handleFormOpen={this.handleFormOpen}
-          handleDelete={this.handleFormOpen}
-          updatedSelected={this.updatedSelected}
-          title="Devices"
-          addIconTooltip="Add device"
-          editIconTooltip="Edit device"
-          deleteIconTooltip="Delete device"
-          rowsPerPage={10}
-        />
-        <DialogMenu
-          open={this.state.newForm}
-          handleFormAccept={this.add}
-          handleFormCancel={() => this.handleFormClose('newForm')}
-          title="New Device"
-          acceptLabel="New"
-        >
-          {fields.filter(form => { return form.addForm }).map(field => {
-            return (
-              <TextField
-                key={field.id}
-                error={this.state[field.id + "_error"]}
-                required={field.required}
-                autoFocus={field.add_autoFocus}
-                className={classNames(classes.margin, classes.textField)}
-                id="name"
-                value={this.state[field.id]}
-                onChange={this.handleChange(field.id)}
-                label={field.label}
-                type="string"
-                fullWidth
-              />
-            )
-          })}
-        </DialogMenu>
+    render() {
+        const { classes } = this.props;
+        const fields = this.fields;
+        return (
+            <LoadingOverlay
+                active={this.state.isActive}
+                spinner={<CircleLoader size={150} color={'yellow'} />}
+                text='Loading your content...'
+            >
+                <EnhancedTable
+                    data={this.state.data}
+                    fields={fields}
+                    selected={this.state.selected}
+                    handleFormOpen={this.handleFormOpen}
+                    handleDelete={this.handleFormOpen}
+                    updatedSelected={this.updatedSelected}
+                    updateRowsPerPage={this.updateRowsPerPage}
+                    title='Action'
+                    addIconTooltip='Add action'
+                    editIconTooltip='Edit action'
+                    deleteIconTooltip='Delete action'
+                    rowsPerPage={this.state.rowsPerPage}
+                />
+                <DialogMenu
+                    open={this.state.newForm}
+                    //fullScreen={true}
+                    handleFormAccept={this.add}
+                    handleFormCancel={() => this.handleFormClose('newForm')}
+                    title='New Action'
+                    acceptLabel='New'
+                >
+                    {fields
+                        .filter(form => {
+                            return form.addForm;
+                        })
+                        .map(field => {
+                            const Component = field.Component ? components[field.Component] : components['default'];
+                            return (
+                                <Component
+                                    key={field.id}
+                                    classes={classes}
+                                    field={field}
+                                    handleChange={this.handleChange}
+                                    value={this.state[field.id]}
+                                    autoFocus={field.autoFocus}
+                                    dependency={this.state[field.dependency]}
+                                />
+                            );
+                        })}
+                </DialogMenu>
 
-        <DialogMenu
-          open={this.state.editForm}
-          handleFormAccept={this.edit}
-          handleFormCancel={() => this.handleFormClose('editForm')}
-          title="Edit Device"
-          acceptLabel="Edit">
-          {fields.filter(form => { return form.editForm }).map(field => {
-            return (
-              <TextField
-                key={field.id}
-                error={this.state[field.id + "_error"]}
-                required={field.required}
-                autoFocus={field.edit_autoFocus}
-                className={classNames(classes.margin, classes.textField)}
-                id="name"
-                value={this.state[field.id]}
-                onChange={this.handleChange(field.id)}
-                label={field.label}
-                type="string"
-                fullWidth
-              />
-            )
-          })}
-        </DialogMenu>
-        <DialogMenu
-          open={this.state.deleteForm}
-          handleFormAccept={this.delete}
-          handleFormCancel={() => this.handleFormClose('deleteForm')}
-          title="Delete Device"
-          acceptLabel="Delete">
-          Are you sure you want to delete device {JSON.stringify(this.state.selected)}
-        </DialogMenu>
-      </div>
-
-    )
-  }
+                <DialogMenu
+                    open={this.state.editForm}
+                    handleFormAccept={this.edit}
+                    handleFormCancel={() => this.handleFormClose('editForm')}
+                    title='Edit Device'
+                    acceptLabel='Edit'
+                >
+                    {fields
+                        .filter(form => {
+                            return form.editForm;
+                        })
+                        .map(field => {
+                            const Component = field.Component ? components[field.Component] : components['default'];
+                            return (
+                                <Component
+                                    key={field.id}
+                                    classes={classes}
+                                    field={field}
+                                    handleChange={this.handleChange}
+                                    value={this.state[field.id]}
+                                    autoFocus={field.autoFocus}
+                                    dependency={this.state[field.dependency]}
+                                    labelField={this.state[field.labelField]}
+                                />
+                            );
+                        })}
+                </DialogMenu>
+                <DialogMenu
+                    open={this.state.deleteForm}
+                    handleFormAccept={this.delete}
+                    handleFormCancel={() => this.handleFormClose('deleteForm')}
+                    title='Delete Device'
+                    acceptLabel='Delete'
+                >
+                    Are you sure you want to delete device {JSON.stringify(this.state.selected)}
+                </DialogMenu>
+            </LoadingOverlay>
+        );
+    }
 }
 Actions.propTypes = {
-  enqueueSnackbar: PropTypes.func.isRequired,
+    enqueueSnackbar: PropTypes.func.isRequired
 };
 
-export default withStyles(styles)(withSnackbar(Actions));
+export default withSnackbar(Actions);

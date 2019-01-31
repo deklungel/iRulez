@@ -7,6 +7,8 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
+import { ValidatorForm } from 'react-material-ui-form-validator';
+
 import { withStyles } from '@material-ui/core/styles';
 
 const styles = theme => ({
@@ -20,7 +22,7 @@ const styles = theme => ({
 });
 
 class DialogMenu extends Component {
-    add = () => {
+    handleSubmit = () => {
         this.props.handleFormAccept();
     };
     closeForm = () => {
@@ -31,17 +33,23 @@ class DialogMenu extends Component {
         const { classes } = this.props;
 
         return (
-            <Dialog open={this.props.open} onClose={this.closeForm} aria-labelledby='form-dialog-title'>
+            <Dialog
+                fullScreen={this.props.fullScreen}
+                open={this.props.open}
+                onClose={this.closeForm}
+                scroll='body'
+                aria-labelledby='form-dialog-title'
+            >
                 <DialogTitle id='form-dialog-title'>{this.props.title}</DialogTitle>
-                <DialogContent className={classes.content}>{this.props.children}</DialogContent>
-                <DialogActions>
-                    <Button onClick={this.closeForm} color='primary'>
-                        Cancel
-                    </Button>
-                    <Button onClick={this.add} color='primary'>
-                        {this.props.acceptLabel}
-                    </Button>
-                </DialogActions>
+                <ValidatorForm ref='form' onSubmit={this.handleSubmit} onError={errors => console.log(errors)}>
+                    <DialogContent className={classes.content}>{this.props.children}</DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.closeForm} color='primary'>
+                            Cancel
+                        </Button>
+                        <Button type='submit'>{this.props.acceptLabel}</Button>
+                    </DialogActions>
+                </ValidatorForm>
             </Dialog>
         );
     }

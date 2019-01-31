@@ -95,9 +95,13 @@ class Administrator extends Component {
                             render={props => <Admin {...props} Collapse={this.SetCollapse} />}
                         />
                         <Route
+                            path='/administrator/actions/relais'
+                            render={props => <Actions {...props} Collapse={this.SetCollapse} />}
+                        />
+                        <Route
                             exact
-                            path='/administrator/actions'
-                            render={(props) => <Actions {...props} Collapse={this.SetCollapse} />}
+                            path='/administrator/actions/dimmer'
+                            render={props => <Actions {...props} Collapse={this.SetCollapse} />}
                         />
                         <Route
                             exact

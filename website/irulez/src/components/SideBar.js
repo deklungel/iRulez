@@ -22,15 +22,14 @@ import Collapse from '@material-ui/core/Collapse';
 import { NavLink } from 'react-router-dom';
 import { withRouter } from 'react-router-dom';
 
-import SendIcon from '@material-ui/icons/Send';
 import PeopleIcon from '@material-ui/icons/People';
 import PersonIcon from '@material-ui/icons/Person';
 import WallIcon from 'mdi-react/WallIcon';
 import LogoutIcon from 'mdi-react/LogoutIcon';
 import ChipIcon from 'mdi-react/ChipIcon';
-import CogsIcon from "mdi-react/CogsIcon";
-import GaugeIcon from "mdi-react/GaugeIcon";
-import LightbulbOnOutlineIcon from 'mdi-react/LightbulbOnOutlineIcon'
+import CogsIcon from 'mdi-react/CogsIcon';
+import GaugeIcon from 'mdi-react/GaugeIcon';
+import LightbulbOnOutlineIcon from 'mdi-react/LightbulbOnOutlineIcon';
 
 const drawerWidth = 240;
 
@@ -178,14 +177,51 @@ class SideBar extends React.Component {
                     </div>
 
                     <Divider />
-                    <List
-                        component="nav"
-
-                    >
-
-                        <ListItemLink to="/administrator" classes={classes} button primary="Dashboard" icon={<GaugeIcon />} />
-                        <ListItemLink to="/administrator/actions" classes={classes} button primary="Actions" icon={<CogsIcon />} />
-                        <ListItemLink to="/administrator/devices" classes={classes} button primary="Devices" icon={<ChipIcon />} />
+                    <List component='nav'>
+                        <ListItemLink
+                            to='/administrator'
+                            classes={classes}
+                            button
+                            primary='Dashboard'
+                            icon={<GaugeIcon />}
+                        />
+                        <ListItem
+                            button
+                            onClick={() => {
+                                this.handleClick('actions');
+                            }}
+                        >
+                            <ListItemIcon>
+                                <CogsIcon />
+                            </ListItemIcon>
+                            <ListItemText inset primary='Actions' />
+                            {this.state.actions ? <ExpandLess /> : <ExpandMore />}
+                        </ListItem>
+                        <Collapse in={this.props.MenuOpen === 'actions'} timeout='auto' unmountOnExit>
+                            <List component='div' disablePadding>
+                                <ListItemLink
+                                    to='/administrator/actions/relais'
+                                    className={classes.nested}
+                                    classes={classes}
+                                    primary='Relais Actions'
+                                    icon={<CogsIcon />}
+                                />
+                                <ListItemLink
+                                    to='/administrator/actions/dimmer'
+                                    className={classes.nested}
+                                    classes={classes}
+                                    primary='Dimmer Actions'
+                                    icon={<CogsIcon />}
+                                />
+                            </List>
+                        </Collapse>
+                        <ListItemLink
+                            to='/administrator/devices'
+                            classes={classes}
+                            button
+                            primary='Devices'
+                            icon={<ChipIcon />}
+                        />
                         <ListItem button>
                             <ListItemIcon>
                                 <LightbulbOnOutlineIcon />
