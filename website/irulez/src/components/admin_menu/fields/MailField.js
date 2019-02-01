@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
-import { TextValidator } from 'react-material-ui-form-validator';
+import TextField from '@material-ui/core/TextField';
 
 const styles = theme => ({
     textField: {
@@ -26,7 +26,7 @@ class MailField extends Component {
         const { classes, field, autoFocus } = this.props;
 
         return (
-            <TextValidator
+            <TextField
                 required={field.required}
                 autoFocus={autoFocus}
                 className={classNames(classes.margin, classes.textField)}
@@ -34,9 +34,8 @@ class MailField extends Component {
                 name={field.id}
                 value={this.props.value}
                 onChange={this.onChange(field.id)}
-                validators={['isEmail']}
                 label={field.label}
-                type='string'
+                type='email'
                 fullWidth
             />
         );

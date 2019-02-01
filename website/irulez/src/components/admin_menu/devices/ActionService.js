@@ -29,17 +29,32 @@ export default class ActionService {
             }, 2000);
         });
     }
-    addDevice(name, mac, sn) {
+    addDevice(state, fields) {
+        var json = {};
+        json.id = state.lastSelectedRow.id;
+
+        fields
+            .filter(field => {
+                return field.addForm;
+            })
+            .map(field => {
+                return (json[field.id] = state[field.id]);
+            });
         return new Promise((resolve, reject) => {
-            var options = {
-                method: 'POST',
-                body: JSON.stringify({ name: name, mac: mac, sn: sn })
-            };
-            this.Auth.fetch(window.DEVICE_ADD, options)
-                .then(result => resolve(result.response))
-                .catch(err => {
-                    reject(String(err).replace(/Error:/g, ''));
-                });
+            if (Object.keys(json).length > 1) {
+                console.log(json);
+                var options = {
+                    method: 'POST',
+                    body: JSON.stringify(json)
+                };
+                this.Auth.fetch(window.DEVICE_ADD, options)
+                    .then(result => resolve(result.response))
+                    .catch(err => {
+                        reject(String(err).replace(/Error:/g, ''));
+                    });
+            } else {
+                reject('User not created');
+            }
         });
     }
     deleteDevice(selected) {
@@ -56,17 +71,24 @@ export default class ActionService {
         });
     }
 
-    editDevice(id, mac, mac_changed, sn, sn_changed) {
+    editDevice(state, fields) {
+        var json = {};
+        json.id = state.lastSelectedRow.id;
+
+        fields
+            .filter(field => {
+                return field.editForm;
+            })
+            .map(field => {
+                let changed = field.id + '_changed';
+                if (state[changed]) {
+                    json[field.id] = state[field.id];
+                }
+                return json;
+            });
         return new Promise((resolve, reject) => {
-            if (mac_changed || sn_changed) {
-                var json = {};
-                json.id = id;
-                if (mac_changed) {
-                    json.mac = mac;
-                }
-                if (sn_changed) {
-                    json.sn = sn;
-                }
+            if (Object.keys(json).length > 1) {
+                console.log(json);
                 var options = {
                     method: 'PUT',
                     body: JSON.stringify(json)
@@ -77,7 +99,7 @@ export default class ActionService {
                         reject(String(err).replace(/Error:/g, ''));
                     });
             } else {
-                reject('User not changed');
+                reject('Device not changed');
             }
         });
     }

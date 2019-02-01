@@ -38,7 +38,8 @@ class Devices extends Component {
         selected: [],
         lastSelectedRow: [],
         isActive: true,
-        rowsPerPage: 5
+        rowsPerPage: 5,
+        submitDisabled: false
     };
 
     componentDidMount() {
@@ -54,16 +55,13 @@ class Devices extends Component {
     resetValues = () => {
         this.fields
             .filter(field => {
-                return field.addForm;
+                return field.editForm;
             })
             .map(field => {
                 let changed = field.id + '_changed';
-                let error = field.id + '_error';
-
                 return this.setState({
-                    [field.id]: '',
-                    [changed]: '',
-                    [error]: ''
+                    [field.id]: field.array ? [] : field.default ? field.default : '',
+                    [changed]: ''
                 });
             });
     };
@@ -75,19 +73,46 @@ class Devices extends Component {
         if (form === 'editForm') {
             this.fields
                 .filter(field => {
-                    return field.editForm;
+                    return field.editForm || field.forLabel;
                 })
                 .map(field => {
-                    return this.setState({
-                        [field.id]: this.state.lastSelectedRow[field.mapping]
-                    });
+                    if (field.array) {
+                        if (this.state.lastSelectedRow[field.id]) {
+                            if (!Array.isArray(this.state.lastSelectedRow[field.id])) {
+                                var row = this.state.lastSelectedRow;
+                                var tmp = this.state.lastSelectedRow[field.id].split(',').map(value => {
+                                    return parseInt(value);
+                                });
+                                row[field.id] = tmp;
+
+                                this.setState({
+                                    lastSelectedRow: row
+                                });
+                            }
+                            return this.setState({
+                                [field.id]: this.state.lastSelectedRow[field.id]
+                            });
+                        } else {
+                            return this.setState({
+                                [field.id]: []
+                            });
+                        }
+                    } else {
+                        return this.setState({
+                            [field.id]:
+                                this.state.lastSelectedRow[field.id] === null
+                                    ? ''
+                                    : this.state.lastSelectedRow[field.id]
+                        });
+                    }
                 });
         }
     };
 
     handleFormClose = form => {
         this.setState({
-            [form]: false
+            [form]: false,
+            submitDisabled: false
         });
         this.resetValues();
     };
@@ -106,16 +131,14 @@ class Devices extends Component {
         this.props.enqueueSnackbar(message, { variant });
     };
 
-    handleChange = (name, value, fieldError) => {
+    handleChange = (name, value) => {
         let changed = name + '_changed';
-        let error = name + '_error';
-
         this.setState({
             [name]: value,
-            [changed]: true,
-            [error]: fieldError
+            [changed]: true
         });
-        if (value === this.state.lastSelectedRow[name]) {
+
+        if (value.toString() === String(this.state.lastSelectedRow[name])) {
             this.setState({
                 [changed]: false
             });
@@ -130,50 +153,61 @@ class Devices extends Component {
                 this.setState({ selected: [] });
                 this.setState({ isActive: false });
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                console.log(err);
+                this.handleNotification(String(err), 'error');
+            });
     };
 
     add = () => {
-        this.Action.addDevice(this.state.name, this.state.mac, this.state.sn)
+        this.setState({ submitDisabled: true });
+        this.Action.addDevice(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('newForm');
                 this.handleNotification('Device has been added', 'success');
                 this.getData();
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                console.log(err);
+                this.handleNotification(String(err), 'error');
+                this.setState({ submitDisabled: false });
+            });
     };
 
     delete = () => {
+        this.setState({ submitDisabled: true });
         this.Action.deleteDevice(this.state.selected)
             .then(() => {
                 this.handleFormClose('deleteForm');
                 this.handleNotification('Device has been deleted', 'warning');
                 this.getData();
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                console.log(err);
+                this.handleNotification(String(err), 'error');
+                this.setState({ submitDisabled: false });
+            });
     };
 
     edit = () => {
-        this.Action.editDevice(
-            this.state.lastSelectedRow.id,
-            this.state.mac,
-            this.state.mac_changed,
-            this.state.sn,
-            this.state.sn_changed
-        )
+        this.setState({ submitDisabled: true });
+        this.Action.editDevice(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('editForm');
                 this.handleNotification('Device has been changed', 'info');
                 this.getData();
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                console.log(err);
+                this.handleNotification(String(err), 'error');
+                this.setState({ submitDisabled: false });
+            });
     };
 
     fields = [
         { id: 'id', align: 'left', disablePadding: true, label: 'ID' },
         {
             id: 'name',
-            mapping: 'name',
             align: 'left',
             disablePadding: true,
             label: 'Name',
@@ -183,7 +217,6 @@ class Devices extends Component {
         },
         {
             id: 'mac',
-            mapping: 'mac',
             align: 'left',
             disablePadding: false,
             label: 'MAC',
@@ -194,7 +227,6 @@ class Devices extends Component {
         },
         {
             id: 'sn',
-            mapping: 'sn',
             align: 'left',
             disablePadding: false,
             label: 'Serial Number',
@@ -222,6 +254,7 @@ class Devices extends Component {
                     selected={this.state.selected}
                     handleFormOpen={this.handleFormOpen}
                     handleDelete={this.handleFormOpen}
+                    updateRowsPerPage={this.updateRowsPerPage}
                     updatedSelected={this.updatedSelected}
                     title='Action'
                     addIconTooltip='Add action'
@@ -231,6 +264,7 @@ class Devices extends Component {
                 />
                 <DialogMenu
                     open={this.state.newForm}
+                    submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.add}
                     handleFormCancel={() => this.handleFormClose('newForm')}
                     title='New Action'
@@ -258,6 +292,7 @@ class Devices extends Component {
 
                 <DialogMenu
                     open={this.state.editForm}
+                    submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.edit}
                     handleFormCancel={() => this.handleFormClose('editForm')}
                     title='Edit Device'
@@ -284,6 +319,7 @@ class Devices extends Component {
                 </DialogMenu>
                 <DialogMenu
                     open={this.state.deleteForm}
+                    submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.delete}
                     handleFormCancel={() => this.handleFormClose('deleteForm')}
                     title='Delete Device'

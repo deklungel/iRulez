@@ -5,19 +5,18 @@ import PropTypes from 'prop-types';
 import { withSnackbar } from 'notistack';
 import AuthService from '../../AuthService';
 import ActionService from './ActionService';
+import { components } from '../fields/iRulezFields';
+
 import LoadingOverlay from 'react-loading-overlay';
 import CircleLoader from 'react-spinners/CircleLoader';
 
-import { components } from '../fields/iRulezFields';
-
-class Users extends Component {
+class DimmerActions extends Component {
     Auth = new AuthService();
     Action = new ActionService();
-    originalValueRow = [];
 
     constructor(props) {
         super(props);
-        this.props.Collapse('users');
+        this.props.Collapse('actions');
     }
 
     state = {
@@ -28,7 +27,7 @@ class Users extends Component {
         selected: [],
         lastSelectedRow: [],
         isActive: true,
-        rowsPerPage: 5,
+        rowsPerPage: 10,
         submitDisabled: false
     };
 
@@ -137,7 +136,7 @@ class Users extends Component {
 
     getData = () => {
         this.setState({ isActive: true });
-        this.Action.getDataWithTimeOut()
+        this.Action.getDataWithTimeOut(window.DIMMER_ACTIONS_GET)
             .then(response => {
                 this.setState({ data: response });
                 this.setState({ selected: [] });
@@ -151,10 +150,10 @@ class Users extends Component {
 
     add = () => {
         this.setState({ submitDisabled: true });
-        this.Action.addUser2(this.state, this.fields)
+        this.Action.addAction(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('newForm');
-                this.handleNotification('User has been added', 'success');
+                this.handleNotification('Action has been added', 'success');
                 this.getData();
             })
             .catch(err => {
@@ -166,10 +165,24 @@ class Users extends Component {
 
     delete = () => {
         this.setState({ submitDisabled: true });
-        this.Action.deleteUser(this.state.selected)
+        this.Action.deleteAction(this.state.selected)
             .then(() => {
                 this.handleFormClose('deleteForm');
-                this.handleNotification('User has been deleted', 'warning');
+                this.handleNotification('Action has been deleted', 'warning');
+                this.getData();
+            })
+            .catch(err => {
+                console.log(err);
+                this.handleNotification(String(err), 'error');
+                this.setState({ submitDisabled: false });
+            });
+    };
+    edit = () => {
+        this.setState({ submitDisabled: true });
+        this.Action.editAction(this.state, this.fields)
+            .then(() => {
+                this.handleFormClose('editForm');
+                this.handleNotification('Action has been changed', 'info');
                 this.getData();
             })
             .catch(err => {
@@ -179,71 +192,161 @@ class Users extends Component {
             });
     };
 
-    edit = () => {
-        this.setState({ submitDisabled: true });
-        this.Action.editUser(this.state, this.fields)
-            .then(() => {
-                this.handleFormClose('editForm');
-                this.handleNotification('User has been changed', 'info');
-                this.getData();
-            })
-            .catch(err => {
-                console.log(err);
-                this.handleNotification(String(err), 'error');
-                this.setState({ submitDisabled: false });
-            });
-    };
     fields = [
+        //{ id: 'id', align: 'left', disablePadding: true, label: 'ID' },
         {
-            id: 'email',
+            id: 'name',
+            mapping: 'name',
+            align: 'left',
+            disablePadding: true,
+            label: 'Name',
+            Component: 'NameField',
             addForm: true,
             editForm: true,
-            align: 'left',
             required: true,
-            disablePadding: false,
-            label: 'Email',
-            Component: 'MailField'
+            autoFocus: true
         },
         {
-            id: 'password',
+            id: 'action_type_name',
+            label: 'Types'
+        },
+        {
+            id: 'action_type',
+            align: 'left',
+            Component: 'DimmerActionTypeField',
+            required: true,
+            disablePadding: true,
+            label: 'Type',
             addForm: true,
             editForm: true,
-            align: 'left',
-            required: true,
-            disablePadding: false,
-            label: 'Password',
-            Component: 'PasswordField',
+            autoFocus: false,
+            default: 1,
             hideInTable: true
         },
         {
-            id: 'role',
+            id: 'trigger_name',
+            label: 'Trigger'
+        },
+        {
+            id: 'trigger',
+            align: 'left',
+            disablePadding: true,
+            label: 'Trigger',
+            Component: 'TriggerField',
+            required: true,
+            addForm: true,
+            editForm: true,
+            autoFocus: false,
+            hideInTable: true,
+            default: 1
+        },
+        {
+            id: 'delay',
+            align: 'left',
+            disablePadding: true,
+            label: 'Delay',
+            Component: 'SecondsField',
+            addForm: true,
+            editForm: true
+        },
+        {
+            id: 'timer',
+            align: 'left',
+            disablePadding: true,
+            label: 'Timer',
+            Component: 'TimerField',
+            addForm: true,
+            editForm: true,
+            dependency: 'action_type'
+        },
+        {
+            id: 'master',
+            align: 'left',
+            disablePadding: false,
+            label: 'Master'
+        },
+        {
+            id: 'master_id',
+            mapping: 'master_id',
+            align: 'left',
+            disablePadding: false,
+            label: 'Master',
+            Component: 'MasterField',
+            addForm: true,
+            editForm: true,
+            dependency: 'action_type',
+            hideInTable: true
+        },
+        {
+            id: 'condition',
+            align: 'left',
+            disablePadding: true,
+            label: 'Condition'
+        },
+        {
+            id: 'condition_id',
+            label: 'Condition',
+            Component: 'ConditionField',
+            addForm: true,
+            editForm: true,
+            hideInTable: true
+        },
+        {
+            id: 'click_number',
+            align: 'left',
+            disablePadding: true,
+            label: 'Click Number',
+            Component: 'NumberField',
             addForm: true,
             editForm: true,
             required: true,
+            default: 1
+        },
+        {
+            id: 'outputs',
             align: 'left',
-            disablePadding: false,
-            label: 'Role',
-            Component: 'SelectionField',
-            default: 'user',
-            options: [
-                {
-                    id: 'user',
-                    value: 'user',
-                    label: 'User'
-                },
-                {
-                    id: 'admin',
-                    value: 'admin',
-                    label: 'Administrator'
-                }
-            ]
+            disablePadding: true,
+            label: 'Outputs',
+            type: 'Chip',
+            forLabel: true
+        },
+        {
+            id: 'outputs_id',
+            align: 'left',
+            disablePadding: true,
+            label: 'Outputs',
+            Component: 'MultipleOutputField',
+            labelField: 'outputs',
+            addForm: true,
+            editForm: true,
+            array: true,
+            hideInTable: true
+        },
+        {
+            id: 'notifications',
+            align: 'left',
+            disablePadding: true,
+            label: 'Notifications',
+            type: 'Chip',
+            forLabel: true
+        },
+        {
+            id: 'notifications_id',
+            align: 'left',
+            disablePadding: true,
+            label: 'Notifications',
+            Component: 'MultipleNotificationField',
+            labelField: 'notifications',
+            addForm: true,
+            editForm: true,
+            array: true,
+            hideInTable: true
         }
     ];
 
     render() {
-        const fields = this.fields;
         const { classes } = this.props;
-
+        const fields = this.fields;
         return (
             <LoadingOverlay
                 active={this.state.isActive}
@@ -258,19 +361,20 @@ class Users extends Component {
                     handleDelete={this.handleFormOpen}
                     updatedSelected={this.updatedSelected}
                     updateRowsPerPage={this.updateRowsPerPage}
-                    title='Users'
-                    addIconTooltip='Add user'
-                    editIconTooltip='Edit user'
-                    deleteIconTooltip='Delete user'
+                    title='Dimmer Action'
+                    addIconTooltip='Add action'
+                    editIconTooltip='Edit action'
+                    deleteIconTooltip='Delete action'
                     rowsPerPage={this.state.rowsPerPage}
                 />
                 <DialogMenu
                     open={this.state.newForm}
                     submitDisabled={this.state.submitDisabled}
+                    //fullScreen={true}
                     handleFormAccept={this.add}
                     handleFormCancel={() => this.handleFormClose('newForm')}
-                    title='New User'
-                    acceptLabel='Add'
+                    title='New Action'
+                    acceptLabel='New'
                 >
                     {fields
                         .filter(form => {
@@ -287,7 +391,6 @@ class Users extends Component {
                                     value={this.state[field.id]}
                                     autoFocus={field.autoFocus}
                                     dependency={this.state[field.dependency]}
-                                    options={field.options}
                                 />
                             );
                         })}
@@ -298,7 +401,7 @@ class Users extends Component {
                     submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.edit}
                     handleFormCancel={() => this.handleFormClose('editForm')}
-                    title='Edit User'
+                    title='Edit Device'
                     acceptLabel='Edit'
                 >
                     {fields
@@ -316,7 +419,7 @@ class Users extends Component {
                                     value={this.state[field.id]}
                                     autoFocus={field.autoFocus}
                                     dependency={this.state[field.dependency]}
-                                    options={field.options}
+                                    labelField={this.state[field.labelField]}
                                 />
                             );
                         })}
@@ -326,17 +429,17 @@ class Users extends Component {
                     submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.delete}
                     handleFormCancel={() => this.handleFormClose('deleteForm')}
-                    title='Delete User'
+                    title='Delete Device'
                     acceptLabel='Delete'
                 >
-                    Are you sure you want to delete user {JSON.stringify(this.state.selected)}
+                    Are you sure you want to delete device {JSON.stringify(this.state.selected)}
                 </DialogMenu>
             </LoadingOverlay>
         );
     }
 }
-Users.propTypes = {
+DimmerActions.propTypes = {
     enqueueSnackbar: PropTypes.func.isRequired
 };
 
-export default withSnackbar(Users);
+export default withSnackbar(DimmerActions);

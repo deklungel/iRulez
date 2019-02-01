@@ -16,6 +16,8 @@ var ACTION_ADD = BASEURL + 'action/add';
 var ACTION_DELETE = BASEURL + 'action/delete';
 var ACTION_EDIT = BASEURL + 'action/edit';
 
+var DIMMER_ACTIONS_GET = BASEURL + 'dimmeractions';
+
 var GET_FIELD_TRIGGERS = BASEURL + 'field/triggers';
 var GET_FIELD_ACTION_TYPES = BASEURL + 'field/action_types';
 var GET_OUTPUTS = BASEURL + 'field/outputs';

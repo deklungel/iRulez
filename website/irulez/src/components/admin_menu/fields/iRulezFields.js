@@ -13,6 +13,7 @@ import PasswordField from './PasswordField';
 import MultipleSelectionField from './MultipleSelectionField';
 import MultipleOutputField from './MultipleOutputField';
 import MultipleNotificationField from './MultipleNotificationField';
+import DimmerActionTypeField from './DimmerActionTypeField';
 
 export const components = {
     NameField: NameField,
@@ -29,5 +30,6 @@ export const components = {
     MultipleSelectionField: MultipleSelectionField,
     MultipleOutputField: MultipleOutputField,
     MultipleNotificationField: MultipleNotificationField,
+    DimmerActionTypeField: DimmerActionTypeField,
     default: CustomTextField
 };

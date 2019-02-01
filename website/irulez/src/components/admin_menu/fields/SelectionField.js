@@ -15,11 +15,9 @@ const styles = theme => ({
 });
 
 class SelectionField extends Component {
-    state = { value: '' };
-
-    onChange = event => {
-        console.log('selectionfield onchange');
-        this.props.handleChange(event.target.name, parseInt(event.target.value));
+    onChange = name => event => {
+        console.log(name + ' ' + event.target.value);
+        this.props.handleChange(name, event.target.value);
     };
 
     render() {
@@ -31,7 +29,7 @@ class SelectionField extends Component {
                 <Select
                     value={value}
                     disabled={disabled}
-                    onChange={this.onChange}
+                    onChange={this.onChange(field.id)}
                     inputProps={{
                         name: field.id,
                         id: field.id

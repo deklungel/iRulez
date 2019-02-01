@@ -5,9 +5,9 @@ export default class ActionService {
         this.Auth = new AuthService();
     }
 
-    getData() {
+    getData(url = window.ACTIONS_GET) {
         return new Promise((resolve, reject) => {
-            this.Auth.fetch(window.ACTIONS_GET)
+            this.Auth.fetch(url)
                 .then(result => {
                     resolve(result.response);
                 })
@@ -16,10 +16,10 @@ export default class ActionService {
                 });
         });
     }
-    getDataWithTimeOut() {
+    getDataWithTimeOut(url = window.ACTIONS_GET) {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
-                this.Auth.fetch(window.ACTIONS_GET)
+                this.Auth.fetch(url)
                     .then(result => {
                         resolve(result.response);
                     })
@@ -29,28 +29,33 @@ export default class ActionService {
             }, 2000);
         });
     }
-    addAction(name, action_type, trigger, timer, delay, master, condition, click_number, outputs_id, notifications_id) {
+
+    addAction(state, fields) {
+        var json = {};
+        json.id = state.lastSelectedRow.id;
+
+        fields
+            .filter(field => {
+                return field.addForm;
+            })
+            .map(field => {
+                return (json[field.id] = state[field.id]);
+            });
         return new Promise((resolve, reject) => {
-            var options = {
-                method: 'POST',
-                body: JSON.stringify({
-                    name: name,
-                    action_type: action_type,
-                    trigger: trigger,
-                    timer: timer,
-                    delay: delay,
-                    master: master,
-                    condition: condition,
-                    click_number: click_number,
-                    outputs_id: outputs_id,
-                    notifications_id: notifications_id
-                })
-            };
-            this.Auth.fetch(window.ACTION_ADD, options)
-                .then(result => resolve(result.response))
-                .catch(err => {
-                    reject(String(err).replace(/Error:/g, ''));
-                });
+            if (Object.keys(json).length > 1) {
+                console.log(json);
+                var options = {
+                    method: 'POST',
+                    body: JSON.stringify(json)
+                };
+                this.Auth.fetch(window.ACTION_ADD, options)
+                    .then(result => resolve(result.response))
+                    .catch(err => {
+                        reject(String(err).replace(/Error:/g, ''));
+                    });
+            } else {
+                reject('Action not created');
+            }
         });
     }
     deleteAction(selected) {

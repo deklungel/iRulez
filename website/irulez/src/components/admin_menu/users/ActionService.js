@@ -29,19 +29,36 @@ export default class ActionService {
             }, 2000);
         });
     }
-    addUser(email, password, role) {
+
+    addUser(state, fields) {
+        var json = {};
+        json.id = state.lastSelectedRow.id;
+
+        fields
+            .filter(field => {
+                return field.addForm;
+            })
+            .map(field => {
+                return (json[field.id] = state[field.id]);
+            });
         return new Promise((resolve, reject) => {
-            var options = {
-                method: 'POST',
-                body: JSON.stringify({ email: email, password: password, role: role })
-            };
-            this.Auth.fetch(window.USER_ADD, options)
-                .then(result => resolve(result.response))
-                .catch(err => {
-                    reject(String(err).replace(/Error:/g, ''));
-                });
+            if (Object.keys(json).length > 1) {
+                console.log(json);
+                var options = {
+                    method: 'POST',
+                    body: JSON.stringify(json)
+                };
+                this.Auth.fetch(window.USER_ADD, options)
+                    .then(result => resolve(result.response))
+                    .catch(err => {
+                        reject(String(err).replace(/Error:/g, ''));
+                    });
+            } else {
+                reject('User not created');
+            }
         });
     }
+
     deleteUser(selected) {
         return new Promise((resolve, reject) => {
             var options = {
@@ -56,20 +73,24 @@ export default class ActionService {
         });
     }
 
-    editUser(id, email, email_changed, role, role_changed, password, password_changed) {
+    editUser(state, fields) {
+        var json = {};
+        json.id = state.lastSelectedRow.id;
+
+        fields
+            .filter(field => {
+                return field.editForm;
+            })
+            .map(field => {
+                let changed = field.id + '_changed';
+                if (state[changed]) {
+                    json[field.id] = state[field.id];
+                }
+                return json;
+            });
         return new Promise((resolve, reject) => {
-            if (email_changed || role_changed || password_changed) {
-                var json = {};
-                json.id = id;
-                if (email_changed) {
-                    json.email = email;
-                }
-                if (role_changed) {
-                    json.role = role;
-                }
-                if (password_changed) {
-                    json.password = password;
-                }
+            if (Object.keys(json).length > 1) {
+                console.log(json);
                 var options = {
                     method: 'PUT',
                     body: JSON.stringify(json)

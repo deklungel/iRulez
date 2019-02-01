@@ -12,6 +12,7 @@ import Admin from './Dashboard';
 import Users from './users/Users';
 import Devices from './devices/Devices';
 import Actions from './actions/Actions';
+import DimmerActions from './actions/DimmerActions';
 
 const Auth = new AuthService();
 
@@ -101,7 +102,7 @@ class Administrator extends Component {
                         <Route
                             exact
                             path='/administrator/actions/dimmer'
-                            render={props => <Actions {...props} Collapse={this.SetCollapse} />}
+                            render={props => <DimmerActions {...props} Collapse={this.SetCollapse} />}
                         />
                         <Route
                             exact

@@ -47,7 +47,9 @@ class DialogMenu extends Component {
                         <Button onClick={this.closeForm} color='primary'>
                             Cancel
                         </Button>
-                        <Button type='submit'>{this.props.acceptLabel}</Button>
+                        <Button disabled={this.props.submitDisabled} type='submit'>
+                            {this.props.acceptLabel}
+                        </Button>
                     </DialogActions>
                 </ValidatorForm>
             </Dialog>

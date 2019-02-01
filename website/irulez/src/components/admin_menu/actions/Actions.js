@@ -27,7 +27,8 @@ class Actions extends Component {
         selected: [],
         lastSelectedRow: [],
         isActive: true,
-        rowsPerPage: 10
+        rowsPerPage: 10,
+        submitDisabled: false
     };
 
     componentDidMount() {
@@ -99,7 +100,8 @@ class Actions extends Component {
 
     handleFormClose = form => {
         this.setState({
-            [form]: false
+            [form]: false,
+            submitDisabled: false
         });
         this.resetValues();
     };
@@ -147,18 +149,8 @@ class Actions extends Component {
     };
 
     add = () => {
-        this.Action.addAction(
-            this.state.name,
-            this.state.action_type,
-            this.state.trigger,
-            this.state.timer,
-            this.state.delay,
-            this.state.master_id,
-            this.state.condition_id,
-            this.state.click_number,
-            this.state.outputs_id,
-            this.state.notifications_id
-        )
+        this.setState({ submitDisabled: true });
+        this.Action.addAction(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('newForm');
                 this.handleNotification('Action has been added', 'success');
@@ -167,10 +159,12 @@ class Actions extends Component {
             .catch(err => {
                 console.log(err);
                 this.handleNotification(String(err), 'error');
+                this.setState({ submitDisabled: false });
             });
     };
 
     delete = () => {
+        this.setState({ submitDisabled: true });
         this.Action.deleteAction(this.state.selected)
             .then(() => {
                 this.handleFormClose('deleteForm');
@@ -180,9 +174,11 @@ class Actions extends Component {
             .catch(err => {
                 console.log(err);
                 this.handleNotification(String(err), 'error');
+                this.setState({ submitDisabled: false });
             });
     };
     edit = () => {
+        this.setState({ submitDisabled: true });
         this.Action.editAction(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('editForm');
@@ -192,41 +188,7 @@ class Actions extends Component {
             .catch(err => {
                 console.log(err);
                 this.handleNotification(String(err), 'error');
-            });
-    };
-
-    edit2 = () => {
-        this.Action.editAction(
-            this.state.id,
-            this.state.name,
-            this.state.name_changed,
-            this.state.action_type_name,
-            this.state.action_type_name_changed,
-            this.state.trigger_name,
-            this.state.trigger_name_changed,
-            this.state.timer,
-            this.state.timer_changed,
-            this.state.delay,
-            this.state.delay_changed,
-            this.state.master,
-            this.state.master_changed,
-            this.state.condition,
-            this.state.condition_changed,
-            this.state.click_number,
-            this.state.click_number_changed,
-            this.state.outputs_id,
-            this.state.outputs_id_changed,
-            this.state.notifications_id,
-            this.state.notifications_id_changed
-        )
-            .then(() => {
-                this.handleFormClose('newForm');
-                this.handleNotification('Action has been added', 'success');
-                this.getData();
-            })
-            .catch(err => {
-                console.log(err);
-                this.handleNotification(String(err), 'error');
+                this.setState({ submitDisabled: false });
             });
     };
 
@@ -407,6 +369,7 @@ class Actions extends Component {
                 />
                 <DialogMenu
                     open={this.state.newForm}
+                    submitDisabled={this.state.submitDisabled}
                     //fullScreen={true}
                     handleFormAccept={this.add}
                     handleFormCancel={() => this.handleFormClose('newForm')}
@@ -435,6 +398,7 @@ class Actions extends Component {
 
                 <DialogMenu
                     open={this.state.editForm}
+                    submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.edit}
                     handleFormCancel={() => this.handleFormClose('editForm')}
                     title='Edit Device'
@@ -462,6 +426,7 @@ class Actions extends Component {
                 </DialogMenu>
                 <DialogMenu
                     open={this.state.deleteForm}
+                    submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.delete}
                     handleFormCancel={() => this.handleFormClose('deleteForm')}
                     title='Delete Device'

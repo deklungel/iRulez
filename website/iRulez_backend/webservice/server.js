@@ -73,6 +73,10 @@ app.get('/api/*', checkIfAuthenticated, function(req, res) {
         case '/api/actions':
             get_actions(req, res);
             break;
+        case '/api/dimmeractions':
+            get_dimmer_actions(req, res);
+            break;
+
         default:
             console.log('response 404 => unknown url:' + req.url);
             res.sendStatus(404);
@@ -290,6 +294,41 @@ function get_actions(req, res) {
         res.sendStatus(500);
     }
 }
+function get_dimmer_actions(req, res) {
+    console.log(req.url);
+    try {
+        sql =
+            "SELECT\
+    tbl_Action.id,\
+    tbl_Action.name,\
+    tbl_Action.action_type as 'action_type',\
+    tbl_Action_Type.name as 'action_type_name',\
+    tbl_Action.trigger_id as 'trigger',\
+    tbl_Trigger.seconds_down as 'trigger_seconds_down',\
+    tbl_Trigger.name as 'trigger_name',\
+    tbl_Action.delay,\
+    tbl_Action.timer,\
+    tbl_Action.condition_id as 'condition_id',\
+    tbl_Condition.name as 'condition',\
+    tbl_Action.master_id as 'master_id',\
+    tbl_OutputPin.name as 'master',\
+    tbl_Action.click_number,\
+    (SELECT GROUP_CONCAT(tbl_Notification.name) from tbl_Action_Notification INNER JOIN tbl_Notification on tbl_Action_Notification.Notification_id = tbl_Notification.id WHERE tbl_Action_Notification.Action_id = tbl_Action.id) as 'notifications',\
+    (SELECT GROUP_CONCAT(tbl_Notification.id) from tbl_Action_Notification INNER JOIN tbl_Notification on tbl_Action_Notification.Notification_id = tbl_Notification.id WHERE tbl_Action_Notification.Action_id = tbl_Action.id) as 'notifications_id',\
+    (SELECT GROUP_CONCAT(tbl_OutputPin.name) from tbl_Action_OutputPin INNER JOIN tbl_OutputPin ON tbl_Action_OutputPin.OutputPin_ID = tbl_OutputPin.id WHERE tbl_Action_OutputPin.Action_id = tbl_Action.id ) as 'outputs',\
+    (SELECT GROUP_CONCAT(tbl_OutputPin.id) from tbl_Action_OutputPin INNER JOIN tbl_OutputPin ON tbl_Action_OutputPin.OutputPin_ID = tbl_OutputPin.id WHERE tbl_Action_OutputPin.Action_id = tbl_Action.id ) as 'outputs_id'\
+    FROM tbl_Action \
+    INNER JOIN tbl_Action_Type ON tbl_Action.action_type =tbl_Action_Type.id\
+    INNER JOIN tbl_Trigger ON tbl_Action.trigger_id =tbl_Trigger.id\
+    LEFT JOIN tbl_Condition ON tbl_Action.condition_id = tbl_Condition.id\
+    LEFT JOIN tbl_OutputPin ON tbl_Action.master_id = tbl_OutputPin.id\
+    WHERE tbl_Action.action_type > 4";
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
 function action_add(req, res) {
     try {
         if (req.body.timer === '') {
@@ -312,12 +351,15 @@ function action_add(req, res) {
             "', " +
             (req.body.master === '' ? null : req.body.action_type === '1' ? req.body.master : null) +
             ', ' +
-            (req.body.condition === '' ? null : "'" + req.body.condition + "'") +
+            (req.body.condition_id === '' ? null : "'" + req.body.condition_id + "'") +
             ", '" +
             req.body.click_number +
             "')";
         processRequest_withReturn(req, res, sql, function(result) {
-            var sql_action = '';
+            var sql_action =
+                'UPDATE tbl_Action SET timer=IF(action_type=1, 0, tbl_Action.timer), master_id=IF(action_type <> 1, null, master_id) WHERE id = ' +
+                parseInt(result.response.insertId) +
+                ';';
             if (req.body.outputs_id.length > 0) {
                 sql_action = sql_action + 'INSERT INTO `tbl_Action_OutputPin` (`Action_ID`, `OutputPin_ID`) VALUES ';
                 req.body.outputs_id.map(id => {
@@ -407,6 +449,11 @@ function action_edit(req, res) {
                 sql_action = sql_action.replace(/.$/, ';');
             }
         }
+        sql_action =
+            sql_action +
+            'UPDATE tbl_Action SET timer=IF(action_type=1, 0, tbl_Action.timer), master_id=IF(action_type <> 1, null, master_id) WHERE id = ' +
+            req.body.id +
+            ';';
         processRequest(req, res, sql_action);
     } catch (err) {
         console.log(err); // bar
