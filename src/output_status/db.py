@@ -1,5 +1,5 @@
 import src.output_status.db_domain as db_domain
-import lib.mysql.connector as mariadb
+import mysql.connector as mariadb
 from abc import ABC, abstractmethod
 from typing import List
 import src.irulez.configuration as configuration

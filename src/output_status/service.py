@@ -1,5 +1,5 @@
 import src.irulez.log as log
-import lib.paho.mqtt.client as mqtt
+import paho.mqtt.client as mqtt
 import src.irulez.constants as constants
 import src.output_status.db as db
 import src.irulez.util as util

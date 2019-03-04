@@ -1,4 +1,4 @@
-import lib.paho.mqtt.publish as publish
+import paho.mqtt.publish as publish
 import time
 import src.irulez.constants as constants
 import src.irulez.util as util

@@ -1,5 +1,5 @@
 import src.dimmer.mqtt_sender as mqtt_sender
-import lib.paho.mqtt.client as mqtt
+import paho.mqtt.client as mqtt
 import src.irulez.log as log
 import src.irulez.constants as constants
 import src.irulez.util as util

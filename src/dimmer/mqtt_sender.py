@@ -1,7 +1,7 @@
 import src.irulez.util as util
 import src.irulez.topic_factory as topic_factory
 import src.irulez.log as log
-import lib.paho.mqtt.client as mqtt
+import paho.mqtt.client as mqtt
 import uuid
 
 logger = log.get_logger('dimmer_mqtt_sender')

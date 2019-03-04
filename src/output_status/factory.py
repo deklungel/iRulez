@@ -2,7 +2,7 @@ from typing import Dict, Optional
 
 import src.output_status.db_domain as db_domain
 
-import src.button.db as db
+import src.button._db as db
 import src.irulez.log as log
 import src.output_status.domain as domain
 

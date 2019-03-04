@@ -3,7 +3,7 @@ from contextlib import closing
 from datetime import time
 from typing import List
 
-import lib.mysql.connector as mariadb
+import mysql.connector as mariadb
 import src.button._db_domain as db_domain
 import src.irulez.configuration as configuration
 

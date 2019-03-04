@@ -1,7 +1,7 @@
-import src.button.factory as factory
+import src.button._factory as factory
 
-import lib.paho.mqtt.client as mqtt
-import src.button.db
+import paho.mqtt.client as mqtt
+import src.button._db
 import src.irulez.configuration as configuration
 import src.irulez.constants as constants
 import src.irulez.log as log
@@ -11,7 +11,7 @@ logger = log.get_logger('dummy')
 
 # Get database, dummy for now
 logger.debug('Getting database')
-db = src.button.db.get_maria_db()
+db = src.button._db.get_maria_db()
 factory = factory.ArduinoConfigFactory(db)
 
 # Get arduinos from database and store them in a dictionary

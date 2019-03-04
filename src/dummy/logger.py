@@ -1,6 +1,6 @@
 import src.irulez.log as log
 
-import lib.paho.mqtt.client as mqtt
+import paho.mqtt.client as mqtt
 from src.irulez import configuration
 
 logger = log.get_logger('logger')

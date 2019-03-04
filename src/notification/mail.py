@@ -1,4 +1,4 @@
-import lib.paho.mqtt.client as mqtt
+import paho.mqtt.client as mqtt
 import src.irulez.configuration as configuration
 import src.irulez.constants as constants
 import src.irulez.log as log
