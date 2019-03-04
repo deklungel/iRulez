@@ -1,6 +1,6 @@
 import src.button.factory as factory
 import lib.paho.mqtt.client as mqtt
-import src.button.db
+import src.button._db
 import src.button.mqtt_sender as mqtt_sender
 import src.button.processors as button_processor
 import src.irulez.configuration as configuration
@@ -14,7 +14,7 @@ logger = log.get_logger('button')
 
 # Get database, dummy for now
 logger.debug('Getting database')
-db = src.button.db.get_maria_db()
+db = src.button._db.get_maria_db()
 factory = factory.ArduinoConfigFactory(db)
 
 # Connect
