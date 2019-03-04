@@ -3,7 +3,7 @@ from typing import Dict, List, Optional
 import src.button._db_domain as db_domain
 
 import src.button._db as db
-import src.button.domain as domain
+import src.button._domain as domain
 import src.irulez.log as log
 
 logger = log.get_logger('factory')

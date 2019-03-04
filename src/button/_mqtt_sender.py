@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-import src.button.domain as irulez_domain
+import src.button._domain as irulez_domain
 import src.irulez.constants as constants
 import src.irulez.log as log
 import src.irulez.util as util
