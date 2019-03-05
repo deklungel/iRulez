@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# Version 5.2
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[2].resolve()))
+
 import src.button._factory as factory
 import paho.mqtt.client as mqtt
 import src.button._db
@@ -9,6 +15,7 @@ import src.irulez.log as log
 import src.irulez.util as util
 import src.output_status.ServiceClient as ServiceClient
 import src.button._action_executor as action_executor
+
 
 logger = log.get_logger('button')
 
