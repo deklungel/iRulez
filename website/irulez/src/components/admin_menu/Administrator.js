@@ -13,6 +13,7 @@ import Users from './users/Users';
 import Devices from './devices/Devices';
 import Actions from './actions/Actions';
 import DimmerActions from './actions/DimmerActions';
+import Processes from './processes/Processes';
 
 const Auth = new AuthService();
 
@@ -113,6 +114,11 @@ class Administrator extends Component {
                             exact
                             path='/administrator/devices'
                             render={props => <Devices {...props} Collapse={this.SetCollapse} />}
+                        />
+                        <Route
+                            exact
+                            path='/administrator/processes'
+                            render={props => <Processes {...props} Collapse={this.SetCollapse} />}
                         />
                     </main>
                 </SnackbarProvider>

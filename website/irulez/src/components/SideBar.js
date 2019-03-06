@@ -222,6 +222,13 @@ class SideBar extends React.Component {
                             primary='Devices'
                             icon={<ChipIcon />}
                         />
+                        <ListItemLink
+                            to='/administrator/processes'
+                            classes={classes}
+                            button
+                            primary='Proicesses'
+                            icon={<ChipIcon />}
+                        />
                         <ListItem button>
                             <ListItemIcon>
                                 <LightbulbOnOutlineIcon />

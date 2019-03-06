@@ -9,7 +9,8 @@
         "prettier.printWidth": 120,
         "prettier.tabWidth": 4,
         "editor.formatOnSave": true,
-        "prettier.singleQuote": true
+        "prettier.singleQuote": true,
+        "git.ignoreLimitWarning": true
     },
     "extensions": {
         "recommendations": ["esbenp.prettier-vscode"]
