@@ -1,10 +1,12 @@
 import configparser
+from pathlib import Path
 
 
 class Configuration:
     def __init__(self) -> None:
         self.config = configparser.ConfigParser()
-        self.config.read('../irulez/config.ini')
+        self.config.read(str(Path(__file__).resolve().parents[0].resolve()) + '/config.ini')
+
 
     def get_config(self, section: str) -> {}:
         if section in self.config:
