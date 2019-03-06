@@ -1,0 +1,4 @@
+{
+    "port": 3003,
+    "key": "./public.key"
+}
