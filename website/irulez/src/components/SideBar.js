@@ -103,14 +103,8 @@ class SideBar extends React.Component {
         this.handleLogout = this.handleLogout.bind(this);
     }
 
-    componentWillReceiveProps = props => {
-        this.setState({
-            [props.open]: true
-        });
-    };
-
     state = {
-        open: true,
+        //open: true,
         subopen: false
     };
 
@@ -119,12 +113,12 @@ class SideBar extends React.Component {
     };
 
     handleDrawerOpen = () => {
-        this.setState({ open: true });
+        // this.setState({ open: true });
         this.props.sidebarToggle(true);
     };
 
     handleDrawerClose = () => {
-        this.setState({ open: false });
+        // this.setState({ open: false });
         this.props.sidebarToggle(false);
     };
 
@@ -136,7 +130,7 @@ class SideBar extends React.Component {
 
     render() {
         const { classes, theme } = this.props;
-        const { open } = this.state;
+        const { open } = this.props;
 
         return (
             <div className={classes.root}>

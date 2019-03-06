@@ -5,6 +5,6 @@
         "password": "irulez4database",
         "database": "iRulez"
     },
-    "port" : 8080,
+    "port": 3002,
     "key": "./private.key"
 }

@@ -34,6 +34,7 @@ class Users extends Component {
 
     componentDidMount() {
         this.getData();
+        this.props.checkSidebarState();
         this.resetValues();
     }
     updateRowsPerPage = rows => {

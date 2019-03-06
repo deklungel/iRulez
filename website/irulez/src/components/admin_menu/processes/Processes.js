@@ -10,7 +10,7 @@ class Processes extends Component {
     };
 
     componentDidMount() {
-        //this.props.checkSidebarState();
+        this.props.checkSidebarState();
         this.getData();
     }
     getData = () => {

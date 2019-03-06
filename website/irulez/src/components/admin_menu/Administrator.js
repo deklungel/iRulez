@@ -14,6 +14,7 @@ import Devices from './devices/Devices';
 import Actions from './actions/Actions';
 import DimmerActions from './actions/DimmerActions';
 import Processes from './processes/Processes';
+import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
 
 const Auth = new AuthService();
 
@@ -73,6 +74,15 @@ class Administrator extends Component {
         this.setState({ MenuOpen: menu });
     };
 
+    checkSidebarState = () => {
+        alert('test');
+        if (isMobile) {
+            this.sideBarToggle(false);
+        } else {
+            this.sideBarToggle(true);
+        }
+    };
+
     render() {
         const { classes } = this.props;
 
@@ -83,6 +93,7 @@ class Administrator extends Component {
                     sidebarToggle={this.sideBarToggle}
                     ToggleCollapse={this.ToggleCollapse}
                     MenuOpen={this.state.MenuOpen}
+                    open={this.state.sidebarOpen}
                 />
                 <SnackbarProvider maxSnack={3}>
                     <main
@@ -98,27 +109,57 @@ class Administrator extends Component {
                         />
                         <Route
                             path='/administrator/actions/relais'
-                            render={props => <Actions {...props} Collapse={this.SetCollapse} />}
+                            render={props => (
+                                <Actions
+                                    {...props}
+                                    checkSidebarState={this.checkSidebarState}
+                                    Collapse={this.SetCollapse}
+                                />
+                            )}
                         />
                         <Route
                             exact
                             path='/administrator/actions/dimmer'
-                            render={props => <DimmerActions {...props} Collapse={this.SetCollapse} />}
+                            render={props => (
+                                <DimmerActions
+                                    {...props}
+                                    checkSidebarState={this.checkSidebarState}
+                                    Collapse={this.SetCollapse}
+                                />
+                            )}
                         />
                         <Route
                             exact
                             path='/administrator/users'
-                            render={props => <Users {...props} Collapse={this.SetCollapse} />}
+                            render={props => (
+                                <Users
+                                    {...props}
+                                    checkSidebarState={this.checkSidebarState}
+                                    Collapse={this.SetCollapse}
+                                />
+                            )}
                         />
                         <Route
                             exact
                             path='/administrator/devices'
-                            render={props => <Devices {...props} Collapse={this.SetCollapse} />}
+                            render={props => (
+                                <Devices
+                                    {...props}
+                                    checkSidebarState={this.checkSidebarState}
+                                    Collapse={this.SetCollapse}
+                                />
+                            )}
                         />
                         <Route
                             exact
                             path='/administrator/processes'
-                            render={props => <Processes {...props} Collapse={this.SetCollapse} />}
+                            render={props => (
+                                <Processes
+                                    {...props}
+                                    checkSidebarState={this.checkSidebarState}
+                                    Collapse={this.SetCollapse}
+                                />
+                            )}
                         />
                     </main>
                 </SnackbarProvider>

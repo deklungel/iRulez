@@ -33,8 +33,10 @@ class Actions extends Component {
 
     componentDidMount() {
         this.getData();
+        this.props.checkSidebarState();
         this.resetValues();
     }
+
     updateRowsPerPage = rows => {
         this.setState({
             rowsPerPage: rows

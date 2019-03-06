@@ -1,5 +1,6 @@
-var BASEURL = 'http://localhost:4002/api/';
-var BASEURL_SUPERVISOR = 'http://localhost:3003/api/';
+var BASEURL = 'http://10.0.50.250:3001/api/';
+var BASEURL_SUPERVISOR = 'http://10.0.50.250:3003/api/';
+var AUTHENTICATION_SERVER = 'http://10.0.50.250:3002/login';
 
 var USER_DELETE = BASEURL + 'user/delete';
 var USER_GET = BASEURL + 'users';
@@ -25,7 +26,6 @@ var GET_OUTPUTS = BASEURL + 'field/outputs';
 var GET_CONDITIONS = BASEURL + 'field/conditions';
 var GET_NOTIFICATIONS = BASEURL + 'field/notifications';
 
-var AUTHENTICATION_SERVER = 'http://localhost:8080/login';
 var PROCESSES_GET = BASEURL_SUPERVISOR + 'getAllProcesses';
 var PROCESSES_RESTART = BASEURL_SUPERVISOR + 'restartProcces';
 var PROCESSES_START = BASEURL_SUPERVISOR + 'startProcces';
