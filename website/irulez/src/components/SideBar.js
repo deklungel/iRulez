@@ -232,30 +232,31 @@ class SideBar extends React.Component {
                         <ListItem
                             button
                             onClick={() => {
-                                this.handleClick('users');
+                                this.handleClick('user');
                             }}
                         >
                             <ListItemIcon>
                                 <PeopleIcon />
                             </ListItemIcon>
                             <ListItemText inset primary='Users' />
-                            {this.state.users ? <ExpandLess /> : <ExpandMore />}
+                            {this.state.user ? <ExpandLess /> : <ExpandMore />}
                         </ListItem>
-                        <Collapse in={this.props.MenuOpen === 'users'} timeout='auto' unmountOnExit>
+                        <Collapse in={this.props.MenuOpen === 'user'} timeout='auto' unmountOnExit>
                             <List component='div' disablePadding>
                                 <ListItemLink
-                                    to='/administrator/users'
+                                    to='/administrator/user/users'
                                     className={classes.nested}
                                     classes={classes}
                                     primary='Add/edit'
                                     icon={<PersonIcon />}
                                 />
-                                <ListItem button className={classes.nested}>
-                                    <ListItemIcon>
-                                        <WallIcon />
-                                    </ListItemIcon>
-                                    <ListItemText primary='User Rights' />
-                                </ListItem>
+                                <ListItemLink
+                                    to='/administrator/user/groups'
+                                    className={classes.nested}
+                                    classes={classes}
+                                    primary='Groups'
+                                    icon={<PersonIcon />}
+                                />
                             </List>
                         </Collapse>
                         <Divider />

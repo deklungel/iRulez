@@ -16,6 +16,17 @@ export default class ValueService {
                 });
         });
     }
+    Get_Groups_Field() {
+        return new Promise((resolve, reject) => {
+            this.Auth.fetch(window.GET_FIELD_GROUPS)
+                .then(result => {
+                    resolve(result.response);
+                })
+                .catch(err => {
+                    reject(err);
+                });
+        });
+    }
 
     Get_Action_Type_Field() {
         return new Promise((resolve, reject) => {

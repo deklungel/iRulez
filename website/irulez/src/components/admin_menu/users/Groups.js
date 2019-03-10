@@ -10,7 +10,7 @@ import CircleLoader from 'react-spinners/CircleLoader';
 
 import { components } from '../fields/iRulezFields';
 
-class Users extends Component {
+class Groups extends Component {
     Auth = new AuthService();
     Action = new ActionService();
     originalValueRow = [];
@@ -138,7 +138,7 @@ class Users extends Component {
 
     getData = () => {
         this.setState({ isActive: true });
-        this.Action.getDataWithTimeOut()
+        this.Action.getGroupsData()
             .then(response => {
                 this.setState({ data: response });
                 this.setState({ selected: [] });
@@ -152,10 +152,10 @@ class Users extends Component {
 
     add = () => {
         this.setState({ submitDisabled: true });
-        this.Action.addUser(this.state, this.fields)
+        this.Action.addGroup(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('newForm');
-                this.handleNotification('User has been added', 'success');
+                this.handleNotification('Group has been added', 'success');
                 this.getData();
             })
             .catch(err => {
@@ -167,10 +167,10 @@ class Users extends Component {
 
     delete = () => {
         this.setState({ submitDisabled: true });
-        this.Action.deleteUser(this.state.selected)
+        this.Action.deleteGroup(this.state.selected)
             .then(() => {
                 this.handleFormClose('deleteForm');
-                this.handleNotification('User has been deleted', 'warning');
+                this.handleNotification('Group has been deleted', 'warning');
                 this.getData();
             })
             .catch(err => {
@@ -182,10 +182,10 @@ class Users extends Component {
 
     edit = () => {
         this.setState({ submitDisabled: true });
-        this.Action.editUser(this.state, this.fields)
+        this.Action.editgroup(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('editForm');
-                this.handleNotification('User has been changed', 'info');
+                this.handleNotification('Group has been changed', 'info');
                 this.getData();
             })
             .catch(err => {
@@ -196,65 +196,21 @@ class Users extends Component {
     };
     fields = [
         {
-            id: 'email',
+            id: 'name',
             addForm: true,
             editForm: true,
             align: 'left',
             required: true,
-            disablePadding: false,
-            label: 'Email',
-            Component: 'MailField'
+            disablePadding: true,
+            label: 'Groups name',
+            hideInTable: false
         },
         {
-            id: 'password',
-            addForm: true,
-            editForm: true,
-            align: 'left',
-            required: true,
-            disablePadding: false,
-            label: 'Password',
-            Component: 'PasswordField',
-            hideInTable: true
-        },
-        {
-            id: 'group_name',
-            label: 'Group'
-        },
-        {
-            id: 'group_id',
+            id: 'users',
             align: 'left',
             disablePadding: true,
-            label: 'Group',
-            Component: 'GroupField',
-            required: true,
-            addForm: true,
-            editForm: true,
-            autoFocus: false,
-            hideInTable: true,
-            default: 1
-        },
-        {
-            id: 'role',
-            addForm: true,
-            editForm: false,
-            required: true,
-            align: 'left',
-            disablePadding: false,
-            label: 'Role',
-            Component: 'SelectionField',
-            default: 'user',
-            options: [
-                {
-                    id: 'user',
-                    value: 'user',
-                    label: 'User'
-                },
-                {
-                    id: 'admin',
-                    value: 'admin',
-                    label: 'Administrator'
-                }
-            ]
+            label: 'Members',
+            type: 'Chip'
         }
     ];
 
@@ -277,9 +233,9 @@ class Users extends Component {
                     updatedSelected={this.updatedSelected}
                     updateRowsPerPage={this.updateRowsPerPage}
                     title='Users'
-                    addIconTooltip='Add user'
-                    editIconTooltip='Edit user'
-                    deleteIconTooltip='Delete user'
+                    addIconTooltip='Add group'
+                    editIconTooltip='Edit group'
+                    deleteIconTooltip='Delete group'
                     rowsPerPage={this.state.rowsPerPage}
                 />
                 <DialogMenu
@@ -287,7 +243,7 @@ class Users extends Component {
                     submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.add}
                     handleFormCancel={() => this.handleFormClose('newForm')}
-                    title='New User'
+                    title='New group'
                     acceptLabel='Add'
                 >
                     {fields
@@ -316,7 +272,7 @@ class Users extends Component {
                     submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.edit}
                     handleFormCancel={() => this.handleFormClose('editForm')}
-                    title={'Edit ' + this.state.lastSelectedRow.role}
+                    title='Edit group'
                     acceptLabel='Edit'
                 >
                     {fields
@@ -344,17 +300,17 @@ class Users extends Component {
                     submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.delete}
                     handleFormCancel={() => this.handleFormClose('deleteForm')}
-                    title='Delete User'
+                    title='Delete group'
                     acceptLabel='Delete'
                 >
-                    Are you sure you want to delete user {JSON.stringify(this.state.selected)}
+                    Are you sure you want to delete group {JSON.stringify(this.state.selected)}
                 </DialogMenu>
             </LoadingOverlay>
         );
     }
 }
-Users.propTypes = {
+Groups.propTypes = {
     enqueueSnackbar: PropTypes.func.isRequired
 };
 
-export default withSnackbar(Users);
+export default withSnackbar(Groups);

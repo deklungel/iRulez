@@ -15,6 +15,7 @@ import Actions from './actions/Actions';
 import DimmerActions from './actions/DimmerActions';
 import Processes from './processes/Processes';
 import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
+import Groups from './users/Groups';
 
 const Auth = new AuthService();
 
@@ -75,7 +76,6 @@ class Administrator extends Component {
     };
 
     checkSidebarState = () => {
-        alert('test');
         if (isMobile) {
             this.sideBarToggle(false);
         } else {
@@ -130,9 +130,20 @@ class Administrator extends Component {
                         />
                         <Route
                             exact
-                            path='/administrator/users'
+                            path='/administrator/user/users'
                             render={props => (
                                 <Users
+                                    {...props}
+                                    checkSidebarState={this.checkSidebarState}
+                                    Collapse={this.SetCollapse}
+                                />
+                            )}
+                        />
+                        <Route
+                            exact
+                            path='/administrator/user/groups'
+                            render={props => (
+                                <Groups
                                     {...props}
                                     checkSidebarState={this.checkSidebarState}
                                     Collapse={this.SetCollapse}

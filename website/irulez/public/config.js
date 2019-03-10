@@ -8,6 +8,11 @@ var USER_EDIT = BASEURL + 'user/edit';
 var USER_CHANGE_PASSWORD = BASEURL + 'user/changepassword';
 var USER_ADD = BASEURL + 'user/add';
 
+var GROUP_DELETE = BASEURL + 'group/delete';
+var GROUP_GET = BASEURL + 'groups';
+var GROUP_EDIT = BASEURL + 'group/edit';
+var GROUP_ADD = BASEURL + 'group/add';
+
 var DEVICE_GET = BASEURL + 'devices';
 var DEVICE_ADD = BASEURL + 'device/add';
 var DEVICE_DELETE = BASEURL + 'device/delete';
@@ -21,6 +26,7 @@ var ACTION_EDIT = BASEURL + 'action/edit';
 var DIMMER_ACTIONS_GET = BASEURL + 'dimmeractions';
 
 var GET_FIELD_TRIGGERS = BASEURL + 'field/triggers';
+var GET_FIELD_GROUPS = BASEURL + 'field/groups';
 var GET_FIELD_ACTION_TYPES = BASEURL + 'field/action_types';
 var GET_OUTPUTS = BASEURL + 'field/outputs';
 var GET_CONDITIONS = BASEURL + 'field/conditions';

@@ -1,4 +1,5 @@
 {
     "port": 3003,
-    "key": "./public.key"
+    "key": "./public.key",
+    "server": "http://10.50.240.11:9001"
 }

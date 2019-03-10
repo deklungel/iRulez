@@ -14,6 +14,7 @@ import MultipleSelectionField from './MultipleSelectionField';
 import MultipleOutputField from './MultipleOutputField';
 import MultipleNotificationField from './MultipleNotificationField';
 import DimmerActionTypeField from './DimmerActionTypeField';
+import GroupField from './GroupField';
 
 export const components = {
     NameField: NameField,
@@ -31,5 +32,6 @@ export const components = {
     MultipleOutputField: MultipleOutputField,
     MultipleNotificationField: MultipleNotificationField,
     DimmerActionTypeField: DimmerActionTypeField,
+    GroupField: GroupField,
     default: CustomTextField
 };

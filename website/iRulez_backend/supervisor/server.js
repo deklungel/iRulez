@@ -20,7 +20,7 @@ const checkIfAuthenticated = expressJwt({
     secret: RSA_PUBLIC_KEY
 });
 
-var client = supervisord.connect('http://10.50.240.11:9001');
+var client = supervisord.connect(config.server);
 
 app.use(function(req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');

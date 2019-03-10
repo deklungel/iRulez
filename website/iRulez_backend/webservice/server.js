@@ -43,6 +43,9 @@ app.get('/api/field/*', checkIfAuthenticated, function(req, res) {
         case '/api/field/triggers':
             get_field_triggers(req, res);
             break;
+        case '/api/field/groups':
+            get_field_groups(req, res);
+            break;
         case '/api/field/action_types':
             get_field_action_types(req, res);
             break;
@@ -67,6 +70,9 @@ app.get('/api/*', checkIfAuthenticated, function(req, res) {
         case '/api/users':
             get_user(req, res);
             break;
+        case '/api/groups':
+            get_group(req, res);
+            break;
         case '/api/devices':
             get_devices(req, res);
             break;
@@ -88,6 +94,9 @@ app.delete('/api/*', checkIfAuthenticated, function(req, res) {
         case '/api/user/delete':
             user_delete(req, res);
             break;
+        case '/api/group/delete':
+            group_delete(req, res);
+            break;
         case '/api/device/delete':
             device_delete(req, res);
             break;
@@ -103,6 +112,9 @@ app.put('/api/*', checkIfAuthenticated, function(req, res) {
     switch (req.url) {
         case '/api/user/edit':
             user_edit(req, res);
+            break;
+        case '/api/group/edit':
+            group_edit(req, res);
             break;
         case '/api/device/edit':
             device_edit(req, res);
@@ -123,6 +135,9 @@ app.post('/api/*', checkIfAuthenticated, function(req, res) {
         case '/api/user/add':
             user_add(req, res);
             break;
+        case '/api/group/add':
+            group_add(req, res);
+            break;
         case '/api/device/add':
             device_add(req, res);
             break;
@@ -138,7 +153,9 @@ app.post('/api/*', checkIfAuthenticated, function(req, res) {
 function get_user(req, res) {
     console.log(req.url);
     try {
-        sql = 'SELECT id, email, role FROM tbl_users';
+        sql =
+            'SELECT tbl_Users.id, email, role, group_id, tbl_Groups.name as group_name \
+            FROM tbl_Users INNER JOIN tbl_Groups ON tbl_Groups.id =tbl_Users.group_id ';
         processRequest(req, res, sql);
     } catch (err) {
         console.log(err); // bar
@@ -149,10 +166,12 @@ function get_user(req, res) {
 function user_add(req, res) {
     try {
         var sql =
-            "INSERT INTO tbl_users (email, role, password) VALUES ('" +
+            "INSERT INTO tbl_Users (email, role, group_id, password) VALUES ('" +
             req.body.email +
             "', '" +
             req.body.role +
+            "', '" +
+            req.body.group_id +
             "','" +
             md5(req.body.password) +
             "')";
@@ -165,7 +184,7 @@ function user_add(req, res) {
 
 function user_delete(req, res) {
     try {
-        var sql = "DELETE FROM tbl_users WHERE id IN ('" + req.body.id.join("','") + "')";
+        var sql = "DELETE FROM tbl_Users WHERE id IN ('" + req.body.id.join("','") + "')";
         processRequest(req, res, sql);
     } catch (err) {
         console.log(err); // bar
@@ -185,7 +204,7 @@ function user_edit(req, res) {
         if (req.body.password) {
             values.push("password='" + md5(req.body.password));
         }
-        var sql = 'UPDATE tbl_users SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
+        var sql = 'UPDATE tbl_Users SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
         processRequest(req, res, sql);
     } catch (err) {
         console.log(err); // bar
@@ -195,7 +214,53 @@ function user_edit(req, res) {
 
 function user_changePassword(req, res) {
     try {
-        var sql = "UPDATE tbl_users SET password='" + md5(req.body.password) + "' WHERE id = " + req.body.id;
+        var sql = "UPDATE tbl_Users SET password='" + md5(req.body.password) + "' WHERE id = " + req.body.id;
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+
+function get_group(req, res) {
+    console.log(req.url);
+    try {
+        sql =
+            "SELECT id, name, \
+        (SELECT GROUP_CONCAT(tbl_Users.email) from tbl_Users WHERE tbl_Users.group_id = tbl_Groups.id ) as 'users' \
+        FROM tbl_Groups";
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+function group_add(req, res) {
+    try {
+        console.log(req.body);
+        var sql = "INSERT INTO tbl_Groups (name) VALUES ('" + req.body.name + "')";
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+function group_delete(req, res) {
+    try {
+        var sql = "DELETE FROM tbl_Groups WHERE id IN ('" + req.body.id.join("','") + "')";
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+function group_edit(req, res) {
+    try {
+        var values = [];
+        if (req.body.name) {
+            values.push("name='" + req.body.name);
+        }
+        var sql = 'UPDATE tbl_Groups SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
         processRequest(req, res, sql);
     } catch (err) {
         console.log(err); // bar
@@ -465,6 +530,16 @@ function get_field_triggers(req, res) {
     console.log(req.url);
     try {
         sql = 'SELECT tbl_Trigger.id as "id", tbl_Trigger.name as "name" from tbl_Trigger';
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+function get_field_groups(req, res) {
+    console.log(req.url);
+    try {
+        sql = 'SELECT tbl_Groups.id as "id", tbl_Groups.name as "name" from tbl_Groups';
         processRequest(req, res, sql);
     } catch (err) {
         console.log(err); // bar

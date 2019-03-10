@@ -87,7 +87,7 @@ function createToken(returnValue, exp) {
 
 function validateEmailAndPassword(credentials, callback) {
     sql =
-        "SELECT * FROM tbl_users where LOWER(email)='" +
+        "SELECT * FROM tbl_Users where LOWER(email)='" +
         credentials.email.toLowerCase() +
         "' and password='" +
         credentials.password +

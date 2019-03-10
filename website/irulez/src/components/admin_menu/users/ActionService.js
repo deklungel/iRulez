@@ -29,6 +29,17 @@ export default class ActionService {
             }, 2000);
         });
     }
+    getGroupsData() {
+        return new Promise((resolve, reject) => {
+            this.Auth.fetch(window.GROUP_GET)
+                .then(result => {
+                    resolve(result.response);
+                })
+                .catch(err => {
+                    reject(String(err).replace(/Error:/g, ''));
+                });
+        });
+    }
 
     addUser(state, fields) {
         var json = {};
@@ -58,6 +69,34 @@ export default class ActionService {
             }
         });
     }
+    addGroup(state, fields) {
+        var json = {};
+        json.id = state.lastSelectedRow.id;
+
+        fields
+            .filter(field => {
+                return field.addForm;
+            })
+            .map(field => {
+                return (json[field.id] = state[field.id]);
+            });
+        return new Promise((resolve, reject) => {
+            if (Object.keys(json).length > 1) {
+                console.log(json);
+                var options = {
+                    method: 'POST',
+                    body: JSON.stringify(json)
+                };
+                this.Auth.fetch(window.GROUP_ADD, options)
+                    .then(result => resolve(result.response))
+                    .catch(err => {
+                        reject(String(err).replace(/Error:/g, ''));
+                    });
+            } else {
+                reject('User not created');
+            }
+        });
+    }
 
     deleteUser(selected) {
         return new Promise((resolve, reject) => {
@@ -66,6 +105,19 @@ export default class ActionService {
                 body: JSON.stringify({ id: selected })
             };
             this.Auth.fetch(window.USER_DELETE, options)
+                .then(result => resolve(result.response))
+                .catch(err => {
+                    reject(String(err).replace(/Error:/g, ''));
+                });
+        });
+    }
+    deleteGroup(selected) {
+        return new Promise((resolve, reject) => {
+            var options = {
+                method: 'DELETE',
+                body: JSON.stringify({ id: selected })
+            };
+            this.Auth.fetch(window.GROUP_DELETE, options)
                 .then(result => resolve(result.response))
                 .catch(err => {
                     reject(String(err).replace(/Error:/g, ''));
@@ -96,6 +148,38 @@ export default class ActionService {
                     body: JSON.stringify(json)
                 };
                 this.Auth.fetch(window.USER_EDIT, options)
+                    .then(result => resolve(result.response))
+                    .catch(err => {
+                        reject(String(err).replace(/Error:/g, ''));
+                    });
+            } else {
+                reject('User not changed');
+            }
+        });
+    }
+    editgroup(state, fields) {
+        var json = {};
+        json.id = state.lastSelectedRow.id;
+
+        fields
+            .filter(field => {
+                return field.editForm;
+            })
+            .map(field => {
+                let changed = field.id + '_changed';
+                if (state[changed]) {
+                    json[field.id] = state[field.id];
+                }
+                return json;
+            });
+        return new Promise((resolve, reject) => {
+            if (Object.keys(json).length > 1) {
+                console.log(json);
+                var options = {
+                    method: 'PUT',
+                    body: JSON.stringify(json)
+                };
+                this.Auth.fetch(window.GROUP_EDIT, options)
                     .then(result => resolve(result.response))
                     .catch(err => {
                         reject(String(err).replace(/Error:/g, ''));

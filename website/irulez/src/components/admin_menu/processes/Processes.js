@@ -9,6 +9,11 @@ class Processes extends Component {
         data: []
     };
 
+    constructor(props) {
+        super(props);
+        this.props.Collapse('processes');
+    }
+
     componentDidMount() {
         this.props.checkSidebarState();
         this.getData();
