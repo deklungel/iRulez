@@ -29,7 +29,10 @@ import LogoutIcon from 'mdi-react/LogoutIcon';
 import ChipIcon from 'mdi-react/ChipIcon';
 import CogsIcon from 'mdi-react/CogsIcon';
 import GaugeIcon from 'mdi-react/GaugeIcon';
+import DnsOutlineIcon from 'mdi-react/DnsOutlineIcon';
 import LightbulbOnOutlineIcon from 'mdi-react/LightbulbOnOutlineIcon';
+import ArrowExpandLeftIcon from 'mdi-react/ArrowExpandLeftIcon';
+import ArrowExpandRightIcon from 'mdi-react/ArrowExpandRightIcon';
 
 const drawerWidth = 240;
 
@@ -214,13 +217,27 @@ class SideBar extends React.Component {
                             classes={classes}
                             button
                             primary='Devices'
-                            icon={<ChipIcon />}
+                            icon={<DnsOutlineIcon />}
+                        />
+                        <ListItemLink
+                            to='/administrator/inputs'
+                            classes={classes}
+                            button
+                            primary='Input'
+                            icon={<ArrowExpandRightIcon />}
+                        />
+                        <ListItemLink
+                            to='/administrator/outputs'
+                            classes={classes}
+                            button
+                            primary='Output'
+                            icon={<ArrowExpandLeftIcon />}
                         />
                         <ListItemLink
                             to='/administrator/processes'
                             classes={classes}
                             button
-                            primary='Proicesses'
+                            primary='Processes'
                             icon={<ChipIcon />}
                         />
                         <ListItem button>

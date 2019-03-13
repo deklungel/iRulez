@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { components } from '../fields/iRulezFields';
 import LoadingOverlay from 'react-loading-overlay';
 import CircleLoader from 'react-spinners/CircleLoader';
-import DeviceService from './DeviceService';
+import OutputService from './OutputService';
 
 const styles = theme => ({
     textField: {
@@ -20,14 +20,14 @@ const styles = theme => ({
     }
 });
 
-class Devices extends Component {
+class Outputs extends Component {
     Auth = new AuthService();
-    Service = new DeviceService();
+    Service = new OutputService();
     originalValueRow = [];
 
     constructor(props) {
         super(props);
-        this.props.Collapse('users');
+        this.props.Collapse('outputs');
     }
 
     state = {
@@ -38,7 +38,7 @@ class Devices extends Component {
         selected: [],
         lastSelectedRow: [],
         isActive: true,
-        rowsPerPage: 5,
+        rowsPerPage: 25,
         submitDisabled: false
     };
 
@@ -160,36 +160,6 @@ class Devices extends Component {
             });
     };
 
-    add = () => {
-        this.setState({ submitDisabled: true });
-        this.Service.add(this.state, this.fields)
-            .then(() => {
-                this.handleFormClose('newForm');
-                this.handleNotification('Device has been added', 'success');
-                this.getData();
-            })
-            .catch(err => {
-                console.log(err);
-                this.handleNotification(String(err), 'error');
-                this.setState({ submitDisabled: false });
-            });
-    };
-
-    delete = () => {
-        this.setState({ submitDisabled: true });
-        this.Service.delete(this.state.selected)
-            .then(() => {
-                this.handleFormClose('deleteForm');
-                this.handleNotification('Device has been deleted', 'warning');
-                this.getData();
-            })
-            .catch(err => {
-                console.log(err);
-                this.handleNotification(String(err), 'error');
-                this.setState({ submitDisabled: false });
-            });
-    };
-
     edit = () => {
         this.setState({ submitDisabled: true });
         this.Service.edit(this.state, this.fields)
@@ -212,50 +182,21 @@ class Devices extends Component {
             align: 'left',
             disablePadding: true,
             label: 'Name',
-            addForm: true,
-            required: true,
-            add_autoFocus: true
+            editForm: true,
+            required: false,
+            edit_autofocus: true
         },
         {
-            id: 'mac',
+            id: 'number',
             align: 'left',
             disablePadding: false,
-            label: 'MAC',
-            addForm: true,
-            editForm: true,
-            required: true,
-            edit_autofocus: true
+            label: 'Number'
         },
 
         {
-            id: 'template_name',
-            label: 'Template'
-        },
-        {
-            id: 'template_id',
-            align: 'left',
-            disablePadding: true,
-            label: 'Template',
-            Component: 'TemplateField',
-            required: true,
-            addForm: true,
-            editForm: false,
-            autoFocus: false,
-            hideInTable: true,
-            default: '1'
-        },
-        {
-            id: 'sn',
-            align: 'left',
-            disablePadding: false,
-            label: 'Serial Number',
-            addForm: true,
-            editForm: true,
-            required: false
-        },
-        { id: 'version', align: 'left', disablePadding: false, label: 'Version' },
-        { id: 'ping', align: 'left', disablePadding: false, label: 'PING', type: 'ErrorCheck' },
-        { id: 'mqtt', align: 'left', disablePadding: false, label: 'MQTT', type: 'ErrorCheck' }
+            id: 'device_name',
+            label: 'Device'
+        }
     ];
 
     render() {
@@ -272,49 +213,21 @@ class Devices extends Component {
                     fields={fields}
                     selected={this.state.selected}
                     handleFormOpen={this.handleFormOpen}
-                    handleDelete={this.handleFormOpen}
+                    disableNew={true}
+                    disableDelete={true}
                     updateRowsPerPage={this.updateRowsPerPage}
                     updatedSelected={this.updatedSelected}
                     title='Action'
-                    addIconTooltip='Add action'
-                    editIconTooltip='Edit action'
-                    deleteIconTooltip='Delete action'
+                    editIconTooltip='Edit output'
                     rowsPerPage={this.state.rowsPerPage}
                 />
-                <DialogMenu
-                    open={this.state.newForm}
-                    submitDisabled={this.state.submitDisabled}
-                    handleFormAccept={this.add}
-                    handleFormCancel={() => this.handleFormClose('newForm')}
-                    title='New Action'
-                    acceptLabel='New'
-                >
-                    {fields
-                        .filter(form => {
-                            return form.addForm;
-                        })
-                        .map(field => {
-                            const Component = field.Component ? components[field.Component] : components['default'];
-                            return (
-                                <Component
-                                    key={field.id}
-                                    classes={classes}
-                                    field={field}
-                                    handleChange={this.handleChange}
-                                    value={this.state[field.id]}
-                                    autoFocus={field.autoFocus}
-                                    dependency={this.state[field.dependency]}
-                                />
-                            );
-                        })}
-                </DialogMenu>
 
                 <DialogMenu
                     open={this.state.editForm}
                     submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.edit}
                     handleFormCancel={() => this.handleFormClose('editForm')}
-                    title='Edit Device'
+                    title='Edit Output'
                     acceptLabel='Edit'
                 >
                     {fields
@@ -336,22 +249,12 @@ class Devices extends Component {
                             );
                         })}
                 </DialogMenu>
-                <DialogMenu
-                    open={this.state.deleteForm}
-                    submitDisabled={this.state.submitDisabled}
-                    handleFormAccept={this.delete}
-                    handleFormCancel={() => this.handleFormClose('deleteForm')}
-                    title='Delete Device'
-                    acceptLabel='Delete'
-                >
-                    Are you sure you want to delete device {JSON.stringify(this.state.selected)}
-                </DialogMenu>
             </LoadingOverlay>
         );
     }
 }
-Devices.propTypes = {
+Outputs.propTypes = {
     enqueueSnackbar: PropTypes.func.isRequired
 };
 
-export default withStyles(styles)(withSnackbar(Devices));
+export default withStyles(styles)(withSnackbar(Outputs));

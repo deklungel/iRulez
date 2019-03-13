@@ -1,13 +1,13 @@
 import AuthService from '../../AuthService';
 
-export default class ActionService {
+export default class DimmerService {
     constructor() {
         this.Auth = new AuthService();
     }
 
-    getData(url = window.ACTION_GET) {
+    getData() {
         return new Promise((resolve, reject) => {
-            this.Auth.fetch(url)
+            this.Auth.fetch(window.DIMMER_ACTIONS_GET)
                 .then(result => {
                     resolve(result.response);
                 })
@@ -16,10 +16,10 @@ export default class ActionService {
                 });
         });
     }
-    getDataWithTimeOut(url = window.ACTIONS_GET) {
+    getDataWithTimeOut() {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
-                this.Auth.fetch(url)
+                this.Auth.fetch(window.DIMMER_ACTIONS_GET)
                     .then(result => {
                         resolve(result.response);
                     })
@@ -30,7 +30,7 @@ export default class ActionService {
         });
     }
 
-    addAction(state, fields) {
+    add(state, fields) {
         var json = {};
         json.id = state.lastSelectedRow.id;
 
@@ -58,7 +58,7 @@ export default class ActionService {
             }
         });
     }
-    deleteAction(selected) {
+    delete(selected) {
         return new Promise((resolve, reject) => {
             var options = {
                 method: 'DELETE',
@@ -71,7 +71,7 @@ export default class ActionService {
                 });
         });
     }
-    editAction(state, fields) {
+    edit(state, fields) {
         var json = {};
         json.id = state.lastSelectedRow.id;
 

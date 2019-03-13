@@ -52,9 +52,16 @@ app.get('/api/field/*', checkIfAuthenticated, function(req, res) {
         case '/api/field/outputs':
             get_field_outputs(req, res);
             break;
+        case '/api/field/actions':
+            get_field_actions(req, res);
+            break;
         case '/api/field/conditions':
             get_field_conditions(req, res);
             break;
+        case '/api/field/templates':
+            get_field_templates(req, res);
+            break;
+
         case '/api/field/notifications':
             get_field_notifications(req, res);
             break;
@@ -75,6 +82,12 @@ app.get('/api/*', checkIfAuthenticated, function(req, res) {
             break;
         case '/api/devices':
             get_devices(req, res);
+            break;
+        case '/api/outputs':
+            get_outputs(req, res);
+            break;
+        case '/api/inputs':
+            get_inputs(req, res);
             break;
         case '/api/actions':
             get_actions(req, res);
@@ -119,12 +132,18 @@ app.put('/api/*', checkIfAuthenticated, function(req, res) {
         case '/api/device/edit':
             device_edit(req, res);
             break;
+        case '/api/output/edit':
+            output_edit(req, res);
+            break;
+        case '/api/input/edit':
+            input_edit(req, res);
+            break;
         case '/api/action/edit':
             action_edit(req, res);
             break;
-        // case '/api/user/changepassword':
-        //     user_changePassword(req, res);
-        //     break;
+        case '/api/user/changepassword':
+            user_changePassword(req, res);
+            break;
         default:
             console.log('response 404');
             res.sendStatus(404);
@@ -201,8 +220,8 @@ function user_edit(req, res) {
         if (req.body.role) {
             values.push("role='" + req.body.role);
         }
-        if (req.body.password) {
-            values.push("password='" + md5(req.body.password));
+        if (req.body.group_id) {
+            values.push("group_id='" + req.body.group_id);
         }
         var sql = 'UPDATE tbl_Users SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
         processRequest(req, res, sql);
@@ -271,23 +290,29 @@ function group_edit(req, res) {
 function get_devices(req, res) {
     console.log(req.url);
     try {
-        sql = 'SELECT id, name, mac, sn, version, ping, mqtt FROM tbl_Arduino';
+        sql =
+            'SELECT tbl_Arduino.id, tbl_Arduino.name, tbl_Arduino.mac, tbl_Arduino.sn, version, ping,tbl_Arduino.template_id,\
+            tbl_Template.name as "template_name", mqtt FROM tbl_Arduino\
+            INNER JOIN tbl_Template ON tbl_Template.id = tbl_Arduino.template_id';
         processRequest(req, res, sql);
     } catch (err) {
         console.log(err); // bar
         res.sendStatus(500);
     }
 }
+
 function device_add(req, res) {
     try {
         console.log(req.body);
         var sql =
-            "INSERT INTO tbl_Arduino (name, mac, sn) VALUES ('" +
+            "INSERT INTO tbl_Arduino (name, mac, sn, template_id) VALUES ('" +
             req.body.name +
             "', '" +
             req.body.mac +
             "','" +
             req.body.sn +
+            "','" +
+            req.body.template_id +
             "')";
         processRequest(req, res, sql);
     } catch (err) {
@@ -318,6 +343,83 @@ function device_edit(req, res) {
         }
         var sql = 'UPDATE tbl_Arduino SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
         processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+function get_outputs(req, res) {
+    console.log(req.url);
+    try {
+        sql =
+            'SELECT tbl_OutputPin.id,tbl_OutputPin.name,tbl_OutputPin.number, tbl_Arduino.name as device_name FROM tbl_OutputPin\
+            INNER JOIN tbl_Arduino ON tbl_Arduino.id = tbl_OutputPin.parent_id';
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+function output_edit(req, res) {
+    try {
+        var values = [];
+        if (req.body.name) {
+            values.push("name='" + req.body.name);
+        }
+        var sql = 'UPDATE tbl_OutputPin SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+
+function get_inputs(req, res) {
+    console.log(req.url);
+    try {
+        sql =
+            "SELECT tbl_InputPin.id,tbl_InputPin.name,tbl_InputPin.number,tbl_InputPin.time_between_clicks, tbl_Arduino.name as device_name,\
+            (SELECT GROUP_CONCAT(tbl_Action.name) FROM tbl_InputPin_Action INNER JOIN tbl_Action ON tbl_InputPin_Action.Action_ID = tbl_Action.id WHERE tbl_InputPin_Action.InputPin_ID = tbl_InputPin.id ) as 'actions',\
+            (SELECT GROUP_CONCAT(tbl_Action.id) FROM tbl_InputPin_Action INNER JOIN tbl_Action ON tbl_InputPin_Action.Action_ID = tbl_Action.id WHERE tbl_InputPin_Action.InputPin_ID = tbl_InputPin.id ) as 'actions_id'\
+            FROM tbl_InputPin\
+            INNER JOIN tbl_Arduino ON tbl_Arduino.id = tbl_InputPin.parent_id";
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+function input_edit(req, res) {
+    try {
+        var values = [];
+        if (req.body.name) {
+            values.push("name='" + req.body.name);
+        }
+        if (req.body.time_between_clicks) {
+            values.push("time_between_clicks='" + req.body.time_between_clicks);
+        }
+        if (req.body.time_between_clicks == '') {
+            values.push("time_between_clicks=NULL'");
+        }
+        var sql = 'UPDATE tbl_InputPin SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
+        sql = sql.replace("''", '');
+
+        var sql_action = '';
+        if (values.length > 0) {
+            sql_action = sql + ';';
+        }
+        if (req.body.actions_id) {
+            sql_action = sql_action + 'DELETE FROM `tbl_InputPin_Action` WHERE  InputPin_ID = ' + req.body.id + ';';
+            if (req.body.actions_id.length > 0) {
+                sql_action = sql_action + 'INSERT INTO tbl_InputPin_Action ( InputPin_ID ,Action_ID) VALUES ';
+                req.body.actions_id.map(id => {
+                    sql_action = sql_action + '(' + parseInt(req.body.id) + ',' + parseInt(id) + '),';
+                });
+                sql_action = sql_action.replace(/.$/, ';');
+            }
+        }
+
+        processRequest(req, res, sql_action);
     } catch (err) {
         console.log(err); // bar
         res.sendStatus(500);
@@ -560,6 +662,27 @@ function get_field_outputs(req, res) {
     console.log(req.url);
     try {
         sql = 'SELECT tbl_OutputPin.id, tbl_OutputPin.name from tbl_OutputPin';
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+function get_field_actions(req, res) {
+    console.log(req.url);
+    try {
+        sql = 'SELECT tbl_Action.id, tbl_Action.name from tbl_Action';
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+
+function get_field_templates(req, res) {
+    console.log(req.url);
+    try {
+        sql = 'SELECT tbl_Template.id, tbl_Template.name from tbl_Template';
         processRequest(req, res, sql);
     } catch (err) {
         console.log(err); // bar

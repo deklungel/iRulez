@@ -28,6 +28,18 @@ export default class ValueService {
         });
     }
 
+    Get_Template_Field() {
+        return new Promise((resolve, reject) => {
+            this.Auth.fetch(window.GET_FIELD_TEMPLATE)
+                .then(result => {
+                    resolve(result.response);
+                })
+                .catch(err => {
+                    reject(err);
+                });
+        });
+    }
+
     Get_Action_Type_Field() {
         return new Promise((resolve, reject) => {
             this.Auth.fetch(window.GET_FIELD_ACTION_TYPES)
@@ -42,6 +54,17 @@ export default class ValueService {
     Get_Outputs() {
         return new Promise((resolve, reject) => {
             this.Auth.fetch(window.GET_OUTPUTS)
+                .then(result => {
+                    resolve(result.response);
+                })
+                .catch(err => {
+                    reject(err);
+                });
+        });
+    }
+    Get_Actions() {
+        return new Promise((resolve, reject) => {
+            this.Auth.fetch(window.GET_FIELD_ACTIONS)
                 .then(result => {
                     resolve(result.response);
                 })

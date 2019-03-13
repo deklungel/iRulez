@@ -18,7 +18,13 @@ var DEVICE_ADD = BASEURL + 'device/add';
 var DEVICE_DELETE = BASEURL + 'device/delete';
 var DEVICE_EDIT = BASEURL + 'device/edit';
 
-var ACTIONS_GET = BASEURL + 'actions';
+var OUTPUT_GET = BASEURL + 'outputs';
+var OUTPUT_EDIT = BASEURL + 'output/edit';
+
+var INPUT_GET = BASEURL + 'inputs';
+var INPUT_EDIT = BASEURL + 'input/edit';
+
+var ACTION_GET = BASEURL + 'actions';
 var ACTION_ADD = BASEURL + 'action/add';
 var ACTION_DELETE = BASEURL + 'action/delete';
 var ACTION_EDIT = BASEURL + 'action/edit';
@@ -31,6 +37,8 @@ var GET_FIELD_ACTION_TYPES = BASEURL + 'field/action_types';
 var GET_OUTPUTS = BASEURL + 'field/outputs';
 var GET_CONDITIONS = BASEURL + 'field/conditions';
 var GET_NOTIFICATIONS = BASEURL + 'field/notifications';
+var GET_FIELD_TEMPLATE = BASEURL + 'field/templates';
+var GET_FIELD_ACTIONS = BASEURL + 'field/actions';
 
 var PROCESSES_GET = BASEURL_SUPERVISOR + 'getAllProcesses';
 var PROCESSES_RESTART = BASEURL_SUPERVISOR + 'restartProcces';

@@ -4,15 +4,15 @@ import EnhancedTable from '../Table';
 import PropTypes from 'prop-types';
 import { withSnackbar } from 'notistack';
 import AuthService from '../../AuthService';
-import ActionService from './ActionService';
+import UserService from './UserService';
 import LoadingOverlay from 'react-loading-overlay';
 import CircleLoader from 'react-spinners/CircleLoader';
-
+import PasswordField from '../fields/PasswordField';
 import { components } from '../fields/iRulezFields';
 
 class Users extends Component {
     Auth = new AuthService();
-    Action = new ActionService();
+    Service = new UserService();
     originalValueRow = [];
 
     constructor(props) {
@@ -24,6 +24,7 @@ class Users extends Component {
         newForm: false,
         editForm: false,
         deleteForm: false,
+        changePasswordForm: false,
         data: [],
         selected: [],
         lastSelectedRow: [],
@@ -45,9 +46,9 @@ class Users extends Component {
 
     resetValues = () => {
         this.fields
-            .filter(field => {
-                return field.editForm;
-            })
+            // .filter(field => {
+            //     return field.editForm;
+            // })
             .map(field => {
                 let changed = field.id + '_changed';
                 return this.setState({
@@ -107,6 +108,13 @@ class Users extends Component {
         });
         this.resetValues();
     };
+    handleChangePasswordFormClose = form => {
+        this.setState({
+            changePasswordForm: false,
+            submitDisabled: false,
+            password: ''
+        });
+    };
 
     updatedSelected = (value, row) => {
         this.setState({ selected: value });
@@ -138,7 +146,7 @@ class Users extends Component {
 
     getData = () => {
         this.setState({ isActive: true });
-        this.Action.getDataWithTimeOut()
+        this.Service.getData()
             .then(response => {
                 this.setState({ data: response });
                 this.setState({ selected: [] });
@@ -152,7 +160,7 @@ class Users extends Component {
 
     add = () => {
         this.setState({ submitDisabled: true });
-        this.Action.addUser(this.state, this.fields)
+        this.Service.add(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('newForm');
                 this.handleNotification('User has been added', 'success');
@@ -167,7 +175,7 @@ class Users extends Component {
 
     delete = () => {
         this.setState({ submitDisabled: true });
-        this.Action.deleteUser(this.state.selected)
+        this.Service.delete(this.state.selected)
             .then(() => {
                 this.handleFormClose('deleteForm');
                 this.handleNotification('User has been deleted', 'warning');
@@ -182,10 +190,26 @@ class Users extends Component {
 
     edit = () => {
         this.setState({ submitDisabled: true });
-        this.Action.editUser(this.state, this.fields)
-            .then(() => {
+        this.Service.edit(this.state, this.fields)
+            .then(msg => {
                 this.handleFormClose('editForm');
-                this.handleNotification('User has been changed', 'info');
+                this.handleNotification(msg, 'info');
+                if (msg !== 'No value changed') {
+                    this.getData();
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                this.handleNotification(String(err), 'error');
+                this.setState({ submitDisabled: false });
+            });
+    };
+    changePassword = () => {
+        this.setState({ submitDisabled: true });
+        this.Service.changePassword(this.state, this.fields)
+            .then(() => {
+                this.handleChangePasswordFormClose();
+                this.handleNotification('Password has been changed', 'info');
                 this.getData();
             })
             .catch(err => {
@@ -194,6 +218,7 @@ class Users extends Component {
                 this.setState({ submitDisabled: false });
             });
     };
+
     fields = [
         {
             id: 'email',
@@ -208,7 +233,7 @@ class Users extends Component {
         {
             id: 'password',
             addForm: true,
-            editForm: true,
+            editForm: false,
             align: 'left',
             required: true,
             disablePadding: false,
@@ -231,7 +256,7 @@ class Users extends Component {
             editForm: true,
             autoFocus: false,
             hideInTable: true,
-            default: 1
+            default: '0'
         },
         {
             id: 'role',
@@ -318,6 +343,8 @@ class Users extends Component {
                     handleFormCancel={() => this.handleFormClose('editForm')}
                     title={'Edit ' + this.state.lastSelectedRow.role}
                     acceptLabel='Edit'
+                    extraButton='Change Password'
+                    extraButtonAction={() => this.handleFormOpen('changePasswordForm')}
                 >
                     {fields
                         .filter(form => {
@@ -348,6 +375,33 @@ class Users extends Component {
                     acceptLabel='Delete'
                 >
                     Are you sure you want to delete user {JSON.stringify(this.state.selected)}
+                </DialogMenu>
+                <DialogMenu
+                    open={this.state.changePasswordForm}
+                    submitDisabled={this.state.submitDisabled}
+                    handleFormAccept={this.changePassword}
+                    handleFormCancel={() => this.handleChangePasswordFormClose()}
+                    title='Change Password'
+                    acceptLabel='Change'
+                >
+                    <PasswordField
+                        key={'password'}
+                        classes={classes}
+                        field={{
+                            id: 'password',
+                            addForm: true,
+                            editForm: true,
+                            align: 'left',
+                            required: true,
+                            disablePadding: false,
+                            label: 'Password',
+                            Component: 'PasswordField',
+                            hideInTable: true
+                        }}
+                        handleChange={this.handleChange}
+                        value={this.state['password']}
+                        autoFocus={false}
+                    />
                 </DialogMenu>
             </LoadingOverlay>
         );

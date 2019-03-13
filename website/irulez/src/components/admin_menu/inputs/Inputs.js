@@ -4,19 +4,30 @@ import EnhancedTable from '../Table';
 import PropTypes from 'prop-types';
 import { withSnackbar } from 'notistack';
 import AuthService from '../../AuthService';
-import DimmerService from './DimmerService';
+import { withStyles } from '@material-ui/core/styles';
 import { components } from '../fields/iRulezFields';
-
 import LoadingOverlay from 'react-loading-overlay';
 import CircleLoader from 'react-spinners/CircleLoader';
+import InputService from './InputService';
 
-class DimmerActions extends Component {
+const styles = theme => ({
+    textField: {
+        marginLeft: theme.spacing.unit,
+        marginRight: theme.spacing.unit
+    },
+    content: {
+        overflowY: 'visible'
+    }
+});
+
+class Inputs extends Component {
     Auth = new AuthService();
-    Service = new DimmerService();
+    Service = new InputService();
+    originalValueRow = [];
 
     constructor(props) {
         super(props);
-        this.props.Collapse('actions');
+        this.props.Collapse('inputs');
     }
 
     state = {
@@ -27,7 +38,7 @@ class DimmerActions extends Component {
         selected: [],
         lastSelectedRow: [],
         isActive: true,
-        rowsPerPage: 10,
+        rowsPerPage: 25,
         submitDisabled: false
     };
 
@@ -44,9 +55,9 @@ class DimmerActions extends Component {
 
     resetValues = () => {
         this.fields
-            .filter(field => {
-                return field.editForm;
-            })
+            // .filter(field => {
+            //     return field.editForm;
+            // })
             .map(field => {
                 let changed = field.id + '_changed';
                 return this.setState({
@@ -149,41 +160,12 @@ class DimmerActions extends Component {
             });
     };
 
-    add = () => {
-        this.setState({ submitDisabled: true });
-        this.Service.add(this.state, this.fields)
-            .then(() => {
-                this.handleFormClose('newForm');
-                this.handleNotification('Action has been added', 'success');
-                this.getData();
-            })
-            .catch(err => {
-                console.log(err);
-                this.handleNotification(String(err), 'error');
-                this.setState({ submitDisabled: false });
-            });
-    };
-
-    delete = () => {
-        this.setState({ submitDisabled: true });
-        this.Service.delete(this.state.selected)
-            .then(() => {
-                this.handleFormClose('deleteForm');
-                this.handleNotification('Action has been deleted', 'warning');
-                this.getData();
-            })
-            .catch(err => {
-                console.log(err);
-                this.handleNotification(String(err), 'error');
-                this.setState({ submitDisabled: false });
-            });
-    };
     edit = () => {
         this.setState({ submitDisabled: true });
         this.Service.edit(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('editForm');
-                this.handleNotification('Action has been changed', 'info');
+                this.handleNotification('Device has been changed', 'info');
                 this.getData();
             })
             .catch(err => {
@@ -194,154 +176,55 @@ class DimmerActions extends Component {
     };
 
     fields = [
-        //{ id: 'id', align: 'left', disablePadding: true, label: 'ID' },
+        { id: 'id', align: 'left', disablePadding: true, label: 'ID' },
         {
             id: 'name',
-            mapping: 'name',
             align: 'left',
             disablePadding: true,
             label: 'Name',
-            Component: 'NameField',
-            addForm: true,
             editForm: true,
-            required: true,
-            autoFocus: true
+            required: false,
+            edit_autofocus: true
         },
         {
-            id: 'action_type_name',
-            label: 'Types'
-        },
-        {
-            id: 'action_type',
-            align: 'left',
-            Component: 'DimmerActionTypeField',
-            required: true,
-            disablePadding: true,
-            label: 'Type',
-            addForm: true,
-            editForm: true,
-            autoFocus: false,
-            default: 1,
-            hideInTable: true
-        },
-        {
-            id: 'trigger_name',
-            label: 'Trigger'
-        },
-        {
-            id: 'trigger',
-            align: 'left',
-            disablePadding: true,
-            label: 'Trigger',
-            Component: 'TriggerField',
-            required: true,
-            addForm: true,
-            editForm: true,
-            autoFocus: false,
-            hideInTable: true,
-            default: 1
-        },
-        {
-            id: 'delay',
-            align: 'left',
-            disablePadding: true,
-            label: 'Delay',
-            Component: 'SecondsField',
-            addForm: true,
-            editForm: true
-        },
-        {
-            id: 'timer',
-            align: 'left',
-            disablePadding: true,
-            label: 'Timer',
-            Component: 'TimerField',
-            addForm: true,
-            editForm: true,
-            dependency: 'action_type'
-        },
-        {
-            id: 'master',
+            id: 'number',
             align: 'left',
             disablePadding: false,
-            label: 'Master'
+            label: 'Number'
         },
         {
-            id: 'master_id',
-            mapping: 'master_id',
+            id: 'time_between_clicks',
             align: 'left',
             disablePadding: false,
-            label: 'Master',
-            Component: 'MasterField',
-            addForm: true,
+            label: 'Time between clicks',
             editForm: true,
-            dependency: 'action_type',
-            hideInTable: true
+            required: false,
+            edit_autofocus: false,
+            Component: 'DecimalField'
         },
         {
-            id: 'condition',
+            id: 'actions',
             align: 'left',
             disablePadding: true,
-            label: 'Condition'
-        },
-        {
-            id: 'condition_id',
-            label: 'Condition',
-            Component: 'ConditionField',
-            addForm: true,
-            editForm: true,
-            hideInTable: true
-        },
-        {
-            id: 'click_number',
-            align: 'left',
-            disablePadding: true,
-            label: 'Click Number',
-            Component: 'NumberField',
-            addForm: true,
-            editForm: true,
-            required: true,
-            default: 1
-        },
-        {
-            id: 'outputs',
-            align: 'left',
-            disablePadding: true,
-            label: 'Outputs',
+            label: 'Actions',
             type: 'Chip',
             forLabel: true
         },
         {
-            id: 'outputs_id',
+            id: 'actions_id',
             align: 'left',
             disablePadding: true,
-            label: 'Outputs',
-            Component: 'MultipleOutputField',
-            labelField: 'outputs',
+            label: 'Actions',
+            Component: 'MultipleActionField',
+            labelField: 'actions',
             addForm: true,
             editForm: true,
             array: true,
             hideInTable: true
         },
         {
-            id: 'notifications',
-            align: 'left',
-            disablePadding: true,
-            label: 'Notifications',
-            type: 'Chip',
-            forLabel: true
-        },
-        {
-            id: 'notifications_id',
-            align: 'left',
-            disablePadding: true,
-            label: 'Notifications',
-            Component: 'MultipleNotificationField',
-            labelField: 'notifications',
-            addForm: true,
-            editForm: true,
-            array: true,
-            hideInTable: true
+            id: 'device_name',
+            label: 'Device'
         }
     ];
 
@@ -359,50 +242,21 @@ class DimmerActions extends Component {
                     fields={fields}
                     selected={this.state.selected}
                     handleFormOpen={this.handleFormOpen}
-                    handleDelete={this.handleFormOpen}
-                    updatedSelected={this.updatedSelected}
+                    disableNew={true}
+                    disableDelete={true}
                     updateRowsPerPage={this.updateRowsPerPage}
-                    title='Dimmer Action'
-                    addIconTooltip='Add action'
-                    editIconTooltip='Edit action'
-                    deleteIconTooltip='Delete action'
+                    updatedSelected={this.updatedSelected}
+                    title='Action'
+                    editIconTooltip='Edit output'
                     rowsPerPage={this.state.rowsPerPage}
                 />
-                <DialogMenu
-                    open={this.state.newForm}
-                    submitDisabled={this.state.submitDisabled}
-                    //fullScreen={true}
-                    handleFormAccept={this.add}
-                    handleFormCancel={() => this.handleFormClose('newForm')}
-                    title='New Action'
-                    acceptLabel='New'
-                >
-                    {fields
-                        .filter(form => {
-                            return form.addForm;
-                        })
-                        .map(field => {
-                            const Component = field.Component ? components[field.Component] : components['default'];
-                            return (
-                                <Component
-                                    key={field.id}
-                                    classes={classes}
-                                    field={field}
-                                    handleChange={this.handleChange}
-                                    value={this.state[field.id]}
-                                    autoFocus={field.autoFocus}
-                                    dependency={this.state[field.dependency]}
-                                />
-                            );
-                        })}
-                </DialogMenu>
 
                 <DialogMenu
                     open={this.state.editForm}
                     submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.edit}
                     handleFormCancel={() => this.handleFormClose('editForm')}
-                    title='Edit Device'
+                    title='Edit Output'
                     acceptLabel='Edit'
                 >
                     {fields
@@ -425,22 +279,12 @@ class DimmerActions extends Component {
                             );
                         })}
                 </DialogMenu>
-                <DialogMenu
-                    open={this.state.deleteForm}
-                    submitDisabled={this.state.submitDisabled}
-                    handleFormAccept={this.delete}
-                    handleFormCancel={() => this.handleFormClose('deleteForm')}
-                    title='Delete Device'
-                    acceptLabel='Delete'
-                >
-                    Are you sure you want to delete device {JSON.stringify(this.state.selected)}
-                </DialogMenu>
             </LoadingOverlay>
         );
     }
 }
-DimmerActions.propTypes = {
+Inputs.propTypes = {
     enqueueSnackbar: PropTypes.func.isRequired
 };
 
-export default withSnackbar(DimmerActions);
+export default withStyles(styles)(withSnackbar(Inputs));

@@ -1,6 +1,6 @@
 import AuthService from '../../AuthService';
 
-export default class ActionService {
+export default class DeviceService {
     constructor() {
         this.Auth = new AuthService();
     }
@@ -29,7 +29,7 @@ export default class ActionService {
             }, 2000);
         });
     }
-    addDevice(state, fields) {
+    add(state, fields) {
         var json = {};
         json.id = state.lastSelectedRow.id;
 
@@ -57,7 +57,7 @@ export default class ActionService {
             }
         });
     }
-    deleteDevice(selected) {
+    delete(selected) {
         return new Promise((resolve, reject) => {
             var options = {
                 method: 'DELETE',
@@ -71,7 +71,7 @@ export default class ActionService {
         });
     }
 
-    editDevice(state, fields) {
+    edit(state, fields) {
         var json = {};
         json.id = state.lastSelectedRow.id;
 

@@ -4,7 +4,7 @@ import EnhancedTable from '../Table';
 import PropTypes from 'prop-types';
 import { withSnackbar } from 'notistack';
 import AuthService from '../../AuthService';
-import ActionService from './ActionService';
+import GroupService from './GroupService';
 import LoadingOverlay from 'react-loading-overlay';
 import CircleLoader from 'react-spinners/CircleLoader';
 
@@ -12,7 +12,7 @@ import { components } from '../fields/iRulezFields';
 
 class Groups extends Component {
     Auth = new AuthService();
-    Action = new ActionService();
+    Service = new GroupService();
     originalValueRow = [];
 
     constructor(props) {
@@ -138,7 +138,7 @@ class Groups extends Component {
 
     getData = () => {
         this.setState({ isActive: true });
-        this.Action.getGroupsData()
+        this.Service.getData()
             .then(response => {
                 this.setState({ data: response });
                 this.setState({ selected: [] });
@@ -152,7 +152,7 @@ class Groups extends Component {
 
     add = () => {
         this.setState({ submitDisabled: true });
-        this.Action.addGroup(this.state, this.fields)
+        this.Service.add(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('newForm');
                 this.handleNotification('Group has been added', 'success');
@@ -167,7 +167,7 @@ class Groups extends Component {
 
     delete = () => {
         this.setState({ submitDisabled: true });
-        this.Action.deleteGroup(this.state.selected)
+        this.Service.delete(this.state.selected)
             .then(() => {
                 this.handleFormClose('deleteForm');
                 this.handleNotification('Group has been deleted', 'warning');
@@ -182,7 +182,7 @@ class Groups extends Component {
 
     edit = () => {
         this.setState({ submitDisabled: true });
-        this.Action.editgroup(this.state, this.fields)
+        this.Service.edit(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('editForm');
                 this.handleNotification('Group has been changed', 'info');

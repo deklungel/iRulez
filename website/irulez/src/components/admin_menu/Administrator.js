@@ -12,6 +12,8 @@ import Admin from './Dashboard';
 import Users from './users/Users';
 import Devices from './devices/Devices';
 import Actions from './actions/Actions';
+import Outputs from './outputs/Outputs';
+import Inputs from './inputs/Inputs';
 import DimmerActions from './actions/DimmerActions';
 import Processes from './processes/Processes';
 import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
@@ -51,7 +53,7 @@ class Administrator extends Component {
     user = Auth.getProfile();
 
     state = {
-        sidebarOpen: true,
+        sidebarOpen: false,
         MenuOpen: ''
     };
 
@@ -155,6 +157,28 @@ class Administrator extends Component {
                             path='/administrator/devices'
                             render={props => (
                                 <Devices
+                                    {...props}
+                                    checkSidebarState={this.checkSidebarState}
+                                    Collapse={this.SetCollapse}
+                                />
+                            )}
+                        />
+                        <Route
+                            exact
+                            path='/administrator/outputs'
+                            render={props => (
+                                <Outputs
+                                    {...props}
+                                    checkSidebarState={this.checkSidebarState}
+                                    Collapse={this.SetCollapse}
+                                />
+                            )}
+                        />
+                        <Route
+                            exact
+                            path='/administrator/inputs'
+                            render={props => (
+                                <Inputs
                                     {...props}
                                     checkSidebarState={this.checkSidebarState}
                                     Collapse={this.SetCollapse}

@@ -1,13 +1,13 @@
 import AuthService from '../../AuthService';
 
-export default class ActionService {
+export default class GroupService {
     constructor() {
         this.Auth = new AuthService();
     }
 
-    getData(url = window.ACTION_GET) {
+    getData() {
         return new Promise((resolve, reject) => {
-            this.Auth.fetch(url)
+            this.Auth.fetch(window.GROUP_GET)
                 .then(result => {
                     resolve(result.response);
                 })
@@ -16,21 +16,8 @@ export default class ActionService {
                 });
         });
     }
-    getDataWithTimeOut(url = window.ACTIONS_GET) {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                this.Auth.fetch(url)
-                    .then(result => {
-                        resolve(result.response);
-                    })
-                    .catch(err => {
-                        reject(String(err).replace(/Error:/g, ''));
-                    });
-            }, 2000);
-        });
-    }
 
-    addAction(state, fields) {
+    add(state, fields) {
         var json = {};
         json.id = state.lastSelectedRow.id;
 
@@ -48,30 +35,32 @@ export default class ActionService {
                     method: 'POST',
                     body: JSON.stringify(json)
                 };
-                this.Auth.fetch(window.ACTION_ADD, options)
+                this.Auth.fetch(window.GROUP_ADD, options)
                     .then(result => resolve(result.response))
                     .catch(err => {
                         reject(String(err).replace(/Error:/g, ''));
                     });
             } else {
-                reject('Action not created');
+                reject('User not created');
             }
         });
     }
-    deleteAction(selected) {
+
+    delete(selected) {
         return new Promise((resolve, reject) => {
             var options = {
                 method: 'DELETE',
                 body: JSON.stringify({ id: selected })
             };
-            this.Auth.fetch(window.ACTION_DELETE, options)
+            this.Auth.fetch(window.GROUP_DELETE, options)
                 .then(result => resolve(result.response))
                 .catch(err => {
                     reject(String(err).replace(/Error:/g, ''));
                 });
         });
     }
-    editAction(state, fields) {
+
+    edit(state, fields) {
         var json = {};
         json.id = state.lastSelectedRow.id;
 
@@ -93,13 +82,13 @@ export default class ActionService {
                     method: 'PUT',
                     body: JSON.stringify(json)
                 };
-                this.Auth.fetch(window.ACTION_EDIT, options)
+                this.Auth.fetch(window.GROUP_EDIT, options)
                     .then(result => resolve(result.response))
                     .catch(err => {
                         reject(String(err).replace(/Error:/g, ''));
                     });
             } else {
-                reject('Action not changed');
+                reject('User not changed');
             }
         });
     }

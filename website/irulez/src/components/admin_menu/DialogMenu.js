@@ -44,6 +44,11 @@ class DialogMenu extends Component {
                 <ValidatorForm ref='form' onSubmit={this.handleSubmit} onError={errors => console.log(errors)}>
                     <DialogContent className={classes.content}>{this.props.children}</DialogContent>
                     <DialogActions>
+                        {this.props.extraButton ? (
+                            <Button onClick={this.props.extraButtonAction} color='secondary'>
+                                {this.props.extraButton}
+                            </Button>
+                        ) : null}
                         <Button onClick={this.closeForm} color='primary'>
                             Cancel
                         </Button>

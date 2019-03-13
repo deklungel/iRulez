@@ -135,7 +135,17 @@ const toolbarStyles = theme => ({
 });
 
 let EnhancedTableToolbar = props => {
-    const { numSelected, classes, open, title, addIconTooltip, editIconTooltip, deleteIconTooltip } = props;
+    const {
+        numSelected,
+        classes,
+        open,
+        title,
+        addIconTooltip,
+        editIconTooltip,
+        deleteIconTooltip,
+        disableDelete,
+        disableNew
+    } = props;
 
     return (
         <Toolbar
@@ -164,20 +174,22 @@ let EnhancedTableToolbar = props => {
                                     <EditIcon />
                                 </IconButton>
                             </Tooltip>
-                            <Tooltip title={deleteIconTooltip} onClick={() => open('deleteForm')}>
-                                <IconButton aria-label={deleteIconTooltip}>
-                                    <DeleteIcon />
-                                </IconButton>
-                            </Tooltip>
+                            {disableDelete ? null : (
+                                <Tooltip title={deleteIconTooltip} onClick={() => open('deleteForm')}>
+                                    <IconButton aria-label={deleteIconTooltip}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
                         </div>
-                    ) : (
+                    ) : disableDelete ? null : (
                         <Tooltip title={deleteIconTooltip} onClick={() => open('deleteForm')}>
                             <IconButton aria-label={deleteIconTooltip}>
                                 <DeleteIcon />
                             </IconButton>
                         </Tooltip>
                     )
-                ) : (
+                ) : disableNew ? null : (
                     <Tooltip title={addIconTooltip} onClick={() => open('newForm')}>
                         <IconButton aria-label={addIconTooltip}>
                             <AddCircle />
@@ -318,7 +330,7 @@ class EnhancedTable extends React.Component {
     };
 
     render() {
-        const { classes, data, fields, title } = this.props;
+        const { classes, data, fields, title, disableNew, disableDelete } = this.props;
         const { order, orderBy, selected, rowsPerPage, page } = this.state;
         const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
@@ -328,6 +340,8 @@ class EnhancedTable extends React.Component {
                     numSelected={selected.length}
                     open={this.props.handleFormOpen}
                     remove={this.props.handleDelete}
+                    disableNew={disableNew}
+                    disableDelete={disableDelete}
                     title={title}
                     addIconTooltip={this.props.addIconTooltip}
                     editIconTooltip={this.props.editIconTooltip}
