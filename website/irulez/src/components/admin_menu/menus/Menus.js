@@ -8,7 +8,10 @@ import { withStyles } from '@material-ui/core/styles';
 import { components } from '../fields/iRulezFields';
 import LoadingOverlay from 'react-loading-overlay';
 import CircleLoader from 'react-spinners/CircleLoader';
-import DeviceService from './DeviceService';
+import MenuService from './MenuService';
+import App from './Reorder';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Radio from '@material-ui/core/Radio';
 
 const styles = theme => ({
     textField: {
@@ -20,9 +23,9 @@ const styles = theme => ({
     }
 });
 
-class Devices extends Component {
+class Menus extends Component {
     Auth = new AuthService();
-    Service = new DeviceService();
+    Service = new MenuService();
     originalValueRow = [];
 
     constructor(props) {
@@ -34,11 +37,12 @@ class Devices extends Component {
         newForm: false,
         editForm: false,
         deleteForm: false,
+        changeOrderForm: false,
         data: [],
         selected: [],
         lastSelectedRow: [],
         isActive: true,
-        rowsPerPage: 5,
+        rowsPerPage: 10,
         submitDisabled: false
     };
 
@@ -118,6 +122,12 @@ class Devices extends Component {
         this.resetValues();
     };
 
+    handleChangeOrderFormClose = form => {
+        this.setState({
+            changeOrderForm: false,
+            submitDisabled: false
+        });
+    };
     updatedSelected = (value, row) => {
         this.setState({ selected: value });
         if (value.length === 1) {
@@ -165,7 +175,7 @@ class Devices extends Component {
         this.Service.add(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('newForm');
-                this.handleNotification('Device has been added', 'success');
+                this.handleNotification('Menu has been added', 'success');
                 this.getData();
             })
             .catch(err => {
@@ -180,7 +190,7 @@ class Devices extends Component {
         this.Service.delete(this.state.selected)
             .then(() => {
                 this.handleFormClose('deleteForm');
-                this.handleNotification('Device has been deleted', 'warning');
+                this.handleNotification('Menu has been deleted', 'warning');
                 this.getData();
             })
             .catch(err => {
@@ -195,7 +205,7 @@ class Devices extends Component {
         this.Service.edit(this.state, this.fields)
             .then(() => {
                 this.handleFormClose('editForm');
-                this.handleNotification('Device has been changed', 'info');
+                this.handleNotification('Menu has been changed', 'info');
                 this.getData();
             })
             .catch(err => {
@@ -206,56 +216,44 @@ class Devices extends Component {
     };
 
     fields = [
-        { id: 'id', align: 'left', disablePadding: true, label: 'ID' },
         {
             id: 'name',
             align: 'left',
             disablePadding: true,
             label: 'Name',
             addForm: true,
-            required: true,
-            add_autoFocus: true
-        },
-        {
-            id: 'mac',
-            align: 'left',
-            disablePadding: false,
-            label: 'MAC',
-            addForm: true,
             editForm: true,
             required: true,
-            edit_autofocus: true
-        },
-
-        {
-            id: 'template_name',
-            label: 'Template'
+            add_autoFocus: true,
+            edit_autoFocus: true
         },
         {
-            id: 'template_id',
+            id: 'display_name',
+            align: 'left',
+            disablePadding: false,
+            label: 'Display Name'
+        },
+        {
+            id: 'parent_name',
+            label: 'parent'
+        },
+        {
+            id: 'parent',
             align: 'left',
             disablePadding: true,
-            label: 'Template',
-            Component: 'TemplateField',
-            required: true,
-            addForm: true,
-            editForm: false,
-            autoFocus: false,
-            hideInTable: true,
-            default: '1'
-        },
-        {
-            id: 'sn',
-            align: 'left',
-            disablePadding: false,
-            label: 'Serial Number',
+            label: 'Parent Menu',
+            Component: 'MenuField',
             addForm: true,
             editForm: true,
-            required: false
+            autoFocus: false,
+            hideInTable: true
         },
-        { id: 'version', align: 'left', disablePadding: false, label: 'Version' },
-        { id: 'ping', align: 'left', disablePadding: false, label: 'PING', type: 'ErrorCheck' },
-        { id: 'mqtt', align: 'left', disablePadding: false, label: 'MQTT', type: 'ErrorCheck' }
+        {
+            id: 'order',
+            align: 'left',
+            disablePadding: true,
+            label: 'order'
+        }
     ];
 
     render() {
@@ -269,7 +267,6 @@ class Devices extends Component {
             >
                 <EnhancedTable
                     data={this.state.data}
-                    orderBy='id'
                     fields={fields}
                     selected={this.state.selected}
                     handleFormOpen={this.handleFormOpen}
@@ -317,6 +314,8 @@ class Devices extends Component {
                     handleFormCancel={() => this.handleFormClose('editForm')}
                     title='Edit Device'
                     acceptLabel='Edit'
+                    extraButton='Change order'
+                    extraButtonAction={() => this.handleFormOpen('changeOrderForm')}
                 >
                     {fields
                         .filter(form => {
@@ -342,17 +341,52 @@ class Devices extends Component {
                     submitDisabled={this.state.submitDisabled}
                     handleFormAccept={this.delete}
                     handleFormCancel={() => this.handleFormClose('deleteForm')}
-                    title='Delete Device'
+                    title='Delete Menu'
                     acceptLabel='Delete'
                 >
-                    Are you sure you want to delete device {JSON.stringify(this.state.selected)}
+                    Are you sure you want to delete menu {JSON.stringify(this.state.selected)}
                 </DialogMenu>
+                <DialogMenu
+                    open={this.state.changeOrderForm}
+                    submitDisabled={this.state.submitDisabled}
+                    handleFormAccept={this.changePassword}
+                    handleFormCancel={() => this.handleChangeOrderFormClose()}
+                    title='Change order'
+                    acceptLabel='Change'
+                >
+                    <FormControlLabel
+                        value='before'
+                        control={
+                            <Radio
+                                checked={this.state.selectedValue === 'a'}
+                                onChange={this.handleChange}
+                                value='a'
+                                name='radio-button-demo'
+                                aria-label='A'
+                            />
+                        }
+                        label='Before'
+                    />
+                    <FormControlLabel
+                        value='after'
+                        control={
+                            <Radio
+                                checked={this.state.selectedValue === 'a'}
+                                onChange={this.handleChange}
+                                name='radio-button-demo'
+                                aria-label='A'
+                            />
+                        }
+                        label='After'
+                    />
+                </DialogMenu>
+                <App />
             </LoadingOverlay>
         );
     }
 }
-Devices.propTypes = {
+Menus.propTypes = {
     enqueueSnackbar: PropTypes.func.isRequired
 };
 
-export default withStyles(styles)(withSnackbar(Devices));
+export default withStyles(styles)(withSnackbar(Menus));

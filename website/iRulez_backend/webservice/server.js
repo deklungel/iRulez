@@ -61,7 +61,12 @@ app.get('/api/field/*', checkIfAuthenticated, function(req, res) {
         case '/api/field/templates':
             get_field_templates(req, res);
             break;
-
+        case '/api/field/output_type':
+            get_field_output_types(req, res);
+            break;
+        case '/api/field/menus':
+            get_field_menus(req, res);
+            break;
         case '/api/field/notifications':
             get_field_notifications(req, res);
             break;
@@ -88,6 +93,9 @@ app.get('/api/*', checkIfAuthenticated, function(req, res) {
             break;
         case '/api/inputs':
             get_inputs(req, res);
+            break;
+        case '/api/menus':
+            get_menus(req, res);
             break;
         case '/api/actions':
             get_actions(req, res);
@@ -116,6 +124,9 @@ app.delete('/api/*', checkIfAuthenticated, function(req, res) {
         case '/api/action/delete':
             action_delete(req, res);
             break;
+        case '/api/menu/delete':
+            menu_delete(req, res);
+            break;
         default:
             console.log('response 404');
             res.sendStatus(404);
@@ -141,6 +152,9 @@ app.put('/api/*', checkIfAuthenticated, function(req, res) {
         case '/api/action/edit':
             action_edit(req, res);
             break;
+        case '/api/menu/edit':
+            menu_edit(req, res);
+            break;
         case '/api/user/changepassword':
             user_changePassword(req, res);
             break;
@@ -156,6 +170,9 @@ app.post('/api/*', checkIfAuthenticated, function(req, res) {
             break;
         case '/api/group/add':
             group_add(req, res);
+            break;
+        case '/api/menu/add':
+            menu_add(req, res);
             break;
         case '/api/device/add':
             device_add(req, res);
@@ -264,6 +281,7 @@ function group_add(req, res) {
         res.sendStatus(500);
     }
 }
+
 function group_delete(req, res) {
     try {
         var sql = "DELETE FROM tbl_Groups WHERE id IN ('" + req.body.id.join("','") + "')";
@@ -352,8 +370,9 @@ function get_outputs(req, res) {
     console.log(req.url);
     try {
         sql =
-            'SELECT tbl_OutputPin.id,tbl_OutputPin.name,tbl_OutputPin.number, tbl_Arduino.name as device_name FROM tbl_OutputPin\
-            INNER JOIN tbl_Arduino ON tbl_Arduino.id = tbl_OutputPin.parent_id';
+            'SELECT tbl_OutputPin.id,tbl_OutputPin.type, tbl_OutputPin_Type.name as type_name, tbl_OutputPin.name,tbl_OutputPin.number, tbl_Arduino.name as device_name FROM tbl_OutputPin\
+            INNER JOIN tbl_Arduino ON tbl_Arduino.id = tbl_OutputPin.parent_id\
+            INNER JOIN tbl_OutputPin_Type ON tbl_OutputPin_Type.id = tbl_OutputPin.type';
         processRequest(req, res, sql);
     } catch (err) {
         console.log(err); // bar
@@ -366,11 +385,27 @@ function output_edit(req, res) {
         if (req.body.name) {
             values.push("name='" + req.body.name);
         }
-        var sql = 'UPDATE tbl_OutputPin SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
-        processRequest(req, res, sql);
+        if (req.body.type) {
+            sqlcheck =
+                "SELECT COUNT(tbl_Action_OutputPin.OutputPin_ID) AS 'counter' FROM tbl_Action_OutputPin WHERE tbl_Action_OutputPin.OutputPin_ID=" +
+                req.body.id;
+            processRequest_withReturn(req, res, sqlcheck, function(result) {
+                if (parseInt(result.response[0].counter) == 0) {
+                    values.push("type='" + req.body.type);
+                    var sql = 'UPDATE tbl_OutputPin SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
+                    processRequest(req, res, sql);
+                } else {
+                    res.statusMessage = 'Output pin exist in action';
+                    res.status(400).end();
+                }
+            });
+        } else {
+            var sql = 'UPDATE tbl_OutputPin SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
+            processRequest(req, res, sql);
+        }
     } catch (err) {
         console.log(err); // bar
-        res.sendStatus(500);
+        res.serverError(err);
     }
 }
 
@@ -628,6 +663,106 @@ function action_edit(req, res) {
     }
 }
 
+async function get_menus(req, res) {
+    try {
+        sql =
+            'SELECT tbl_Menu.id, tbl_Menu.name, tbl_Menu.parent, tbl_Menu.order FROM tbl_Menu where tbl_Menu.parent is null order by tbl_Menu.order';
+        to_return = [];
+        var result_parent = await processRequest_promise(sql);
+        for (var parent of result_parent) {
+            to_return.push(parent);
+            sql =
+                'SELECT tbl_Menu.id, tbl_Menu.name,CONCAT("--"\
+                ,name) as display_name, tbl_Menu.parent, tbl_Menu.order,\
+                (SELECT tbl_Menu.name FROM tbl_Menu WHERE  tbl_Menu.id = ' +
+                parent.id +
+                ') as parent_name\
+                FROM tbl_Menu where tbl_Menu.parent = ' +
+                parent.id +
+                ' order by tbl_Menu.order';
+            console.log(sql);
+            var result_child = await processRequest_promise(sql);
+            for (var child of result_child) {
+                to_return.push(child);
+                sql =
+                    'SELECT tbl_Menu.id, tbl_Menu.name,CONCAT("------"\
+                    ,name) as display_name, tbl_Menu.parent, tbl_Menu.order,\
+                (SELECT tbl_Menu.name FROM tbl_Menu WHERE  tbl_Menu.id = ' +
+                    child.id +
+                    ') as parent_name\
+                FROM tbl_Menu where tbl_Menu.parent = ' +
+                    child.id +
+                    ' order by tbl_Menu.order';
+                var result_grandchild = await processRequest_promise(sql);
+                for (var grandchild of result_grandchild) {
+                    to_return.push(grandchild);
+                }
+            }
+        }
+        res.json({ response: to_return });
+        console.log('result: ' + to_return);
+    } catch (err) {
+        console.log(err); // bar
+    }
+}
+
+function processRequest_promise(sql) {
+    // Return new promise
+    return new Promise(function(resolve, reject) {
+        // Do async job
+        executeQuery(
+            sql,
+            function(result) {
+                resolve(result.response);
+            },
+            function(err) {
+                reject(err);
+            }
+        );
+    });
+}
+
+function menu_add(req, res) {
+    try {
+        if (req.body.parent == '') {
+            var sql = "INSERT INTO tbl_Menu (name, parent) VALUES ('" + req.body.name + "',null)";
+        } else {
+            var sql = "INSERT INTO tbl_Menu (name, parent) VALUES ('" + req.body.name + "','" + req.body.parent + "')";
+        }
+
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+
+function menu_delete(req, res) {
+    try {
+        var sql = "DELETE FROM tbl_Menu WHERE id IN ('" + req.body.id.join("','") + "')";
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
+function menu_edit(req, res) {
+    try {
+        var values = [];
+        if (req.body.name) {
+            values.push("name='" + req.body.name);
+        }
+        if (req.body.parent) {
+            values.push("parent='" + req.body.parent);
+        }
+
+        var sql = 'UPDATE tbl_Menu SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
 function get_field_triggers(req, res) {
     console.log(req.url);
     try {
@@ -658,10 +793,20 @@ function get_field_action_types(req, res) {
         res.sendStatus(500);
     }
 }
+function get_field_output_types(req, res) {
+    console.log(req.url);
+    try {
+        sql = 'SELECT tbl_OutputPin_Type.id as "id", tbl_OutputPin_Type.name as "name" from tbl_OutputPin_Type';
+        processRequest(req, res, sql);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
 function get_field_outputs(req, res) {
     console.log(req.url);
     try {
-        sql = 'SELECT tbl_OutputPin.id, tbl_OutputPin.name from tbl_OutputPin';
+        sql = 'SELECT tbl_OutputPin.id, tbl_OutputPin.name from tbl_OutputPin WHERE type=0';
         processRequest(req, res, sql);
     } catch (err) {
         console.log(err); // bar
@@ -678,7 +823,37 @@ function get_field_actions(req, res) {
         res.sendStatus(500);
     }
 }
-
+async function get_field_menus(req, res) {
+    console.log(req.url);
+    try {
+        sql =
+            'SELECT tbl_Menu.id, tbl_Menu.name, tbl_Menu.parent FROM tbl_Menu where tbl_Menu.parent is null order by tbl_Menu.order';
+        to_return = [];
+        console.log(sql);
+        var result_parent = await processRequest_promise(sql);
+        for (var parent of result_parent) {
+            to_return.push(parent);
+            sql =
+                'SELECT tbl_Menu.id, tbl_Menu.name,CONCAT((SELECT tbl_Menu.name FROM tbl_Menu WHERE  tbl_Menu.id = ' +
+                parent.id +
+                ") ,' -- ',name) as name,\
+                tbl_Menu.parent, tbl_Menu.order\
+                FROM tbl_Menu where tbl_Menu.parent = " +
+                parent.id +
+                ' order by tbl_Menu.order';
+            console.log(sql);
+            var result_child = await processRequest_promise(sql);
+            for (var child of result_child) {
+                to_return.push(child);
+            }
+        }
+        res.json({ response: to_return });
+        console.log('result: ' + to_return);
+    } catch (err) {
+        console.log(err); // bar
+        res.sendStatus(500);
+    }
+}
 function get_field_templates(req, res) {
     console.log(req.url);
     try {
@@ -759,6 +934,8 @@ function executeQuery(sql, onSuccess, onFailure) {
         if (err) {
             if (err.code === 'ER_DUP_ENTRY') {
                 onFailure(new Error('Duplicate Entry'));
+            } else if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+                onFailure(new Error('Reference to this ID exists'));
             } else {
                 console.log(err.code);
                 console.log(err);

@@ -33,6 +33,7 @@ import DnsOutlineIcon from 'mdi-react/DnsOutlineIcon';
 import LightbulbOnOutlineIcon from 'mdi-react/LightbulbOnOutlineIcon';
 import ArrowExpandLeftIcon from 'mdi-react/ArrowExpandLeftIcon';
 import ArrowExpandRightIcon from 'mdi-react/ArrowExpandRightIcon';
+import FileTreeIcon from 'mdi-react/FileTreeIcon';
 
 const drawerWidth = 240;
 
@@ -212,6 +213,13 @@ class SideBar extends React.Component {
                                 />
                             </List>
                         </Collapse>
+                        <ListItemLink
+                            to='/administrator/menus'
+                            classes={classes}
+                            button
+                            primary='Menus'
+                            icon={<FileTreeIcon />}
+                        />
                         <ListItemLink
                             to='/administrator/devices'
                             classes={classes}

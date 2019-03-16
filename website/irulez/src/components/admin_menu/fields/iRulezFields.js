@@ -18,6 +18,8 @@ import GroupField from './GroupField';
 import TemplateField from './TemplateField';
 import DecimalField from './DecimalField';
 import MultipleActionField from './MultipleActionField';
+import OutputTypeField from './OutputTypeField';
+import MenuField from './MenuField';
 
 export const components = {
     NameField: NameField,
@@ -39,5 +41,7 @@ export const components = {
     TemplateField: TemplateField,
     DecimalField: DecimalField,
     MultipleActionField: MultipleActionField,
+    OutputTypeField: OutputTypeField,
+    MenuField: MenuField,
     default: CustomTextField
 };

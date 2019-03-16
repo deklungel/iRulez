@@ -39,6 +39,28 @@ export default class ValueService {
                 });
         });
     }
+    Get_Menu_Field() {
+        return new Promise((resolve, reject) => {
+            this.Auth.fetch(window.GET_FIELD_MENUS)
+                .then(result => {
+                    resolve(result.response);
+                })
+                .catch(err => {
+                    reject(err);
+                });
+        });
+    }
+    Get_OutputType_Field() {
+        return new Promise((resolve, reject) => {
+            this.Auth.fetch(window.GET_FIELD_OUTPUTTYPE)
+                .then(result => {
+                    resolve(result.response);
+                })
+                .catch(err => {
+                    reject(err);
+                });
+        });
+    }
 
     Get_Action_Type_Field() {
         return new Promise((resolve, reject) => {

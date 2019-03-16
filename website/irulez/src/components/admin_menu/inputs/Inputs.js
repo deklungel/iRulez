@@ -9,6 +9,11 @@ import { components } from '../fields/iRulezFields';
 import LoadingOverlay from 'react-loading-overlay';
 import CircleLoader from 'react-spinners/CircleLoader';
 import InputService from './InputService';
+import TextField from '@material-ui/core/TextField';
+import Paper from '@material-ui/core/Paper';
+import InputBase from '@material-ui/core/InputBase';
+import IconButton from '@material-ui/core/IconButton';
+import SearchIcon from '@material-ui/icons/Search';
 
 const styles = theme => ({
     textField: {
@@ -17,6 +22,20 @@ const styles = theme => ({
     },
     content: {
         overflowY: 'visible'
+    },
+    search: {
+        padding: '2px 4px',
+        margin: '5px',
+        display: 'flex',
+        alignItems: 'center',
+        width: 'calc(100% - 10px)'
+    },
+    input: {
+        marginLeft: 8,
+        flex: 1
+    },
+    iconButton: {
+        padding: 10
     }
 });
 
@@ -35,6 +54,7 @@ class Inputs extends Component {
         editForm: false,
         deleteForm: false,
         data: [],
+        filterArray: [],
         selected: [],
         lastSelectedRow: [],
         isActive: true,
@@ -55,9 +75,9 @@ class Inputs extends Component {
 
     resetValues = () => {
         this.fields
-            // .filter(field => {
-            //     return field.editForm;
-            // })
+            .filter(field => {
+                return field.editForm;
+            })
             .map(field => {
                 let changed = field.id + '_changed';
                 return this.setState({
@@ -151,6 +171,7 @@ class Inputs extends Component {
         this.Service.getData()
             .then(response => {
                 this.setState({ data: response });
+                this.setState({ filterArray: response });
                 this.setState({ selected: [] });
                 this.setState({ isActive: false });
             })
@@ -158,6 +179,17 @@ class Inputs extends Component {
                 console.log(err);
                 this.handleNotification(String(err), 'error');
             });
+    };
+
+    filter = event => {
+        if (event.target.value == '') {
+            var filterArray = this.state.data;
+        } else {
+            var filterArray = this.state.data.filter(row => {
+                return row.actions && row.actions.toLowerCase().includes(event.target.value.toLowerCase());
+            });
+        }
+        this.setState({ filterArray: filterArray });
     };
 
     edit = () => {
@@ -237,8 +269,14 @@ class Inputs extends Component {
                 spinner={<CircleLoader size={150} color={'yellow'} />}
                 text='Loading your content...'
             >
+                <Paper className={classes.search} elevation={1}>
+                    <InputBase onChange={this.filter} className={classes.input} placeholder='Search' />
+                    <IconButton className={classes.iconButton} aria-label='Search'>
+                        <SearchIcon />
+                    </IconButton>
+                </Paper>
                 <EnhancedTable
-                    data={this.state.data}
+                    data={this.state.filterArray}
                     fields={fields}
                     selected={this.state.selected}
                     handleFormOpen={this.handleFormOpen}

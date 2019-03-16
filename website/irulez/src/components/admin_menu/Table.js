@@ -237,7 +237,7 @@ class EnhancedTable extends React.Component {
 
     state = {
         order: 'asc',
-        orderBy: 'id',
+        //orderBy: 'id',
         page: 0,
         selected: [],
         SelectedRow: [],
@@ -330,8 +330,8 @@ class EnhancedTable extends React.Component {
     };
 
     render() {
-        const { classes, data, fields, title, disableNew, disableDelete } = this.props;
-        const { order, orderBy, selected, rowsPerPage, page } = this.state;
+        const { classes, data, orderBy, fields, title, disableNew, disableDelete } = this.props;
+        const { order, selected, rowsPerPage, page } = this.state;
         const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
 
         return (

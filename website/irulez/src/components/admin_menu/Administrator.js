@@ -14,6 +14,7 @@ import Devices from './devices/Devices';
 import Actions from './actions/Actions';
 import Outputs from './outputs/Outputs';
 import Inputs from './inputs/Inputs';
+import Menus from './menus/Menus';
 import DimmerActions from './actions/DimmerActions';
 import Processes from './processes/Processes';
 import { BrowserView, MobileView, isBrowser, isMobile } from 'react-device-detect';
@@ -146,6 +147,17 @@ class Administrator extends Component {
                             path='/administrator/user/groups'
                             render={props => (
                                 <Groups
+                                    {...props}
+                                    checkSidebarState={this.checkSidebarState}
+                                    Collapse={this.SetCollapse}
+                                />
+                            )}
+                        />
+                        <Route
+                            exact
+                            path='/administrator/menus'
+                            render={props => (
+                                <Menus
                                     {...props}
                                     checkSidebarState={this.checkSidebarState}
                                     Collapse={this.SetCollapse}

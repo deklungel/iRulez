@@ -13,6 +13,7 @@
         "mui-datatables": "^2.0.0-beta.58",
         "notistack": "^0.4.1",
         "react": "^16.6.3",
+        "react-beautiful-dnd": "^10.1.0",
         "react-bootstrap": "^0.32.4",
         "react-bootstrap-table-next": "^1.4.2",
         "react-bootstrap-table2-editor": "^1.2.2",

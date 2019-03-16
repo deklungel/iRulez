@@ -192,7 +192,22 @@ class Outputs extends Component {
             disablePadding: false,
             label: 'Number'
         },
-
+        {
+            id: 'type_name',
+            align: 'left',
+            disablePadding: false,
+            label: 'Type'
+        },
+        {
+            id: 'type',
+            label: 'Type',
+            Component: 'OutputTypeField',
+            required: true,
+            editForm: true,
+            autoFocus: false,
+            hideInTable: true,
+            default: 0
+        },
         {
             id: 'device_name',
             label: 'Device'

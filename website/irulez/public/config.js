@@ -21,6 +21,11 @@ var DEVICE_EDIT = BASEURL + 'device/edit';
 var OUTPUT_GET = BASEURL + 'outputs';
 var OUTPUT_EDIT = BASEURL + 'output/edit';
 
+var MENU_GET = BASEURL + 'menus';
+var MENU_ADD = BASEURL + 'menu/add';
+var MENU_DELETE = BASEURL + 'menu/delete';
+var MENU_EDIT = BASEURL + 'menu/edit';
+
 var INPUT_GET = BASEURL + 'inputs';
 var INPUT_EDIT = BASEURL + 'input/edit';
 
@@ -39,6 +44,8 @@ var GET_CONDITIONS = BASEURL + 'field/conditions';
 var GET_NOTIFICATIONS = BASEURL + 'field/notifications';
 var GET_FIELD_TEMPLATE = BASEURL + 'field/templates';
 var GET_FIELD_ACTIONS = BASEURL + 'field/actions';
+var GET_FIELD_MENUS = BASEURL + 'field/menus';
+var GET_FIELD_OUTPUTTYPE = BASEURL + 'field/output_type';
 
 var PROCESSES_GET = BASEURL_SUPERVISOR + 'getAllProcesses';
 var PROCESSES_RESTART = BASEURL_SUPERVISOR + 'restartProcces';
