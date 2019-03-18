@@ -1,6 +1,6 @@
-from flask import Flask
+from flask import Flask, request
+from src.webservice._user import User
 from flask_sqlalchemy import SQLAlchemy
-
 
 app = Flask(__name__)
 
@@ -10,13 +10,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:irulez4database@10
 db = SQLAlchemy(app)
 
 
-class User2(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    public_id = db.Column(db.String(50), unique=True)
-    name = db.Column(db.String(50))
-    password = db.Column(db.String(80))
-    admin = db.Column(db.Boolean)
+@app.route('/user', methods=['GET', 'POST'])
+def user_route():
+    if request.method == 'GET':
+        return User.get_all_users()
+    elif request.method == 'POST':
+        return User.create_new_user(request)
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run('127.0.0.1', 5000)
