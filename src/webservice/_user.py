@@ -4,12 +4,14 @@ import uuid
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
-from src.webservice._group import Group
+from src.webservice.base import Base
+
 
 db = SQLAlchemy()
+Base.query = db.session.query_property()
 
 
-class User(db.Model):
+class User(Base):
     __tablename__ = 'tbl_Users'
     id = db.Column(db.Integer, primary_key=True)
     public_id = db.Column(db.String(50), unique=True)
@@ -17,13 +19,14 @@ class User(db.Model):
     password = db.Column(db.String(80))
     admin = db.Column(db.Boolean)
     refresh_token = db.Column(db.String(50))
-    group_id = db.Column(db.ForeignKey(Group.id))
-    group = db.relationship(Group, backref='tbl_Users2')
+    group_id = db.Column(db.Integer, db.ForeignKey('tbl_Groups.id'))
+    group = db.relationship('Group')
+
 
     @staticmethod
     def login(request):
         auth = request.authorization
-        print(auth.username)
+
         if not auth or not auth.username or not auth.password:
             return make_response("Bad Request", 401)
 
@@ -41,21 +44,17 @@ class User(db.Model):
                                 'admin': user.admin, 'refreshToken':user.refresh_token,
                                 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)},
                                private_key, algorithm='RS256').decode('utf-8')
-            print(token)
             return jsonify({'token': token})
 
         return make_response("Could not verify", 401)
 
     @staticmethod
     def get_all_users():
-
         users = User.query.all()
         output = []
 
         for user in users:
-            user_data = {}
-            user_data['id'] = user.public_id
-            user_data['email'] = user.email
+            user_data = {'id': user.public_id, 'email': user.email}
             if user.admin:
                 user_data['role'] = 'admin'
             else:

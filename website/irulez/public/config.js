@@ -9,10 +9,10 @@ var USER_EDIT = PYTHON_SERVER + 'users';
 var USER_CHANGE_PASSWORD = PYTHON_SERVER + 'users';
 var USER_ADD = PYTHON_SERVER + 'users';
 
-var GROUP_DELETE = BASEURL + 'group/delete';
-var GROUP_GET = BASEURL + 'groups';
-var GROUP_EDIT = BASEURL + 'group/edit';
-var GROUP_ADD = BASEURL + 'group/add';
+var GROUP_DELETE = PYTHON_SERVER + 'groups';
+var GROUP_GET = PYTHON_SERVER + 'groups';
+var GROUP_EDIT = PYTHON_SERVER + 'groups';
+var GROUP_ADD = PYTHON_SERVER + 'groups';
 
 var DEVICE_GET = BASEURL + 'devices';
 var DEVICE_ADD = BASEURL + 'device/add';

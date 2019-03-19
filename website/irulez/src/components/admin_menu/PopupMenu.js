@@ -36,7 +36,7 @@ class PopupMenu extends Component {
             <Dialog open={this.props.open} onClose={this.closeForm} aria-labelledby='form-dialog-title'>
                 <DialogTitle id='form-dialog-title'>{this.props.title}</DialogTitle>
                 <DialogContent className={classes.content}>
-                    {data.split(',').map(value => {
+                    {data.map(value => {
                         return <Chip key={value} label={value} className={classes.chip} />;
                     })}
                 </DialogContent>

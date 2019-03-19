@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
-from src.webservice._user import User
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import jwt
 from flask_cors import CORS
+from src.webservice.base import Base
+from src.webservice._user import User
+from src.webservice._group import Group
 
 app = Flask(__name__)
 cors = CORS(app, resources={"/api/*": {"origins": "*"}})
@@ -55,6 +57,22 @@ def user_route(current_user):
         return User.update_user(request)
     elif request.method == 'DELETE':
         return User.delete_user(request)
+
+
+@app.route('/api/groups', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@token_required
+def group_route(current_user):
+    if not current_user.admin:
+        return jsonify({"message": "You are not allowed to perform this action"})
+
+    if request.method == 'GET':
+        return Group.get_all_groups()
+    elif request.method == 'POST':
+        return Group.create_new_group(request)
+    elif request.method == 'PUT':
+        return Group.update_group(request)
+    elif request.method == 'DELETE':
+        return Group.delete_group(request)
 
 
 if __name__ == '__main__':

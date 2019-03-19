@@ -243,7 +243,7 @@ class EnhancedTable extends React.Component {
         SelectedRow: [],
         rowsPerPage: 0,
         popupOpen: false,
-        popupData: ''
+        popupData: []
     };
 
     handleRequestSort = (event, property) => {
