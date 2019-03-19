@@ -52,7 +52,7 @@ class Login extends Component {
         e.preventDefault();
         this.Auth.login(this.state.username, this.state.password)
             .then(res => {
-                if (this.Auth.getProfile().role === 'admin') {
+                if (this.Auth.getProfile().admin) {
                     this.props.history.replace('/administrator');
                 } else {
                     this.props.history.replace('/');

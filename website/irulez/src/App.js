@@ -9,7 +9,7 @@ const Auth = new AuthService();
 class App extends Component {
     user = Auth.getProfile();
     componentWillMount() {
-        if (this.user.role === 'admin') {
+        if (this.user.admin) {
             this.props.history.replace('/administrator/');
         }
     }

@@ -59,7 +59,7 @@ class Administrator extends Component {
     };
 
     componentWillMount() {
-        if (this.user.role === 'user') {
+        if (!this.user.admin) {
             this.props.history.replace('/');
         }
     }

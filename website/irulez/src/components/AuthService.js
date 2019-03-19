@@ -1,4 +1,5 @@
 import decode from 'jwt-decode';
+import base64 from 'react-native-base64';
 
 export default class AuthService {
     // Initializing important variables
@@ -10,12 +11,10 @@ export default class AuthService {
 
     login(username, password) {
         // Get a token from api server using the fetch api
+
         return this.fetch(window.AUTHENTICATION_SERVER, {
             method: 'POST',
-            body: JSON.stringify({
-                username: username,
-                password: password
-            })
+            headers: { Authorization: 'Basic ' + base64.encode(username + ':' + password) }
         }).then(res => {
             this.setToken(res.token); // Setting the token in localStorage
             return Promise.resolve(res);
