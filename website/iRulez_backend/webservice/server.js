@@ -80,9 +80,11 @@ app.get('/api/field/*', checkIfAuthenticated, function(req, res) {
 app.get('/api/*', checkIfAuthenticated, function(req, res) {
     switch (req.url) {
         case '/api/users':
+            /*done */
             get_user(req, res);
             break;
         case '/api/groups':
+            /*done */
             get_group(req, res);
             break;
         case '/api/devices':
@@ -113,9 +115,11 @@ app.get('/api/*', checkIfAuthenticated, function(req, res) {
 app.delete('/api/*', checkIfAuthenticated, function(req, res) {
     switch (req.url) {
         case '/api/user/delete':
+            /*done */
             user_delete(req, res);
             break;
         case '/api/group/delete':
+            /*done */
             group_delete(req, res);
             break;
         case '/api/device/delete':
@@ -135,6 +139,7 @@ app.delete('/api/*', checkIfAuthenticated, function(req, res) {
 app.put('/api/*', checkIfAuthenticated, function(req, res) {
     switch (req.url) {
         case '/api/user/edit':
+            /*done */
             user_edit(req, res);
             break;
         case '/api/group/edit':
@@ -156,6 +161,7 @@ app.put('/api/*', checkIfAuthenticated, function(req, res) {
             menu_edit(req, res);
             break;
         case '/api/user/changepassword':
+            /*done */
             user_changePassword(req, res);
             break;
         default:
@@ -166,9 +172,11 @@ app.put('/api/*', checkIfAuthenticated, function(req, res) {
 app.post('/api/*', checkIfAuthenticated, function(req, res) {
     switch (req.url) {
         case '/api/user/add':
+            /*done */
             user_add(req, res);
             break;
         case '/api/group/add':
+            /*done */
             group_add(req, res);
             break;
         case '/api/menu/add':
@@ -186,124 +194,124 @@ app.post('/api/*', checkIfAuthenticated, function(req, res) {
     }
 });
 
-function get_user(req, res) {
-    console.log(req.url);
-    try {
-        sql =
-            'SELECT tbl_Users.id, email, role, group_id, tbl_Groups.name as group_name \
-            FROM tbl_Users INNER JOIN tbl_Groups ON tbl_Groups.id =tbl_Users.group_id ';
-        processRequest(req, res, sql);
-    } catch (err) {
-        console.log(err); // bar
-        res.sendStatus(500);
-    }
-}
+// function get_user(req, res) {
+//     console.log(req.url);
+//     try {
+//         sql =
+//             'SELECT tbl_Users.id, email, role, group_id, tbl_Groups.name as group_name \
+//             FROM tbl_Users INNER JOIN tbl_Groups ON tbl_Groups.id =tbl_Users.group_id ';
+//         processRequest(req, res, sql);
+//     } catch (err) {
+//         console.log(err); // bar
+//         res.sendStatus(500);
+//     }
+// }
 
-function user_add(req, res) {
-    try {
-        var sql =
-            "INSERT INTO tbl_Users (email, role, group_id, password) VALUES ('" +
-            req.body.email +
-            "', '" +
-            req.body.role +
-            "', '" +
-            req.body.group_id +
-            "','" +
-            md5(req.body.password) +
-            "')";
-        processRequest(req, res, sql);
-    } catch (err) {
-        console.log(err); // bar
-        res.sendStatus(500);
-    }
-}
+// function user_add(req, res) {
+//     try {
+//         var sql =
+//             "INSERT INTO tbl_Users (email, role, group_id, password) VALUES ('" +
+//             req.body.email +
+//             "', '" +
+//             req.body.role +
+//             "', '" +
+//             req.body.group_id +
+//             "','" +
+//             md5(req.body.password) +
+//             "')";
+//         processRequest(req, res, sql);
+//     } catch (err) {
+//         console.log(err); // bar
+//         res.sendStatus(500);
+//     }
+// }
 
-function user_delete(req, res) {
-    try {
-        var sql = "DELETE FROM tbl_Users WHERE id IN ('" + req.body.id.join("','") + "')";
-        processRequest(req, res, sql);
-    } catch (err) {
-        console.log(err); // bar
-        res.sendStatus(500);
-    }
-}
+// function user_delete(req, res) {
+//     try {
+//         var sql = "DELETE FROM tbl_Users WHERE id IN ('" + req.body.id.join("','") + "')";
+//         processRequest(req, res, sql);
+//     } catch (err) {
+//         console.log(err); // bar
+//         res.sendStatus(500);
+//     }
+// }
 
-function user_edit(req, res) {
-    try {
-        var values = [];
-        if (req.body.email) {
-            values.push("email='" + req.body.email);
-        }
-        if (req.body.role) {
-            values.push("role='" + req.body.role);
-        }
-        if (req.body.group_id) {
-            values.push("group_id='" + req.body.group_id);
-        }
-        var sql = 'UPDATE tbl_Users SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
-        processRequest(req, res, sql);
-    } catch (err) {
-        console.log(err); // bar
-        res.sendStatus(500);
-    }
-}
+// function user_edit(req, res) {
+//     try {
+//         var values = [];
+//         if (req.body.email) {
+//             values.push("email='" + req.body.email);
+//         }
+//         if (req.body.role) {
+//             values.push("role='" + req.body.role);
+//         }
+//         if (req.body.group_id) {
+//             values.push("group_id='" + req.body.group_id);
+//         }
+//         var sql = 'UPDATE tbl_Users SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
+//         processRequest(req, res, sql);
+//     } catch (err) {
+//         console.log(err); // bar
+//         res.sendStatus(500);
+//     }
+// }
 
-function user_changePassword(req, res) {
-    try {
-        var sql = "UPDATE tbl_Users SET password='" + md5(req.body.password) + "' WHERE id = " + req.body.id;
-        processRequest(req, res, sql);
-    } catch (err) {
-        console.log(err); // bar
-        res.sendStatus(500);
-    }
-}
+// function user_changePassword(req, res) {
+//     try {
+//         var sql = "UPDATE tbl_Users SET password='" + md5(req.body.password) + "' WHERE id = " + req.body.id;
+//         processRequest(req, res, sql);
+//     } catch (err) {
+//         console.log(err); // bar
+//         res.sendStatus(500);
+//     }
+// }
 
-function get_group(req, res) {
-    console.log(req.url);
-    try {
-        sql =
-            "SELECT id, name, \
-        (SELECT GROUP_CONCAT(tbl_Users.email) from tbl_Users WHERE tbl_Users.group_id = tbl_Groups.id ) as 'users' \
-        FROM tbl_Groups";
-        processRequest(req, res, sql);
-    } catch (err) {
-        console.log(err); // bar
-        res.sendStatus(500);
-    }
-}
-function group_add(req, res) {
-    try {
-        console.log(req.body);
-        var sql = "INSERT INTO tbl_Groups (name) VALUES ('" + req.body.name + "')";
-        processRequest(req, res, sql);
-    } catch (err) {
-        console.log(err); // bar
-        res.sendStatus(500);
-    }
-}
+// function get_group(req, res) {
+//     console.log(req.url);
+//     try {
+//         sql =
+//             "SELECT id, name, \
+//         (SELECT GROUP_CONCAT(tbl_Users.email) from tbl_Users WHERE tbl_Users.group_id = tbl_Groups.id ) as 'users' \
+//         FROM tbl_Groups";
+//         processRequest(req, res, sql);
+//     } catch (err) {
+//         console.log(err); // bar
+//         res.sendStatus(500);
+//     }
+// }
+// function group_add(req, res) {
+//     try {
+//         console.log(req.body);
+//         var sql = "INSERT INTO tbl_Groups (name) VALUES ('" + req.body.name + "')";
+//         processRequest(req, res, sql);
+//     } catch (err) {
+//         console.log(err); // bar
+//         res.sendStatus(500);
+//     }
+// }
 
-function group_delete(req, res) {
-    try {
-        var sql = "DELETE FROM tbl_Groups WHERE id IN ('" + req.body.id.join("','") + "')";
-        processRequest(req, res, sql);
-    } catch (err) {
-        console.log(err); // bar
-        res.sendStatus(500);
-    }
-}
-function group_edit(req, res) {
-    try {
-        var values = [];
-        if (req.body.name) {
-            values.push("name='" + req.body.name);
-        }
-        var sql = 'UPDATE tbl_Groups SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
-        processRequest(req, res, sql);
-    } catch (err) {
-        console.log(err); // bar
-        res.sendStatus(500);
-    }
-}
+// function group_delete(req, res) {
+//     try {
+//         var sql = "DELETE FROM tbl_Groups WHERE id IN ('" + req.body.id.join("','") + "')";
+//         processRequest(req, res, sql);
+//     } catch (err) {
+//         console.log(err); // bar
+//         res.sendStatus(500);
+//     }
+// }
+// function group_edit(req, res) {
+//     try {
+//         var values = [];
+//         if (req.body.name) {
+//             values.push("name='" + req.body.name);
+//         }
+//         var sql = 'UPDATE tbl_Groups SET ' + values.join("', ") + "' WHERE id = " + req.body.id;
+//         processRequest(req, res, sql);
+//     } catch (err) {
+//         console.log(err); // bar
+//         res.sendStatus(500);
+//     }
+// }
 
 function get_devices(req, res) {
     console.log(req.url);

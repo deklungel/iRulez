@@ -41,12 +41,38 @@ class User(Base):
 
             private_key = open('private.key').read()
             token = jwt.encode({'public_id': user.public_id, 'username': user.email,
-                                'admin': user.admin, 'refreshToken':user.refresh_token,
-                                'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)},
+                                'admin': user.admin, 'refreshToken': user.refresh_token,
+                                'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=10)},
                                private_key, algorithm='RS256').decode('utf-8')
             return jsonify({'token': token})
 
         return make_response("Could not verify", 401)
+
+
+    @staticmethod
+    def refresh_login(request):
+        data = request.get_json()
+        print(data)
+        if not data['refreshToken']:
+            print("no data")
+            return jsonify({"message": "You are not allowed to perform this action"}), 401
+        print(data['refreshToken'])
+        user = User.query.filter_by(refresh_token=data['refreshToken']).first()
+        print(user)
+        if not user:
+            print("no user")
+            return jsonify({"message": "You are not allowed to perform this action"}), 401
+
+        user.refresh_token = str(uuid.uuid4())
+        db.session.commit()
+
+        private_key = open('private.key').read()
+        token = jwt.encode({'public_id': user.public_id, 'username': user.email,
+                            'admin': user.admin, 'refreshToken': user.refresh_token,
+                            'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=10)},
+                           private_key, algorithm='RS256').decode('utf-8')
+        return jsonify({'token': token})
+
 
     @staticmethod
     def get_all_users():

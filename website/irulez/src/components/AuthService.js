@@ -26,6 +26,10 @@ export default class AuthService {
         const token = this.getToken(); // GEtting token from localstorage
         return !!token && !this.isTokenExpired(token); // handwaiving here
     }
+    tokenExist() {
+        const token = this.getToken(); // GEtting token from localstorage
+        return !!token;
+    }
 
     isTokenExpired(token) {
         try {
@@ -33,7 +37,9 @@ export default class AuthService {
             if (decoded.exp < Date.now() / 1000) {
                 // Checking if token is expired. N
                 return true;
-            } else return false;
+            } else {
+                return false;
+            }
         } catch (err) {
             return false;
         }
@@ -59,7 +65,7 @@ export default class AuthService {
         return decode(this.getToken());
     }
 
-    fetch(url, options) {
+    fetch_old(url, options) {
         // performs api calls sending the required authentication headers
         const headers = {
             Accept: 'application/json',
@@ -77,6 +83,69 @@ export default class AuthService {
         })
             .then(this._checkStatus)
             .then(response => response.json());
+    }
+
+    fetch(url, options) {
+        // performs api calls sending the required authentication headers
+        const headers = {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+        };
+
+        // Setting Authorization header
+        // Authorization: Bearer xxxxxxx.xxxxxxxx.xxxxxx
+        if (this.tokenExist()) {
+            headers['Authorization'] = 'Bearer ' + this.getToken();
+        }
+        if (this.isTokenExpired(this.getToken())) {
+            const decoded = decode(this.getToken());
+            return fetch(window.AUTHENTICATION_SERVER_REFRESH, {
+                headers,
+                method: 'POST',
+                body: JSON.stringify({ refreshToken: decoded.refreshToken })
+            })
+                .then(this._checkStatus)
+                .then(response => {
+                    return response.json().then(response => {
+                        this.setToken(response.token);
+                        headers['Authorization'] = 'Bearer ' + response.token;
+                        return fetch(url, {
+                            headers,
+                            ...options
+                        })
+                            .then(this._checkStatus)
+                            .then(response => response.json());
+                    });
+                });
+        } else {
+            return fetch(url, {
+                headers,
+                ...options
+            })
+                .then(this._checkStatus)
+                .then(response => response.json());
+        }
+    }
+
+    refreshToken() {
+        const decoded = decode(this.getToken());
+        const headers = {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + this.getToken()
+        };
+        return fetch(window.AUTHENTICATION_SERVER_REFRESH, {
+            headers,
+            method: 'POST',
+            body: JSON.stringify({ refreshToken: decoded.refreshToken })
+        })
+            .then(this._checkStatus)
+            .then(response => {
+                return response.json().then(response => {
+                    this.setToken(response.token);
+                    return Promise.resolve(response);
+                });
+            });
     }
 
     _checkStatus(response) {

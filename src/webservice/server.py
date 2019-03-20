@@ -1,9 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
 from functools import wraps
 import jwt
 from flask_cors import CORS
-from src.webservice.base import Base
 from src.webservice._user import User
 from src.webservice._group import Group
 
@@ -12,7 +11,8 @@ cors = CORS(app, resources={"/api/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:irulez4database@10.0.50.50/iRulez'
-
+app.config['SQLALCHEMY_MAX_OVERFLOW'] = 50
+app.config['SQLALCHEMY_POOL_SIZE'] = 20
 db = SQLAlchemy(app)
 
 
@@ -21,18 +21,19 @@ def token_required(f):
     def decorated(*args, **kwargs):
         token = None
         auth_header = request.headers.get('Authorization')
-        if auth_header:
-            token = auth_header.split(" ")[1]
+        print(auth_header)
+        if not auth_header:
+            return jsonify({'statusText': 'token is missing!'}), 401
 
+        token = auth_header.split(" ")[1]
         if not token:
-            return jsonify({'message': 'token is missing!'}, 401)
-
+            return jsonify({'statusText': 'token is missing!'}), 401
         try:
             public_key = open('public.key').read()
             data = jwt.decode(token, public_key, algorithms=['RS256'])
             current_user = User.query.filter_by(public_id=data['public_id']).first()
         except:
-            return jsonify({'message': 'Token is invalide'})
+            return jsonify({'statusText': 'Token is invalide'}), 401
 
         return f(current_user, *args, **kwargs)
     return decorated
@@ -43,11 +44,16 @@ def login_route():
     return User.login(request)
 
 
+@app.route('/api/refresh_login', methods=['POST'])
+def login_refresh_route():
+    return User.refresh_login(request)
+
+
 @app.route('/api/users', methods=['GET', 'POST', 'PUT', 'DELETE'])
 @token_required
 def user_route(current_user):
     if not current_user.admin:
-        return jsonify({"message": "You are not allowed to perform this action"})
+        return jsonify({"message": "You are not allowed to perform this action"}), 401
 
     if request.method == 'GET':
         return User.get_all_users()
@@ -76,4 +82,4 @@ def group_route(current_user):
 
 
 if __name__ == '__main__':
-    app.run('127.0.0.1', 5000)
+    app.run('0.0.0.0', 3004)

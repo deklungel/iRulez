@@ -1,15 +1,15 @@
 var BASEURL = 'http://10.0.50.250:3001/api/';
 var BASEURL_SUPERVISOR = 'http://10.0.50.250:3003/api/';
-var PYTHON_SERVER = 'http://127.0.0.1:5000/api/';
-var AUTHENTICATION_SERVER = 'http://127.0.0.1:5000/api/login';
-
+var PYTHON_SERVER = 'http://10.0.50.250:3004/api/';
+var AUTHENTICATION_SERVER = 'http://10.0.50.250:3004/api/login';
+var AUTHENTICATION_SERVER_REFRESH = 'http://10.0.50.250:3004/api/refresh_login';
 var USER_DELETE = PYTHON_SERVER + 'users';
 var USER_GET = PYTHON_SERVER + 'users';
 var USER_EDIT = PYTHON_SERVER + 'users';
 var USER_CHANGE_PASSWORD = PYTHON_SERVER + 'users';
 var USER_ADD = PYTHON_SERVER + 'users';
 
-var GROUP_DELETE = PYTHON_SERVER + 'groups';
+var GROUP_DELETE = PYTHON_SERVER + 'group';
 var GROUP_GET = PYTHON_SERVER + 'groups';
 var GROUP_EDIT = PYTHON_SERVER + 'groups';
 var GROUP_ADD = PYTHON_SERVER + 'groups';
