@@ -25,9 +25,11 @@ class Input(Base):
 
         for input in inputs:
             actions = []
+            actions_id = []
             for action in input.actions:
                 actions.append(action.name)
-            input_data = {'id': input.id, 'name': input.name, 'device_name': input.parent.name,
+                actions_id.append(action.id)
+            input_data = {'id': input.id, 'name': input.name, 'device_name': input.parent.name, 'actions_id': actions_id,
                           'number': input.number, 'time_between_clicks': input.time_between_clicks, 'actions': actions}
             output.append(input_data)
 
