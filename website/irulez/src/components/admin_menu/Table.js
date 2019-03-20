@@ -305,13 +305,13 @@ class EnhancedTable extends React.Component {
         if (field.id in n) {
             switch (field.type) {
                 case 'ErrorCheck':
-                    return n[field.id] === 1 ? (
+                    return n[field.id] === true ? (
                         <CheckCircleOutline className={classes.checkPass} />
                     ) : (
                         <ErrorOutline className={classes.checkFail} />
                     );
                 case 'Chip':
-                    if (n[field.id]) {
+                    if (n[field.id].length > 0) {
                         return (
                             <Button
                                 variant='outlined'

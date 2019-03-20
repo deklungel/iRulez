@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from src.webservice.base import Base
 
 db = SQLAlchemy()
+Base.query = db.session.query_property()
 
 
 class Group(Base):
@@ -39,7 +40,7 @@ class Group(Base):
     @staticmethod
     def update_group(request):
         data = request.get_json()
-        group = Group.query.filter_by(id=data['id']).first()
+        group = db.session.query(Group).filter_by(id=data['id']).first()
         if 'name' in data:
             group.email = data['name']
         db.session.commit()
@@ -49,7 +50,7 @@ class Group(Base):
     @staticmethod
     def delete_group(request):
         data = request.get_json()
-        groups = Group.query.filter(Group.id.in_(data['id'])).all()
+        groups = db.session.query(Group).filter(Group.id.in_(data['id'])).all()
         for group in groups:
             db.session.delete(group)
         db.session.commit()

@@ -1,23 +1,26 @@
 var BASEURL = 'http://10.0.50.250:3001/api/';
 var BASEURL_SUPERVISOR = 'http://10.0.50.250:3003/api/';
+
 var PYTHON_SERVER = 'http://10.0.50.250:3004/api/';
-var AUTHENTICATION_SERVER = 'http://10.0.50.250:3004/api/login';
-var AUTHENTICATION_SERVER_REFRESH = 'http://10.0.50.250:3004/api/refresh_login';
+
+var AUTHENTICATION_SERVER = PYTHON_SERVER + 'login';
+var AUTHENTICATION_SERVER_REFRESH = PYTHON_SERVER + 'refresh_login';
+
 var USER_DELETE = PYTHON_SERVER + 'users';
 var USER_GET = PYTHON_SERVER + 'users';
 var USER_EDIT = PYTHON_SERVER + 'users';
 var USER_CHANGE_PASSWORD = PYTHON_SERVER + 'users';
 var USER_ADD = PYTHON_SERVER + 'users';
 
-var GROUP_DELETE = PYTHON_SERVER + 'group';
+var GROUP_DELETE = PYTHON_SERVER + 'groups';
 var GROUP_GET = PYTHON_SERVER + 'groups';
 var GROUP_EDIT = PYTHON_SERVER + 'groups';
 var GROUP_ADD = PYTHON_SERVER + 'groups';
 
-var DEVICE_GET = BASEURL + 'devices';
-var DEVICE_ADD = BASEURL + 'device/add';
-var DEVICE_DELETE = BASEURL + 'device/delete';
-var DEVICE_EDIT = BASEURL + 'device/edit';
+var DEVICE_GET = PYTHON_SERVER + 'devices';
+var DEVICE_ADD = PYTHON_SERVER + 'devices';
+var DEVICE_DELETE = PYTHON_SERVER + 'devices';
+var DEVICE_EDIT = PYTHON_SERVER + 'devices';
 
 var OUTPUT_GET = BASEURL + 'outputs';
 var OUTPUT_EDIT = BASEURL + 'output/edit';
@@ -27,8 +30,8 @@ var MENU_ADD = BASEURL + 'menu/add';
 var MENU_DELETE = BASEURL + 'menu/delete';
 var MENU_EDIT = BASEURL + 'menu/edit';
 
-var INPUT_GET = BASEURL + 'inputs';
-var INPUT_EDIT = BASEURL + 'input/edit';
+var INPUT_GET = PYTHON_SERVER + 'inputs';
+var INPUT_EDIT = PYTHON_SERVER + 'inputs';
 
 var ACTION_GET = BASEURL + 'actions';
 var ACTION_ADD = BASEURL + 'action/add';

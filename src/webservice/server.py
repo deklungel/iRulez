@@ -5,9 +5,14 @@ import jwt
 from flask_cors import CORS
 from src.webservice._user import User
 from src.webservice._group import Group
+from src.webservice._device import Device
+from src.webservice._input import Input
+from src.webservice._template import Template
+from src.webservice._inputPin_action import InputPin_Action
+from src.webservice._action import Action
 
 app = Flask(__name__)
-cors = CORS(app, resources={"/api/*": {"origins": "*"}})
+CORS(app, resources={"/api/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:irulez4database@10.0.50.50/iRulez'
@@ -79,6 +84,34 @@ def group_route(current_user):
         return Group.update_group(request)
     elif request.method == 'DELETE':
         return Group.delete_group(request)
+
+
+@app.route('/api/devices', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@token_required
+def device_route(current_user):
+    if not current_user.admin:
+        return jsonify({"message": "You are not allowed to perform this action"})
+
+    if request.method == 'GET':
+        return Device.get_all_devices()
+    elif request.method == 'POST':
+        return Device.create_new_device(request)
+    elif request.method == 'PUT':
+        return Device.update_device(request)
+    elif request.method == 'DELETE':
+        return Device.delete_device(request)
+
+
+@app.route('/api/inputs', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@token_required
+def input_route(current_user):
+    if not current_user.admin:
+        return jsonify({"message": "You are not allowed to perform this action"})
+
+    if request.method == 'GET':
+        return Input.get_all_inputs()
+    elif request.method == 'PUT':
+        return Input.update_input(request)
 
 
 if __name__ == '__main__':
