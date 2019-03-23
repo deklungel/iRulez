@@ -32,7 +32,7 @@ class Input(Base):
             input_data = {'id': input.id, 'name': input.name, 'device_name': input.parent.name, 'actions_id': actions_id,
                           'number': input.number, 'time_between_clicks': input.time_between_clicks, 'actions': actions}
             output.append(input_data)
-
+        db.session.commit()
         return jsonify({'response': output})
 
     @staticmethod
@@ -44,7 +44,7 @@ class Input(Base):
         if 'time_between_clicks' in data:
             input.time_between_clicks = data['time_between_clicks']
         if 'actions_id':
-            actions = Action.get_inputs(data['actions_id'])
+            actions = Action.get_actions(data['actions_id'])
             input.actions = actions
         db.session.commit()
 

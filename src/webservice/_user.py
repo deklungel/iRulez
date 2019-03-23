@@ -5,7 +5,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
 from src.webservice.base import Base
+import src.irulez.log as log
 
+logger = log.get_logger('webserver_user')
 
 db = SQLAlchemy()
 Base.query = db.session.query_property()
@@ -30,19 +32,21 @@ class User(Base):
         if not auth or not auth.username or not auth.password:
             return make_response("Bad Request", 401)
 
-        user = User.query.filter_by(email=auth.username).first()
-
+        user = db.session.query(User).filter_by(email=auth.username).first()
         if not user:
             return make_response("Could not verify", 401)
 
+        refresh_token = str(uuid.uuid4())
         if check_password_hash(user.password, auth.password):
-            user.refresh_token = str(uuid.uuid4())
+            logger.debug('refresh token' + refresh_token)
+            user.refresh_token = refresh_token
+
             db.session.commit()
 
             private_key = open('private.key').read()
             token = jwt.encode({'public_id': user.public_id, 'username': user.email,
-                                'admin': user.admin, 'refreshToken': user.refresh_token,
-                                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)},
+                                'admin': user.admin, 'refreshToken': refresh_token,
+                                'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)},
                                private_key, algorithm='RS256').decode('utf-8')
             return jsonify({'token': token})
 
@@ -53,19 +57,25 @@ class User(Base):
     def refresh_login(request):
         data = request.get_json()
         if not data['refreshToken']:
+            logger.debug("No refresh token")
             return jsonify({"message": "You are not allowed to perform this action"}), 401
-        user = User.query.filter_by(refresh_token=data['refreshToken']).first()
+        user = db.session.query(User).filter_by(refresh_token=data['refreshToken']).first()
         if not user:
+            logger.debug("No user found for token: " + data['refreshToken'])
             return jsonify({"message": "You are not allowed to perform this action"}), 401
 
-        user.refresh_token = str(uuid.uuid4())
+        refresh_token = str(uuid.uuid4())
+        user.refresh_token = refresh_token
+        logger.debug('refresh token' + refresh_token)
+
         db.session.commit()
 
         private_key = open('private.key').read()
         token = jwt.encode({'public_id': user.public_id, 'username': user.email,
-                            'admin': user.admin, 'refreshToken': user.refresh_token,
-                            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)},
+                            'admin': user.admin, 'refreshToken': refresh_token,
+                            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60)},
                            private_key, algorithm='RS256').decode('utf-8')
+        logger.debug("Send new token")
         return jsonify({'token': token})
 
 
@@ -83,7 +93,7 @@ class User(Base):
             user_data['group_name'] = user.group.name
             user_data['group_id'] = user.group_id
             output.append(user_data)
-
+        db.session.commit()
         return jsonify({'response': output})
 
     @staticmethod

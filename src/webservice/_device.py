@@ -30,7 +30,7 @@ class Device(Base):
                           'sn': device.sn, 'version': device.version, 'ping': device.ping,
                           'mqtt': device.mqtt}
             output.append(group_data)
-
+        db.session.commit()
         return jsonify({'response': output})
 
     @staticmethod

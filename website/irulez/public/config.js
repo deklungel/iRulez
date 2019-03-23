@@ -22,34 +22,34 @@ var DEVICE_ADD = PYTHON_SERVER + 'devices';
 var DEVICE_DELETE = PYTHON_SERVER + 'devices';
 var DEVICE_EDIT = PYTHON_SERVER + 'devices';
 
-var OUTPUT_GET = BASEURL + 'outputs';
-var OUTPUT_EDIT = BASEURL + 'output/edit';
+var OUTPUT_GET = PYTHON_SERVER + 'outputs';
+var OUTPUT_EDIT = PYTHON_SERVER + 'outputs';
 
-var MENU_GET = BASEURL + 'menus';
-var MENU_ADD = BASEURL + 'menu/add';
-var MENU_DELETE = BASEURL + 'menu/delete';
-var MENU_EDIT = BASEURL + 'menu/edit';
+var MENU_GET = PYTHON_SERVER + 'menus';
+var MENU_ADD = PYTHON_SERVER + 'menus';
+var MENU_DELETE = PYTHON_SERVER + 'menus';
+var MENU_EDIT = PYTHON_SERVER + 'menus';
 
 var INPUT_GET = PYTHON_SERVER + 'inputs';
 var INPUT_EDIT = PYTHON_SERVER + 'inputs';
 
-var ACTION_GET = BASEURL + 'actions';
-var ACTION_ADD = BASEURL + 'action/add';
-var ACTION_DELETE = BASEURL + 'action/delete';
-var ACTION_EDIT = BASEURL + 'action/edit';
+var ACTION_GET = PYTHON_SERVER + 'actions/relais';
+var ACTION_ADD = PYTHON_SERVER + 'actions/relais';
+var ACTION_DELETE = PYTHON_SERVER + 'actions/relais';
+var ACTION_EDIT = PYTHON_SERVER + 'actions/relais';
 
-var DIMMER_ACTIONS_GET = BASEURL + 'dimmeractions';
+var DIMMER_ACTIONS_GET = PYTHON_SERVER + 'actions/dimmers';
 
-var GET_FIELD_TRIGGERS = BASEURL + 'field/triggers';
-var GET_FIELD_GROUPS = BASEURL + 'field/groups';
-var GET_FIELD_ACTION_TYPES = BASEURL + 'field/action_types';
-var GET_OUTPUTS = BASEURL + 'field/outputs';
-var GET_CONDITIONS = BASEURL + 'field/conditions';
-var GET_NOTIFICATIONS = BASEURL + 'field/notifications';
-var GET_FIELD_TEMPLATE = BASEURL + 'field/templates';
-var GET_FIELD_ACTIONS = BASEURL + 'field/actions';
-var GET_FIELD_MENUS = BASEURL + 'field/menus';
-var GET_FIELD_OUTPUTTYPE = BASEURL + 'field/output_type';
+var GET_FIELD_TRIGGERS = PYTHON_SERVER + 'field/triggers';
+var GET_FIELD_GROUPS = PYTHON_SERVER + 'field/groups';
+var GET_FIELD_ACTION_TYPES = PYTHON_SERVER + 'field/action_types_relais';
+var GET_OUTPUTS = PYTHON_SERVER + 'field/outputs';
+var GET_CONDITIONS = PYTHON_SERVER + 'field/conditions';
+var GET_NOTIFICATIONS = PYTHON_SERVER + 'field/notifications';
+var GET_FIELD_TEMPLATE = PYTHON_SERVER + 'field/templates';
+var GET_FIELD_ACTIONS = PYTHON_SERVER + 'field/actions';
+var GET_FIELD_MENUS = PYTHON_SERVER + 'field/menus';
+var GET_FIELD_OUTPUTTYPE = PYTHON_SERVER + 'field/output_type';
 
 var PROCESSES_GET = BASEURL_SUPERVISOR + 'getAllProcesses';
 var PROCESSES_RESTART = BASEURL_SUPERVISOR + 'restartProcces';

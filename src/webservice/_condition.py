@@ -6,16 +6,14 @@ db = SQLAlchemy()
 Base.query = db.session.query_property()
 
 
-class Template(Base):
-    __tablename__ = 'tbl_Template'
+class Condition(Base):
+    __tablename__ = 'tbl_Condition'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
-    nb_input_pins = db.Column(db.Integer)
-    nb_output_pins = db.Column(db.Integer)
 
     @staticmethod
-    def get_menu_fields_templates():
-        rows = db.session.query(Template).all()
+    def get_menu_fields_conditions():
+        rows = db.session.query(Condition).all()
         output = []
         for row in rows:
             output.append({'id': row.id, 'name': row.name})

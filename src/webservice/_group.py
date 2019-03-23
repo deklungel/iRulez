@@ -24,7 +24,7 @@ class Group(Base):
                 users.append(user.email)
             group_data = {'id': group.id, 'name': group.name, 'users': users}
             output.append(group_data)
-
+        db.session.commit()
         return jsonify({'response': output})
 
     @staticmethod
@@ -56,3 +56,12 @@ class Group(Base):
         db.session.commit()
 
         return jsonify({'result': 'Group has been deleted'})
+
+    @staticmethod
+    def get_menu_fields_groups():
+        groups = db.session.query(Group).all()
+        output = []
+        for group in groups:
+            output.append({'id': group.id, 'name': group.name})
+        db.session.close()
+        return jsonify({'response': output})
