@@ -51,8 +51,8 @@ var GET_FIELD_ACTIONS = PYTHON_SERVER + 'field/actions';
 var GET_FIELD_MENUS = PYTHON_SERVER + 'field/menus';
 var GET_FIELD_OUTPUTTYPE = PYTHON_SERVER + 'field/output_type';
 
-var PROCESSES_GET = BASEURL_SUPERVISOR + 'getAllProcesses';
-var PROCESSES_RESTART = BASEURL_SUPERVISOR + 'restartProcces';
-var PROCESSES_START = BASEURL_SUPERVISOR + 'startProcces';
-var PROCESSES_STOP = BASEURL_SUPERVISOR + 'stopProcces';
-var CLEAR_LOG = BASEURL_SUPERVISOR + 'clearLogs';
+var PROCESSES_GET = PYTHON_SERVER + 'supervisor';
+var PROCESSES_RESTART = PYTHON_SERVER + 'supervisor/restart';
+var PROCESSES_START = PYTHON_SERVER + 'supervisor/start';
+var PROCESSES_STOP = PYTHON_SERVER + 'supervisor/stop';
+var CLEAR_LOG = PYTHON_SERVER + 'clearLogs';

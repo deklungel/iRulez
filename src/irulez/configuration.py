@@ -28,3 +28,7 @@ class Configuration:
 
     def get_service_server_config(self) -> {}:
         return self.get_config('output_status_server')
+
+    def get_webserver_config(self) -> {}:
+        return self.get_config('webserver')
+

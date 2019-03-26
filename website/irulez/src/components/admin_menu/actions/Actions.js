@@ -138,7 +138,7 @@ class Actions extends Component {
 
     getData = () => {
         this.setState({ isActive: true });
-        this.Action.getDataWithTimeOut()
+        this.Action.getData()
             .then(response => {
                 this.setState({ data: response });
                 this.setState({ selected: [] });

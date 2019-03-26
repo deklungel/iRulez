@@ -23,17 +23,25 @@ from src.webservice._trigger import Trigger
 from src.webservice._action_type import Action_Type
 from src.webservice._condition import Condition
 from src.webservice._notification_type import Notification_Type
+import src.irulez.configuration as configuration
+
+from src.webservice._supervisor import SupervisorClient
 
 logger = log.get_logger('webserver')
+config = configuration.Configuration()
+webserverConfig = config.get_webserver_config()
 
 app = Flask(__name__)
 CORS(app, resources={"/api/*": {"origins": "*"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://root:irulez4database@10.0.50.50/iRulez'
+app.config['SQLALCHEMY_DATABASE_URI'] = webserverConfig['DATABASE_UI']
 app.config['SQLALCHEMY_MAX_OVERFLOW'] = 50
 app.config['SQLALCHEMY_POOL_SIZE'] = 20
 db = SQLAlchemy(app)
+
+supervisor = SupervisorClient("10.50.240.11")
+
 
 
 def token_required(f):
@@ -235,9 +243,34 @@ def fields_route(current_user, field):
     if field == 'output_type':
         return OutputPin_Type.get_menu_fields_output_type()
 
-
-
     return jsonify({"message": "field not implemented"}), 501
+
+
+@app.route('/api/supervisor', methods=['GET'])
+@token_required
+def supervisor_route(current_user):
+    logger.debug('supervisor route. Method -> ' + request.method)
+    if not current_user.admin:
+        logger.debug('No admin user')
+        return jsonify({"message": "You are not allowed to perform this action"})
+    if request.method == 'GET':
+        return supervisor.get_all_process()
+
+
+@app.route('/api/supervisor/<action>', methods=['POST'])
+@token_required
+def supervisor_action_route(current_user, action):
+    logger.debug('supervisor '+ action + ' route. Method -> ' + request.method)
+    if not current_user.admin:
+        logger.debug('No admin user')
+        return jsonify({"message": "You are not allowed to perform this action"})
+    if action == 'stop':
+        return supervisor.stop(request)
+    if action == 'start':
+        return supervisor.start(request)
+    if action == 'restart':
+        return supervisor.restart(request)
+
 
 if __name__ == '__main__':
     app.run('0.0.0.0', 3004)
